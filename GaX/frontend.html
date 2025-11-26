@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GaX Crypto Wallet</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); /* Green gradient */
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .background-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 40% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wallet-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .wallet-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .tagline {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .nav-tab {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .wallet-content {
+            padding: 40px;
+            min-height: 500px;
+        }
+
+        .balance-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .total-balance {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .balance-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.7;
+            margin-bottom: 30px;
+        }
+
+        .crypto-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .crypto-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .crypto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .crypto-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .crypto-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .btc-icon { background: linear-gradient(135deg, #f7931a, #ff6b35); }
+        .eth-icon { background: linear-gradient(135deg, #627eea, #4ea8de); }
+        .usdt-icon { background: linear-gradient(135deg, #26a17b, #00d4aa); }
+
+        .crypto-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .crypto-symbol {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .crypto-balance {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .crypto-value {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+
+        .action-section {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 140px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .transaction-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 0 -16px;
+            padding-left: 16px;
+            padding-right: 16px;
+            border-radius: 8px;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 1.1rem;
+        }
+
+        .send-icon { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        .receive-icon { background: linear-gradient(135deg, #51cf66, #40c057); }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-amount {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .transaction-address {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .transaction-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+        }
+
+        .status-message {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-success {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+            border: 1px solid rgba(81, 207, 102, 0.3);
+        }
+
+        .status-error {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .status-loading {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .auth-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+        }
+
+        .auth-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-link:hover {
+            color: #5a6fd8;
+            text-decoration: underline;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-up {
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .market-ticker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 18px 0 10px 0;
+            margin-bottom: 32px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            overflow-x: auto;
+        }
+        .market-coin {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+        }
+        .market-coin .coin-symbol {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .market-coin .coin-price {
+            font-weight: 600;
+        }
+        .market-coin .coin-change.up {
+            color: #51cf66;
+        }
+        .market-coin .coin-change.down {
+            color: #ff6b6b;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .wallet-content { padding: 20px; }
+            .total-balance { font-size: 2.2rem; }
+            .crypto-cards { grid-template-columns: 1fr; }
+            .action-section { flex-direction: column; }
+            .nav-tabs { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-pattern"></div>
+    
+    <div class="container">
+        <div class="wallet-card fade-in">
+            <div class="wallet-header">
+                <div class="logo">GaX</div>
+                <div class="tagline">Your Gateway to Digital Assets</div>
+                <nav class="nav-tabs">
+                    <button class="nav-tab active" id="dashboardBtn">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </button>
+                    <button class="nav-tab" id="transactionsBtn">
+                        <i class="fas fa-history"></i> Transactions
+                    </button>
+                    <button class="nav-tab" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </nav>
+            </div>
+            
+            <div class="market-ticker" id="marketTicker">
+                <!-- Market data will be loaded here -->
+            </div>
+
+            <div class="wallet-content" id="mainContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mainContent = document.getElementById('mainContent');
+        const dashboardBtn = document.getElementById('dashboardBtn');
+        const transactionsBtn = document.getElementById('transactionsBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        let jwtToken = null;
+
+        function setActiveTab(activeBtn) {
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            activeBtn.classList.add('active');
+        }
+
+        function renderDashboard() {
+            setActiveTab(dashboardBtn);
+            mainContent.innerHTML = `
+                <div class="slide-up">
+                    <div class="balance-section">
+                        <div class="total-balance" id="totalBalance">$0.00</div>
+                        <div class="balance-subtitle">Total Portfolio Value</div>
+                    </div>
+
+                    <div class="crypto-cards" id="cryptoCards">
+                        <!-- Crypto cards will be populated here -->
+                    </div>
+
+                    <div class="action-section">
+                        <button class="action-btn" onclick="showSendForm()">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                        <button class="action-btn secondary" onclick="showReceiveForm()">
+                            <i class="fas fa-qrcode"></i> Receive
+                        </button>
+                        <button class="action-btn secondary" onclick="refreshBalance()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div id="actionForms"></div>
+                </div>
+            `;
+            fetchBalance();
+        }
+
+        function renderTransactions() {
+            setActiveTab(transactionsBtn);
+            mainContent.innerHTML = `
+                <div class="slide-up">
+                    <h2 style="margin-bottom: 30px; font-size: 1.8rem;">
+                        <i class="fas fa-history"></i> Transaction History
+                    </h2>
+                    <div class="transaction-list">
+                        <div id="txList">
+                            <div style="text-align: center; padding: 40px;">
+                                <div class="loading-spinner"></div>
+                                <p style="margin-top: 16px;">Loading transactions...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            fetchTransactions();
+        }
+
+        function renderLogin() {
+            mainContent.innerHTML = `
+                <div class="auth-container fade-in">
+                    <div class="auth-card">
+                        <div class="auth-title">Welcome Back</div>
+                        <div class="auth-subtitle">Sign in to access your wallet</div>
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <input type="text" id="loginUsername" class="form-input" placeholder="Username" required />
+                            </div>
+                            <div class="form-group">
+                                <input type="password" id="loginPassword" class="form-input" placeholder="Password" required />
+                            </div>
+                            <button class="action-btn" type="submit" style="width: 100%;">
+                                <i class="fas fa-sign-in-alt"></i> Sign In
+                            </button>
+                        </form>
+                        <p style="margin-top: 20px;">
+                            Don't have an account? 
+                            <a href="#" id="showRegister" class="auth-link">Create one</a>
+                        </p>
+                        <div id="loginStatus"></div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('loginForm').onsubmit = loginUser;
+            document.getElementById('showRegister').onclick = renderRegister;
+        }
+
+        function renderRegister() {
+            mainContent.innerHTML = `
+                <div class="auth-container fade-in">
+                    <div class="auth-card">
+                        <div class="auth-title">Create Account</div>
+                        <div class="auth-subtitle">Join GaX and start your crypto journey</div>
+                        <form id="registerForm">
+                            <div class="form-group">
+                                <input type="text" id="registerUsername" class="form-input" placeholder="Choose a username" required />
+                            </div>
+                            <div class="form-group">
+                                <input type="password" id="registerPassword" class="form-input" placeholder="Create a password" required />
+                            </div>
+                            <button class="action-btn" type="submit" style="width: 100%;">
+                                <i class="fas fa-user-plus"></i> Create Account
+                            </button>
+                        </form>
+                        <p style="margin-top: 20px;">
+                            Already have an account? 
+                            <a href="#" id="showLogin" class="auth-link">Sign in</a>
+                        </p>
+                        <div id="registerStatus"></div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('registerForm').onsubmit = registerUser;
+            document.getElementById('showLogin').onclick = renderLogin;
+        }
+
+        function showSendForm() {
+            document.getElementById('actionForms').innerHTML = `
+                <div class="form-section slide-up">
+                    <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-paper-plane"></i> Send Cryptocurrency
+                    </h3>
+                    <form id="sendForm">
+                        <div class="form-group">
+                            <label class="form-label">Recipient Address</label>
+                            <input type="text" id="recipient" class="form-input" placeholder="Enter wallet address" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Amount</label>
+                            <input type="number" id="amount" class="form-input" placeholder="0.00" min="0" step="any" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Currency</label>
+                            <select id="currency" class="form-select">
+                                <option value="BTC">Bitcoin (BTC)</option>
+                                <option value="ETH">Ethereum (ETH)</option>
+                                <option value="USDT">Tether (USDT)</option>
+                            </select>
+                        </div>
+                        <button class="action-btn" type="submit" style="width: 100%;">
+                            <i class="fas fa-send"></i> Send Transaction
+                        </button>
+                    </form>
+                    <div id="sendStatus"></div>
+                </div>
+            `;
+            document.getElementById('sendForm').onsubmit = sendCrypto;
+        }
+
+        function showReceiveForm() {
+            document.getElementById('actionForms').innerHTML = `
+                <div class="form-section slide-up">
+                    <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-qrcode"></i> Receive Cryptocurrency
+                    </h3>
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="background: white; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 20px;">
+                            <i class="fas fa-qrcode" style="font-size: 80px; color: #333;"></i>
+                        </div>
+                        <p style="font-size: 1.1rem; margin-bottom: 16px;">Your GaX Wallet Address</p>
+                        <div style="background: rgba(255,255,255,0.1); padding: 16px; border-radius: 8px; font-family: monospace; word-break: break-all; margin-bottom: 16px;">
+                            1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+                        </div>
+                        <button class="action-btn secondary" onclick="copyAddress()" style="width: auto;">
+                            <i class="fas fa-copy"></i> Copy Address
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function copyAddress() {
+            navigator.clipboard.writeText('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
+            // Could add a toast notification here
+        }
+
+        function refreshBalance() {
+            fetchBalance();
+        }
+
+        function loginUser(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            showStatus('loginStatus', 'Signing in...', 'loading');
+            
+            fetch('/api/auth/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.access_token) {
+                    jwtToken = data.access_token;
+                    renderDashboard();
+                } else {
+                    showStatus('loginStatus', 'Invalid credentials. Please try again.', 'error');
+                }
+            })
+            .catch(() => {
+                showStatus('loginStatus', 'Connection error. Please try again.', 'error');
+            });
+        }
+
+        function registerUser(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            showStatus('registerStatus', 'Creating account...', 'loading');
+            
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.access_token) {
+                    jwtToken = data.access_token;
+                    renderDashboard();
+                } else {
+                    showStatus('registerStatus', 'Registration failed. Please try again.', 'error');
+                }
+            })
+            .catch(() => {
+                showStatus('registerStatus', 'Connection error. Please try again.', 'error');
+            });
+        }
+
+        function logoutUser() {
+            jwtToken = null;
+            renderLogin();
+        }
+
+        function fetchBalance() {
+            fetch('/api/wallet/balance', {
+                headers: jwtToken ? { 'Authorization': 'Bearer ' + jwtToken } : {}
+            })
+            .then(res => res.json())
+            .then(data => {
+                updateBalanceDisplay(data);
+            })
+            .catch(() => {
+                console.error('Error loading balance');
+            });
+        }
+
+        function updateBalanceDisplay(balanceData) {
+            // Use backend data, fallback to 0 if not present
+            const mockData = {
+                btc: balanceData.btc || 0,
+                eth: balanceData.eth || 0,
+                usdt: balanceData.usdt || 0
+            };
+            // Example: 1 USD = 1500 NGN (Naira)
+            const prices = { btc: 45000 * 1500, eth: 3000 * 1500, usdt: 1 * 1500 };
+            const totalValue = (mockData.btc * prices.btc) + (mockData.eth * prices.eth) + (mockData.usdt * prices.usdt);
+            document.getElementById('totalBalance').textContent = `₦${totalValue.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cryptoCards').innerHTML = `
+                <div class="crypto-card">
+                    <div class="crypto-header">
+                        <div class="crypto-icon btc-icon">₿</div>
+                        <div>
+                            <div class="crypto-name">Bitcoin</div>
+                            <div class="crypto-symbol">BTC</div>
+                        </div>
+                    </div>
+                    <div class="crypto-balance">${mockData.btc.toFixed(8)} BTC</div>
+                    <div class="crypto-value">≈ ₦${(mockData.btc * prices.btc).toLocaleString('en-NG')}</div>
+                </div>
+                <div class="crypto-card">
+                    <div class="crypto-header">
+                        <div class="crypto-icon eth-icon">Ξ</div>
+                        <div>
+                            <div class="crypto-name">Ethereum</div>
+                            <div class="crypto-symbol">ETH</div>
+                        </div>
+                    </div>
+                    <div class="crypto-balance">${mockData.eth.toFixed(6)} ETH</div>
+                    <div class="crypto-value">≈ ₦${(mockData.eth * prices.eth).toLocaleString('en-NG')}</div>
+                </div>
+                <div class="crypto-card">
+                    <div class="crypto-header">
+                        <div class="crypto-icon usdt-icon">₮</div>
+                        <div>
+                            <div class="crypto-name">Tether USD</div>
+                            <div class="crypto-symbol">USDT</div>
+                        </div>
+                    </div>
+                    <div class="crypto-balance">${mockData.usdt.toFixed(2)} USDT</div>
+                    <div class="crypto-value">≈ ₦${(mockData.usdt * prices.usdt).toLocaleString('en-NG')}</div>
+                </div>
+            `;
+        }
+
+        function fetchTransactions() {
+            fetch('/api/wallet/transactions', {
+                headers: jwtToken ? { 'Authorization': 'Bearer ' + jwtToken } : {}
+            })
+            .then(res => res.json())
+            .then(data => {
+                displayTransactions(data);
+            })
+            .catch(() => {
+                document.getElementById('txList').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 16px; color: #ff6b6b;"></i>
+                        <p>Unable to load transactions</p>
+                    </div>
+                `;
+            });
+        }
+
+        function displayTransactions(transactions) {
+            // Mock transaction data for demonstration
+            const mockTransactions = transactions.length ? transactions : [
+                {
+                    id: 1,
+                    type: 'send',
+                    amount: -0.00123456,
+                    currency: 'BTC',
+                    address: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2',
+                    timestamp: new Date(Date.now() - 86400000).toLocaleString(),
+                    status: 'completed'
+                },
+                {
+                    id: 2,
+                    type: 'receive',
+                    amount: 0.5,
+                    currency: 'ETH',
+                    address: '0x742d35Cc6Fc3c9e1fcE8b1dd1f6C5434b1A2e4d8',
+                    timestamp: new Date(Date.now() - 172800000).toLocaleString(),
+                    status: 'completed'
+                },
+                {
+                    id: 3,
+                    type: 'send',
+                    amount: -250.00,
+                    currency: 'USDT',
+                    address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+                    timestamp: new Date(Date.now() - 259200000).toLocaleString(),
+                    status: 'completed'
+                },
+                {
+                    id: 4,
+                    type: 'receive',
+                    amount: 1000.00,
+                    currency: 'USDT',
+                    address: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2',
+                    timestamp: new Date(Date.now() - 345600000).toLocaleString(),
+                    status: 'completed'
+                }
+            ];
+
+            if (mockTransactions.length === 0) {
+                document.getElementById('txList').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 16px; opacity: 0.5;"></i>
+                        <p>No transactions yet</p>
+                        <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 8px;">Your transaction history will appear here</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const transactionHTML = mockTransactions.map(tx => `
+                <div class="transaction-item">
+                    <div class="transaction-icon ${tx.type === 'send' ? 'send-icon' : 'receive-icon'}">
+                        <i class="fas ${tx.type === 'send' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                    </div>
+                    <div class="transaction-details">
+                        <div class="transaction-amount ${tx.amount < 0 ? 'text-red' : 'text-green'}">
+                            ${tx.amount > 0 ? '+' : ''}${Math.abs(tx.amount).toFixed(tx.currency === 'USDT' ? 2 : 8)} ${tx.currency}
+                        </div>
+                        <div class="transaction-address">
+                            ${tx.type === 'send' ? 'To: ' : 'From: '}${tx.address.substring(0, 20)}...
+                        </div>
+                    </div>
+                    <div class="transaction-time">
+                        ${tx.timestamp}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('txList').innerHTML = transactionHTML;
+        }
+
+        async function fetchMarketData() {
+            // Example using CoinGecko public API
+            const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=ngn&include_24hr_change=true';
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const coins = [
+                    { symbol: 'BTC', name: 'Bitcoin', icon: '₿', key: 'bitcoin' },
+                    { symbol: 'ETH', name: 'Ethereum', icon: 'Ξ', key: 'ethereum' },
+                    { symbol: 'USDT', name: 'Tether', icon: '₮', key: 'tether' }
+                ];
+                document.getElementById('marketTicker').innerHTML = coins.map(coin => {
+                    const price = data[coin.key]?.ngn || 0;
+                    const change = data[coin.key]?.ngn_24h_change || 0;
+                    const changeClass = change >= 0 ? 'up' : 'down';
+                    const changeSign = change >= 0 ? '+' : '';
+                    return `
+                        <div class="market-coin">
+                            <span class="coin-symbol">${coin.icon} ${coin.symbol}</span>
+                            <span class="coin-price">₦${price.toLocaleString('en-NG', {maximumFractionDigits:2})}</span>
+                            <span class="coin-change ${changeClass}">${changeSign}${change.toFixed(2)}%</span>
+                        </div>
+                    `;
+                }).join('');
+            } catch {
+                document.getElementById('marketTicker').innerHTML = '<span style="color:#ff6b6b">Market data unavailable</span>';
+            }
+        }
+
+        function sendCrypto(e) {
+            e.preventDefault();
+            
+            const recipient = document.getElementById('recipient').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const currency = document.getElementById('currency').value;
+            
+            if (!recipient || !amount || amount <= 0) {
+                showStatus('sendStatus', 'Please fill in all fields correctly.', 'error');
+                return;
+            }
+
+            showStatus('sendStatus', 'Processing transaction...', 'loading');
+
+            const transactionData = {
+                recipient_address: recipient,
+                amount: amount,
+                currency: currency
+            };
+
+            fetch('/api/wallet/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': jwtToken ? 'Bearer ' + jwtToken : ''
+                },
+                body: JSON.stringify(transactionData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.transaction_id) {
+                    showStatus('sendStatus', 'Transaction sent successfully!', 'success');
+                    document.getElementById('sendForm').reset();
+                    // Refresh balance after successful transaction
+                    setTimeout(() => {
+                        fetchBalance();
+                        document.getElementById('actionForms').innerHTML = '';
+                    }, 2000);
+                } else {
+                    showStatus('sendStatus', data.error || 'Transaction failed. Please try again.', 'error');
+                }
+            })
+            .catch(() => {
+                showStatus('sendStatus', 'Network error. Please check your connection and try again.', 'error');
+            });
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusEl = document.getElementById(elementId);
+            if (!statusEl) return;
+
+            let iconClass = '';
+            switch (type) {
+                case 'loading':
+                    iconClass = '<div class="loading-spinner"></div>';
+                    break;
+                case 'success':
+                    iconClass = '<i class="fas fa-check-circle"></i>';
+                    break;
+                case 'error':
+                    iconClass = '<i class="fas fa-exclamation-circle"></i>';
+                    break;
+            }
+
+            statusEl.innerHTML = `
+                <div class="status-message status-${type}">
+                    ${iconClass} ${message}
+                </div>
+            `;
+
+            // Auto-hide success/error messages after 5 seconds
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    statusEl.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Event listeners
+        dashboardBtn.addEventListener('click', renderDashboard);
+        transactionsBtn.addEventListener('click', renderTransactions);
+        logoutBtn.addEventListener('click', logoutUser);
+
+        // Initialize the app
+        function initApp() {
+            // Check if user has a stored session or token
+            const storedToken = null; // In a real app, you might check localStorage
+            
+            if (storedToken) {
+                jwtToken = storedToken;
+                renderDashboard();
+            } else {
+                renderLogin();
+            }
+            fetchMarketData();
+            setInterval(fetchMarketData, 15000);
+        }
+
+        // Add some additional CSS for transaction colors
+        const additionalCSS = `
+            .text-red { color: #ff6b6b; }
+            .text-green { color: #51cf66; }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = additionalCSS;
+        document.head.appendChild(styleSheet);
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        // Add smooth scrolling and enhanced interactions
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.crypto-card')) {
+                e.target.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    e.target.style.transform = '';
+                }, 100);
+            }
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + 1 for Dashboard
+            if ((e.ctrlKey || e.metaKey) && e.key === '1') {
+                e.preventDefault();
+                renderDashboard();
+            }
+            // Ctrl/Cmd + 2 for Transactions
+            if ((e.ctrlKey || e.metaKey) && e.key === '2') {
+                e.preventDefault();
+                renderTransactions();
+            }
+            // Escape to close forms
+            if (e.key === 'Escape') {
+                const actionForms = document.getElementById('actionForms');
+                if (actionForms) {
+                    actionForms.innerHTML = '';
+                }
+            }
+        });
+
+        // Add periodic balance refresh (every 30 seconds when dashboard is active)
+        setInterval(() => {
+            if (jwtToken && dashboardBtn.classList.contains('active')) {
+                fetchBalance();
+            }
+        }, 30000);
+
+    </script>
+</body>
+</html>
