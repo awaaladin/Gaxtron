@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "gaxtron-blockchain-service",
+  "builds": [
+    {
+      "src": "GaX/app/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "GaX/app/main.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "/var/task/GaX"
+  }
+}
