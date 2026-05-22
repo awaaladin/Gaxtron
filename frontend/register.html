@@ -3,76 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gaxtron – Register</title>
+  <title>Gaxtron — Create Account</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#0f172a" />
-  <meta name="description" content="Create your Gaxtron merchant account — secure crypto payments" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="description" content="Create your Gaxtron merchant account — accept Ethereum payments on Sepolia" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <link rel="stylesheet" href="css/styles.css?v=5" />
 </head>
-<body class="auth-page bg-slate-50 min-h-screen flex items-center justify-center p-4 py-10">
+<body>
 
-<div class="auth-wrap w-full max-w-md animate-reveal-up">
-  <a href="index.html" class="auth-brand flex items-center justify-center gap-2.5 mb-8 no-underline">
-    <div class="brand-mark">GX</div>
-    <span class="font-semibold text-slate-900 text-lg">Gaxtron</span>
-  </a>
+<div data-aurora style="position:fixed;inset:0;z-index:0"></div>
+<canvas data-particles class="gx-particles" style="position:fixed;inset:0;z-index:0"></canvas>
 
-  <div class="auth-card bg-white rounded-xl border border-slate-200 shadow-md p-8">
-    <h1 class="text-xl font-semibold text-slate-900 mb-1">Create account</h1>
-    <p class="auth-sub text-slate-500 text-sm mb-6">Start accepting crypto payments</p>
+<div class="auth-split">
+  <aside class="auth-panel">
+    <div class="auth-panel-grid"></div>
+    <div class="bg-orb bg-orb--cyan" style="opacity:0.15;position:absolute;bottom:20%;right:-10%"></div>
+    <div class="auth-panel-content animate-reveal-fade">
+      <a href="index.html" class="auth-brand">
+        <div class="brand-mark">GX</div>
+        <span>Gaxtron</span>
+      </a>
+      <h2>Start accepting crypto in minutes</h2>
+      <p>Register once, get your API key, and create your first payment link. No blockchain expertise required — we handle confirmations and webhooks.</p>
 
-    <div id="apiStatus" class="hidden mb-4 p-3 rounded-lg text-sm bg-amber-50 text-amber-900 border border-amber-200"></div>
-    <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
-
-    <form id="registerForm" novalidate>
-      <div class="auth-grid-2 grid grid-cols-2 gap-3 mb-4">
-        <div class="auth-field">
-          <label class="block text-sm font-medium text-slate-700 mb-1.5">First name</label>
-          <input id="firstName" type="text" class="cp-input" />
+      <div style="margin-top:2rem;display:flex;flex-direction:column;gap:1rem">
+        <div style="display:flex;gap:0.75rem;align-items:flex-start">
+          <div class="feature-icon-wrap" style="width:36px;height:36px;margin:0;flex-shrink:0"><i data-lucide="zap"></i></div>
+          <div>
+            <p style="font-weight:600;font-size:0.875rem">Instant API access</p>
+            <p style="font-size:0.8125rem;color:var(--text-dim)">API key generated on signup</p>
+          </div>
         </div>
-        <div class="auth-field">
-          <label class="block text-sm font-medium text-slate-700 mb-1.5">Last name</label>
-          <input id="lastName" type="text" class="cp-input" />
+        <div style="display:flex;gap:0.75rem;align-items:flex-start">
+          <div class="feature-icon-wrap" style="width:36px;height:36px;margin:0;flex-shrink:0"><i data-lucide="link-2"></i></div>
+          <div>
+            <p style="font-weight:600;font-size:0.875rem">Hosted checkout</p>
+            <p style="font-size:0.8125rem;color:var(--text-dim)">Share payment links with customers</p>
+          </div>
         </div>
-      </div>
-      <div class="auth-field mb-4">
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Business name</label>
-        <input id="businessName" type="text" class="cp-input" placeholder="Used as API username" />
-      </div>
-      <div class="auth-field mb-4">
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-        <input id="email" type="email" class="cp-input" autocomplete="email" />
-      </div>
-      <div class="auth-field mb-4">
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
-        <div class="relative">
-          <input id="password" type="password" class="cp-input pr-10" autocomplete="new-password" />
-          <button type="button" id="togglePwd" class="icon-btn absolute right-2 top-1/2 -translate-y-1/2">
-            <i data-lucide="eye" class="w-4 h-4"></i>
-          </button>
+        <div style="display:flex;gap:0.75rem;align-items:flex-start">
+          <div class="feature-icon-wrap" style="width:36px;height:36px;margin:0;flex-shrink:0"><i data-lucide="blocks"></i></div>
+          <div>
+            <p style="font-weight:600;font-size:0.875rem">On-chain settlement</p>
+            <p style="font-size:0.8125rem;color:var(--text-dim)">Sepolia ETH with 3-block confirms</p>
+          </div>
         </div>
       </div>
-      <div class="auth-field mb-5">
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Confirm password</label>
-        <input id="confirmPwd" type="password" class="cp-input" />
-      </div>
-      <label class="flex items-start gap-2 mb-5 text-sm text-slate-600 cursor-pointer">
-        <input type="checkbox" id="terms" class="mt-1 accent-blue-700" />
-        <span>I agree to the terms of service</span>
-      </label>
-      <button id="submitBtn" type="submit" class="cp-btn cp-btn-primary w-full py-2.5">Create account</button>
-    </form>
-
-    <p class="auth-footer text-center text-sm text-slate-500 mt-6">
-      Have an account? <a href="login.html" class="text-blue-700 font-medium hover:underline">Sign in</a>
+    </div>
+    <p style="position:relative;z-index:1;font-size:0.75rem;color:var(--text-dim)">
+      Free on Sepolia testnet · No credit card required
     </p>
+  </aside>
+
+  <div class="auth-form-side">
+    <div class="auth-wrap animate-reveal-up">
+      <div class="auth-card gx-glow-border" data-reveal>
+        <h1>Create merchant account</h1>
+        <p class="auth-sub">Set up your crypto payment gateway</p>
+
+        <div id="apiStatus" class="hidden"></div>
+        <div id="alert" class="hidden"></div>
+
+        <form id="registerForm" novalidate>
+          <div class="auth-grid-2">
+            <div class="auth-field">
+              <label for="firstName">First name</label>
+              <input id="firstName" type="text" class="cp-input" autocomplete="given-name" />
+            </div>
+            <div class="auth-field">
+              <label for="lastName">Last name</label>
+              <input id="lastName" type="text" class="cp-input" autocomplete="family-name" />
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="businessName">Business name</label>
+            <input id="businessName" type="text" class="cp-input" placeholder="Acme Corp" />
+          </div>
+          <div class="auth-field">
+            <label for="email">Work email</label>
+            <input id="email" type="email" class="cp-input" autocomplete="email" />
+          </div>
+          <div class="auth-field">
+            <label for="password">Password</label>
+            <div style="position:relative">
+              <input id="password" type="password" class="cp-input" style="padding-right:2.75rem" autocomplete="new-password" />
+              <button type="button" id="togglePwd" class="icon-btn" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%)">
+                <i data-lucide="eye" style="width:16px;height:16px"></i>
+              </button>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="confirmPwd">Confirm password</label>
+            <input id="confirmPwd" type="password" class="cp-input" autocomplete="new-password" />
+          </div>
+          <label style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8125rem;color:var(--text-muted);cursor:pointer;margin-bottom:1.25rem">
+            <input type="checkbox" id="terms" style="margin-top:0.25rem;accent-color:var(--indigo)" />
+            <span>I agree to the <a href="#" style="color:var(--accent)">Terms of Service</a> and <a href="#" style="color:var(--accent)">Privacy Policy</a></span>
+          </label>
+          <button id="submitBtn" type="submit" class="cp-btn cp-btn-btc" style="width:100%">Create account</button>
+        </form>
+
+        <p class="auth-footer">
+          Already registered? <a href="login.html">Sign in</a>
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
-<script src="js/api.js?v=2"></script>
+<script src="js/animations.js?v=1"></script>
+<script src="js/errors.js?v=1"></script>
+<script src="js/api.js?v=3"></script>
 <script>
   if (getToken()) window.location.href = 'dashboard.html';
 
@@ -80,11 +123,16 @@
     const el = document.getElementById('apiStatus');
     el.classList.remove('hidden');
     if (ok) {
-      el.className += ' bg-emerald-50 text-emerald-800 border border-emerald-200';
-      el.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4"></i><span>Secure API connected</span>';
+      el.innerHTML = `
+        <div class="cp-alert cp-alert--success" role="status">
+          <div class="cp-alert-icon"><i data-lucide="wifi"></i></div>
+          <div class="cp-alert-body">
+            <p class="cp-alert-title">API connected</p>
+            <p class="cp-alert-message">Sepolia payment infrastructure is online.</p>
+          </div>
+        </div>`;
     } else {
-      el.className += ' bg-amber-50 text-amber-900 border border-amber-200';
-      el.innerHTML = '<i data-lucide="alert-triangle" class="w-4 h-4"></i><span>Server offline. In terminal run: <code class="mono text-xs">.\\scripts\\start_gaxtron.ps1</code> then refresh this page.</span>';
+      showAlert(el, { message: 'Cannot reach payment API. Ensure the server is running.' });
     }
     lucide.createIcons();
   });
@@ -99,23 +147,34 @@
     lucide.createIcons();
   };
 
-  function showAlert(msg, type = 'error') {
-    alertEl.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-800' : 'bg-emerald-50 text-emerald-800'}`;
-    alertEl.textContent = msg;
-    alertEl.classList.remove('hidden');
-  }
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    alertEl.classList.add('hidden');
+
     const email = document.getElementById('email').value.trim();
     const pwd = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPwd').value;
     const business = document.getElementById('businessName').value.trim();
     const fn = document.getElementById('firstName').value.trim();
     const ln = document.getElementById('lastName').value.trim();
-    if (!document.getElementById('terms').checked || pwd.length < 8 || pwd !== document.getElementById('confirmPwd').value) {
-      showAlert('Complete all fields and accept terms.');
+
+    if (!document.getElementById('terms').checked) {
+      showAlert(alertEl, { status: 422, message: 'Please accept the terms of service to continue.' });
       return;
     }
+    if (pwd.length < 8) {
+      showAlert(alertEl, { status: 422, message: 'Password must be at least 8 characters.' });
+      return;
+    }
+    if (pwd !== confirm) {
+      showAlert(alertEl, { status: 422, message: 'Passwords do not match.' });
+      return;
+    }
+    if (!email.includes('@')) {
+      showAlert(alertEl, { status: 422, message: 'Enter a valid work email address.' });
+      return;
+    }
+
     setLoading(submitBtn, true, 'Creating account');
     try {
       const username = business || `${fn}${ln}`.replace(/\s/g, '_').toLowerCase() || email.split('@')[0];
@@ -126,10 +185,12 @@
       setApiKey(keyRes.api_key);
       window.location.href = 'dashboard.html';
     } catch (err) {
-      showAlert(err.message || 'Registration failed');
+      showAlert(alertEl, err);
       setLoading(submitBtn, false, 'Create account');
     }
   });
+
+  lucide.createIcons();
 </script>
 </body>
 </html>

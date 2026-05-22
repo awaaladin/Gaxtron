@@ -3,167 +3,230 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gaxtron – Crypto Payment Gateway</title>
+  <title>Gaxtron — Crypto Payment Infrastructure</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#0f172a" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="description" content="Institutional-grade Ethereum payment gateway. Accept Sepolia ETH with hosted checkout, webhooks, and REST API." />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=5" />
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body>
 
-<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-    <a href="index.html" class="flex items-center gap-2.5 no-underline">
-      <div class="brand-mark">GX</div>
-      <span class="font-semibold text-slate-900">Gaxtron</span>
-    </a>
-    <div class="hidden md:flex items-center gap-8 text-sm text-slate-600">
-      <a href="#features" class="hover:text-slate-900 transition-colors no-underline">Features</a>
-      <a href="#pricing" class="hover:text-slate-900 transition-colors no-underline">Pricing</a>
-    </div>
-    <div class="flex items-center gap-2">
-      <a href="login.html" class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-2 no-underline">Log in</a>
-      <a href="register.html" class="cp-btn cp-btn-primary text-sm py-2 px-4 no-underline">Get started</a>
-    </div>
-  </div>
-</nav>
+<div class="bg-grid"></div>
+<div data-aurora style="position:fixed;inset:0;z-index:0"></div>
+<canvas data-particles class="gx-particles" style="position:fixed;inset:0;z-index:0"></canvas>
 
-<section class="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-20 text-center">
-  <div class="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-full px-3 py-1 text-xs font-medium text-slate-600 mb-8 animate-reveal-up">
-    <i data-lucide="circle-dot" class="w-3 h-3 text-emerald-600"></i>
-    ETH & USDT settlement
-  </div>
-
-  <h1 class="text-4xl sm:text-5xl lg:text-6xl font-semibold text-slate-900 leading-tight mb-5 animate-reveal-up stagger-1">
-    Accept crypto<br /><span class="grad-text">without the complexity</span>
-  </h1>
-
-  <p class="text-lg text-slate-500 max-w-xl mx-auto mb-9 animate-reveal-up stagger-2">
-    Developer-first payment infrastructure. Integrate via REST API, receive on-chain confirmations, and settle to your wallet.
-  </p>
-
-  <div class="flex flex-col sm:flex-row justify-center gap-3 animate-reveal-up stagger-3">
-    <a href="register.html" class="cp-btn cp-btn-primary px-6 py-3 no-underline">
-      Start accepting payments
-      <i data-lucide="arrow-right" class="w-4 h-4"></i>
-    </a>
-    <a href="http://127.0.0.1:8000/docs" target="_blank" class="cp-btn cp-btn-ghost px-6 py-3 no-underline">API documentation</a>
-  </div>
-
-  <div class="mt-14 mx-auto max-w-2xl animate-reveal-up" style="animation-delay:.2s;opacity:0">
-    <div class="rounded-xl border border-slate-200 shadow-md overflow-hidden text-left">
-      <div class="mesh-header px-5 py-3 flex items-center justify-between">
-        <span class="text-slate-300 text-xs font-medium tracking-wide uppercase">Merchant overview</span>
-        <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i>
+<div class="landing-wrap" data-spotlight>
+  <nav class="gx-nav">
+    <div class="gx-nav-inner">
+      <a href="index.html" class="auth-brand no-underline" style="margin:0">
+        <div class="brand-mark">GX</div>
+        <span>Gaxtron</span>
+      </a>
+      <div class="gx-nav-links">
+        <a href="#how">How it works</a>
+        <a href="#features">Platform</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/docs" target="_blank">API</a>
       </div>
-      <div class="bg-white p-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
-          <p class="text-[11px] text-slate-500 uppercase tracking-wide">Revenue</p>
-          <p class="text-lg font-semibold text-slate-900 mt-1">—</p>
-        </div>
-        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
-          <p class="text-[11px] text-slate-500 uppercase tracking-wide">Payments</p>
-          <p class="text-lg font-semibold text-slate-900 mt-1">—</p>
-        </div>
-        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
-          <p class="text-[11px] text-slate-500 uppercase tracking-wide">Success</p>
-          <p class="text-lg font-semibold text-slate-900 mt-1">—</p>
-        </div>
-        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
-          <p class="text-[11px] text-slate-500 uppercase tracking-wide">Pending</p>
-          <p class="text-lg font-semibold text-slate-900 mt-1">—</p>
-        </div>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <a href="login.html" class="cp-btn cp-btn-ghost" style="font-size:0.8125rem;padding:0.5rem 1rem">Log in</a>
+        <a href="register.html" class="cp-btn cp-btn-primary" style="font-size:0.8125rem;padding:0.5rem 1rem">Get started</a>
       </div>
     </div>
-  </div>
-</section>
+  </nav>
 
-<div class="border-y border-slate-200 bg-white py-4 overflow-hidden">
-  <div class="ticker-track text-slate-400 text-xs font-medium uppercase tracking-widest">
-    <span>Ethereum</span><span>USDT</span><span>Sepolia</span><span>Webhooks</span><span>API Keys</span>
-    <span>Non-custodial</span><span>Ethereum</span><span>USDT</span><span>Sepolia</span><span>Webhooks</span>
+  <section class="hero">
+    <div class="hero-badge animate-reveal-up">
+      <span class="hero-badge-dot"></span>
+      Sepolia testnet · Non-custodial · ETH settlement
+    </div>
+
+    <h1 data-reveal>
+      On-chain payments<br /><span class="grad-text gx-shimmer-text" data-shimmer>built for builders</span>
+    </h1>
+
+    <p class="hero-lead animate-reveal-up stagger-2">
+    Accept Ethereum with a Stripe-grade checkout experience. Unique deposit addresses,
+    block confirmations, signed webhooks — all through a single REST API.
+    </p>
+
+    <div class="hero-actions" data-reveal>
+      <a href="register.html" class="cp-btn cp-btn-btc">
+        Start accepting ETH
+        <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
+      </a>
+      <a href="#how" class="cp-btn cp-btn-ghost">See how it works</a>
+    </div>
+
+    <div class="hero-preview animate-reveal-up stagger-4">
+      <div class="hero-preview-bar">
+        <span style="font-size:0.6875rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em">Merchant console</span>
+        <i data-lucide="activity" style="width:16px;height:16px;color:var(--accent)"></i>
+      </div>
+      <div class="hero-preview-body">
+        <div class="hero-metrics">
+          <div class="hero-metric animate-float" style="animation-delay:0s">
+            <p class="hero-metric-label">Volume (24h)</p>
+            <p class="hero-metric-value" style="color:var(--btc)"><span data-counter="2.847">0</span> ETH</p>
+          </div>
+          <div class="hero-metric animate-float" style="animation-delay:0.5s">
+            <p class="hero-metric-label">Payments</p>
+            <p class="hero-metric-value" data-counter="1284">0</p>
+          </div>
+          <div class="hero-metric animate-float" style="animation-delay:1s">
+            <p class="hero-metric-label">Success rate</p>
+            <p class="hero-metric-value" style="color:var(--success)">99.2%</p>
+          </div>
+          <div class="hero-metric animate-float" style="animation-delay:1.5s">
+            <p class="hero-metric-label">Avg confirm</p>
+            <p class="hero-metric-value">~45s</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker-bar">
+    <div class="ticker-track">
+      <span>Ethereum Sepolia</span><span>Non-custodial</span><span>3-block confirmation</span>
+      <span>HMAC webhooks</span><span>Unique deposit addresses</span><span>REST API</span>
+      <span>Hosted checkout</span><span>QR payments</span><span>Idempotency keys</span>
+      <span>Ethereum Sepolia</span><span>Non-custodial</span><span>3-block confirmation</span>
+      <span>HMAC webhooks</span><span>Unique deposit addresses</span><span>REST API</span>
+    </div>
   </div>
+
+  <section id="how" class="section">
+    <div class="section-head animate-reveal-up">
+      <p class="section-eyebrow">Workflow</p>
+      <h2 class="section-title">Three steps to live payments</h2>
+    </div>
+    <div class="steps">
+      <div class="step-card gx-card--glow animate-reveal-up stagger-1">
+        <p class="step-num">01 — Register</p>
+        <h3>Create merchant account</h3>
+        <p>Sign up, receive your API key instantly. Configure webhook endpoints for payment events.</p>
+      </div>
+      <div class="step-card gx-card--glow animate-reveal-up stagger-2">
+        <p class="step-num">02 — Create payment</p>
+        <h3>Generate checkout link</h3>
+        <p>POST to <code class="mono" style="color:var(--accent)">/create-payment</code> with amount and callback URL. Share the hosted link with your customer.</p>
+      </div>
+      <div class="step-card gx-card--glow animate-reveal-up stagger-3">
+        <p class="step-num">03 — Settle</p>
+        <h3>On-chain confirmation</h3>
+        <p>Customer sends ETH to a unique address. After 3 block confirmations, we fire your webhook with a signed payload.</p>
+      </div>
+    </div>
+
+    <div class="code-block animate-reveal-up" style="animation-delay:0.2s;opacity:0">
+      <div class="code-block-header">
+        <span class="code-dot code-dot--r"></span>
+        <span class="code-dot code-dot--y"></span>
+        <span class="code-dot code-dot--g"></span>
+        <span style="margin-left:0.5rem">create-payment.sh</span>
+      </div>
+      <pre><span class="kw">curl</span> -X POST https://gaxtron.vercel.app/create-payment \
+  -H <span class="str">"X-API-Key: gx_live_..."</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"amount": "0.01", "callback_url": "https://your.app/webhook"}'</span>
+
+<span class="kw"># Response</span>
+{
+  <span class="str">"payment_id"</span>: <span class="num">42</span>,
+  <span class="str">"payment_url"</span>: <span class="str">"https://gaxtron.vercel.app/pay/42"</span>,
+  <span class="str">"wallet_address"</span>: <span class="str">"0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"</span>,
+  <span class="str">"status"</span>: <span class="str">"pending"</span>
+}</pre>
+    </div>
+  </section>
+
+  <section id="features" class="section" style="padding-top:0">
+    <div class="section-head animate-reveal-up">
+      <p class="section-eyebrow">Infrastructure</p>
+      <h2 class="section-title">Production-grade from day one</h2>
+    </div>
+    <div class="features-grid">
+      <div class="stat-card gx-card--glow">
+        <div class="feature-icon-wrap"><i data-lucide="blocks"></i></div>
+        <h3 style="font-size:1rem;margin-bottom:0.375rem">Block confirmations</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted)">Configurable depth (default 3 blocks). Reorg-safe settlement logic.</p>
+      </div>
+      <div class="stat-card gx-card--glow">
+        <div class="feature-icon-wrap"><i data-lucide="wallet"></i></div>
+        <h3 style="font-size:1rem;margin-bottom:0.375rem">Unique addresses</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted)">Each payment gets a dedicated deposit address for precise reconciliation.</p>
+      </div>
+      <div class="stat-card gx-card--glow">
+        <div class="feature-icon-wrap"><i data-lucide="webhook"></i></div>
+        <h3 style="font-size:1rem;margin-bottom:0.375rem">Signed webhooks</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted)">HMAC-SHA256 signed payloads with automatic retry and delivery logs.</p>
+      </div>
+      <div class="stat-card gx-card--glow">
+        <div class="feature-icon-wrap"><i data-lucide="shield-check"></i></div>
+        <h3 style="font-size:1rem;margin-bottom:0.375rem">Non-custodial</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted)">Funds flow directly on-chain. We never hold merchant or customer balances.</p>
+      </div>
+      <div class="stat-card gx-card--glow">
+        <div class="feature-icon-wrap"><i data-lucide="qr-code"></i></div>
+        <h3 style="font-size:1rem;margin-bottom:0.375rem">Hosted checkout</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted)">Mobile-ready payment page with QR code, live status polling, and copy-to-clipboard.</p>
+      </div>
+      <div class="stat-card gx-card--glow">
+        <div class="feature-icon-wrap"><i data-lucide="gauge"></i></div>
+        <h3 style="font-size:1rem;margin-bottom:0.375rem">Rate limiting</h3>
+        <p style="font-size:0.875rem;color:var(--text-muted)">Built-in API rate limits, JWT auth, and encrypted wallet key storage.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section" style="background:var(--surface);border-block:1px solid var(--border)">
+    <div class="section-head">
+      <p class="section-eyebrow">Pricing</p>
+      <h2 class="section-title">Transparent, builder-friendly</h2>
+    </div>
+    <div class="pricing-grid">
+      <div class="stat-card pricing-card">
+        <p style="font-weight:600;color:var(--text-muted)">Starter</p>
+        <p class="pricing-price">Free</p>
+        <ul class="pricing-list">
+          <li><i data-lucide="check"></i> Unlimited testnet payments</li>
+          <li><i data-lucide="check"></i> REST API + webhooks</li>
+          <li><i data-lucide="check"></i> Hosted checkout</li>
+        </ul>
+        <a href="register.html" class="cp-btn cp-btn-ghost" style="width:100%">Get started</a>
+      </div>
+      <div class="stat-card pricing-card pricing-card--featured">
+        <p style="font-weight:600;color:var(--accent)">Pro</p>
+        <p class="pricing-price">$49<span style="font-size:1rem;font-weight:400;color:var(--text-dim)">/mo</span></p>
+        <ul class="pricing-list">
+          <li><i data-lucide="check"></i> Mainnet support</li>
+          <li><i data-lucide="check"></i> Priority webhooks</li>
+          <li><i data-lucide="check"></i> Advanced analytics</li>
+        </ul>
+        <a href="register.html" class="cp-btn cp-btn-primary" style="width:100%">Start trial</a>
+      </div>
+      <div class="stat-card pricing-card">
+        <p style="font-weight:600;color:var(--text-muted)">Enterprise</p>
+        <p class="pricing-price">Custom</p>
+        <ul class="pricing-list">
+          <li><i data-lucide="check"></i> SLA & dedicated support</li>
+          <li><i data-lucide="check"></i> Custom chain integration</li>
+          <li><i data-lucide="check"></i> White-label checkout</li>
+        </ul>
+        <a href="mailto:sales@gaxtron.io" class="cp-btn cp-btn-ghost" style="width:100%">Contact sales</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="gx-footer">
+    <p>&copy; 2025 Gaxtron · Non-custodial crypto payment infrastructure</p>
+  </footer>
 </div>
 
-<section id="features" class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
-  <div class="text-center mb-12">
-    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Platform</p>
-    <h2 class="text-3xl font-semibold text-slate-900">Built for production workloads</h2>
-  </div>
-  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-    <div class="stat-card">
-      <div class="feature-icon-wrap bg-blue-50 text-blue-700"><i data-lucide="zap"></i></div>
-      <h3 class="font-semibold text-slate-900 mb-1">Fast settlement</h3>
-      <p class="text-slate-500 text-sm">On-chain confirmation with configurable block depth.</p>
-    </div>
-    <div class="stat-card">
-      <div class="feature-icon-wrap bg-teal-50 text-teal-700"><i data-lucide="link-2"></i></div>
-      <h3 class="font-semibold text-slate-900 mb-1">Multi-asset</h3>
-      <p class="text-slate-500 text-sm">ETH and USDT with unique deposit addresses per payment.</p>
-    </div>
-    <div class="stat-card">
-      <div class="feature-icon-wrap bg-violet-50 text-violet-700"><i data-lucide="code-2"></i></div>
-      <h3 class="font-semibold text-slate-900 mb-1">REST API</h3>
-      <p class="text-slate-500 text-sm">API keys, idempotency, and signed webhook callbacks.</p>
-    </div>
-    <div class="stat-card">
-      <div class="feature-icon-wrap bg-emerald-50 text-emerald-700"><i data-lucide="shield-check"></i></div>
-      <h3 class="font-semibold text-slate-900 mb-1">Security</h3>
-      <p class="text-slate-500 text-sm">Encrypted keys, rate limits, and double-spend protection.</p>
-    </div>
-    <div class="stat-card">
-      <div class="feature-icon-wrap bg-amber-50 text-amber-700"><i data-lucide="bar-chart-3"></i></div>
-      <h3 class="font-semibold text-slate-900 mb-1">Analytics</h3>
-      <p class="text-slate-500 text-sm">Real-time dashboard for payments and webhook delivery.</p>
-    </div>
-    <div class="stat-card">
-      <div class="feature-icon-wrap bg-slate-100 text-slate-700"><i data-lucide="globe-2"></i></div>
-      <h3 class="font-semibold text-slate-900 mb-1">Global</h3>
-      <p class="text-slate-500 text-sm">Borderless payments without traditional banking rails.</p>
-    </div>
-  </div>
-</section>
-
-<section id="pricing" class="bg-white border-t border-slate-200 py-20">
-  <div class="max-w-4xl mx-auto px-4 text-center">
-    <h2 class="text-3xl font-semibold text-slate-900 mb-10">Transparent pricing</h2>
-    <div class="grid md:grid-cols-3 gap-5 text-left">
-      <div class="stat-card">
-        <p class="font-semibold text-slate-900">Starter</p>
-        <p class="text-3xl font-semibold mt-2">Free</p>
-        <ul class="mt-5 space-y-2 text-sm text-slate-600">
-          <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0"></i>API access</li>
-          <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0"></i>ETH / USDT</li>
-        </ul>
-        <a href="register.html" class="cp-btn cp-btn-ghost w-full mt-6 py-2.5 text-sm no-underline block text-center">Get started</a>
-      </div>
-      <div class="stat-card border-blue-200 ring-1 ring-blue-100">
-        <p class="font-semibold text-blue-800">Pro</p>
-        <p class="text-3xl font-semibold mt-2">$49<span class="text-base font-normal text-slate-500">/mo</span></p>
-        <ul class="mt-5 space-y-2 text-sm text-slate-600">
-          <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0"></i>Priority webhooks</li>
-          <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0"></i>Advanced analytics</li>
-        </ul>
-        <a href="register.html" class="cp-btn cp-btn-primary w-full mt-6 py-2.5 text-sm no-underline block text-center">Start trial</a>
-      </div>
-      <div class="stat-card">
-        <p class="font-semibold text-slate-900">Enterprise</p>
-        <p class="text-3xl font-semibold mt-2">Custom</p>
-        <ul class="mt-5 space-y-2 text-sm text-slate-600">
-          <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0"></i>SLA & support</li>
-          <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0"></i>Custom integration</li>
-        </ul>
-        <a href="mailto:sales@gaxtron.io" class="cp-btn cp-btn-ghost w-full mt-6 py-2.5 text-sm no-underline block text-center">Contact</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer class="bg-slate-900 text-slate-400 py-10 text-sm text-center">
-  <p>&copy; 2025 Gaxtron. Powered by Gaxtron.</p>
-</footer>
+<script src="js/animations.js?v=1"></script>
 <script>lucide.createIcons();</script>
 </body>
 </html>

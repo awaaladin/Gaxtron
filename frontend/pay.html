@@ -19,7 +19,11 @@
   </div>
 
   <div id="errorView" class="checkout-loading hidden">
-    <p style="color:#dc2626;font-weight:500" id="errorText">Payment not found</p>
+    <div style="max-width:22rem;margin:0 auto;text-align:center;padding:2rem">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem">⚠</div>
+      <p style="font-weight:600;font-size:1rem;margin-bottom:0.375rem" id="errorTitle">Payment unavailable</p>
+      <p style="color:var(--checkout-muted);font-size:0.875rem;line-height:1.6" id="errorText">This payment link is invalid or has expired.</p>
+    </div>
   </div>
 
   <main id="checkoutView" class="checkout-layout hidden" aria-label="Crypto checkout">
@@ -252,8 +256,10 @@
   };
 
   async function poll() {
+    let httpStatus = null;
     try {
       const res = await fetch('/payment/' + paymentId);
+      httpStatus = res.status;
       if (!res.ok) throw new Error('not found');
       const data = await res.json();
       $('loadingView').classList.add('hidden');
@@ -264,6 +270,10 @@
       if ($('checkoutView').classList.contains('hidden')) {
         $('loadingView').classList.add('hidden');
         $('errorView').classList.remove('hidden');
+        $('errorTitle').textContent = httpStatus === 404 ? 'Payment not found' : 'Connection issue';
+        $('errorText').textContent = httpStatus === 404
+          ? 'This payment link is invalid or has expired. Contact the merchant for a new link.'
+          : 'Unable to load payment details. Check your connection and refresh.';
       }
     }
     setTimeout(poll, 3000);

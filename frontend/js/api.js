@@ -78,6 +78,11 @@ async function apiFetch(endpoint, options = {}) {
     const err = new Error(message || `HTTP ${res.status}`);
     err.status = res.status;
     err.data = data;
+    if (window.GaxtronErrors) {
+      const resolved = GaxtronErrors.resolveError(err);
+      err.message = resolved.message;
+      err.title = resolved.title;
+    }
     throw err;
   }
   return data;
@@ -108,7 +113,15 @@ const Auth = {
       throw new Error(`Cannot reach Gaxtron API at ${API_BASE}. Run: .\\scripts\\start_gaxtron.ps1`);
     }
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || 'Login failed');
+    if (!res.ok) {
+      const err = new Error(data.detail || 'Login failed');
+      err.status = res.status;
+      if (window.GaxtronErrors) {
+        const resolved = GaxtronErrors.resolveError(err);
+        err.message = resolved.message;
+      }
+      throw err;
+    }
     return data;
   },
   register: (body) =>
@@ -164,23 +177,51 @@ const Webhooks = {
 };
 
 function showToast(message, type = 'success') {
-  const existing = document.getElementById('gaxtron-toast');
-  if (existing) existing.remove();
+  let host = document.getElementById('cp-toast-host');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'cp-toast-host';
+    document.body.appendChild(host);
+  }
 
-  const colors = {
-    success: 'bg-emerald-700',
-    error: 'bg-red-600',
-    info: 'bg-slate-800',
-    warning: 'bg-amber-600',
-  };
+  const toneMap = { success: 'success', error: 'error', warning: 'warning', info: 'neutral' };
+  const tone = toneMap[type] || 'neutral';
 
-  const toast = document.createElement('div');
-  toast.id = 'gaxtron-toast';
-  toast.className = `fixed top-5 right-5 z-[100] flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${colors[type] || colors.info}`;
-  toast.innerHTML = `<span>${message}</span><button type="button" class="opacity-80 hover:opacity-100 ml-2" aria-label="Close">&times;</button>`;
-  toast.querySelector('button').onclick = () => toast.remove();
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 4200);
+  let html;
+  if (window.GaxtronErrors && (type === 'error' || type === 'warning')) {
+    const t = GaxtronErrors.toastHtml(message);
+    html = t.html.replace(`cp-toast--${t.error.tone}`, `cp-toast--${tone === 'error' ? t.error.tone : tone}`);
+  } else {
+    const icons = { success: 'check-circle', error: 'circle-alert', warning: 'alert-triangle', info: 'info' };
+    html = `
+      <div class="cp-toast cp-toast--${tone}">
+        <div class="cp-toast-icon"><i data-lucide="${icons[type] || icons.info}"></i></div>
+        <div class="cp-toast-body">
+          <p class="cp-toast-title">${type === 'success' ? 'Success' : type === 'warning' ? 'Notice' : 'Info'}</p>
+          <p class="cp-toast-message">${message}</p>
+        </div>
+        <button type="button" class="cp-toast-close" aria-label="Close">&times;</button>
+      </div>`;
+  }
+
+  const el = document.createElement('div');
+  el.innerHTML = html;
+  const toast = el.firstElementChild;
+  toast.querySelector('.cp-toast-close')?.addEventListener('click', () => toast.remove());
+  host.appendChild(toast);
+  if (window.lucide) lucide.createIcons();
+  setTimeout(() => toast.remove(), 5200);
+}
+
+function showAlert(container, err, opts) {
+  if (window.GaxtronErrors) {
+    GaxtronErrors.showAlert(container, err, opts);
+    return;
+  }
+  if (!container) return;
+  container.className = 'mb-4';
+  container.innerHTML = `<p class="text-sm text-red-400">${typeof err === 'string' ? err : err.message}</p>`;
+  container.classList.remove('hidden');
 }
 
 function setLoading(btn, loading, text = 'Loading…') {
@@ -232,15 +273,23 @@ function formatDate(dateStr) {
 }
 
 function statusBadge(status) {
-  const map = {
-    confirmed: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    pending: 'bg-amber-50 text-amber-800 border-amber-200',
-    failed: 'bg-red-50 text-red-800 border-red-200',
-    delivered: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    expired: 'bg-slate-100 text-slate-600 border-slate-200',
+  const labels = {
+    confirmed: 'Confirmed',
+    pending: 'Pending',
+    failed: 'Failed',
+    delivered: 'Delivered',
+    expired: 'Expired',
   };
-  const cls = map[status] || map.pending;
-  return `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border ${cls}">${status}</span>`;
+  const cls = {
+    confirmed: 'status-badge--confirmed',
+    pending: 'status-badge--pending',
+    failed: 'status-badge--failed',
+    delivered: 'status-badge--delivered',
+    expired: 'status-badge--expired',
+  };
+  const label = labels[status] || status;
+  const tone = cls[status] || cls.pending;
+  return `<span class="status-badge ${tone}">${label}</span>`;
 }
 
 function initLucide() {

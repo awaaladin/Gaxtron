@@ -1,5 +1,7 @@
 import logging
+import os
 import time
+from collections import defaultdict
 
 import redis
 
@@ -8,6 +10,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 _redis: redis.Redis | None = None
+_memory_windows: dict[str, list[float]] = defaultdict(list)
 
 
 def get_redis() -> redis.Redis | None:
@@ -33,25 +36,35 @@ def _sliding_window(r: redis.Redis, key: str, limit: int, window: int) -> bool:
     return count <= limit
 
 
+def _memory_sliding_window(key: str, limit: int, window: int) -> bool:
+    """Fallback when Redis is unavailable (e.g. Vercel serverless without Redis)."""
+    now = time.time()
+    bucket = _memory_windows[key]
+    _memory_windows[key] = [t for t in bucket if t > now - window]
+    if len(_memory_windows[key]) >= limit:
+        return False
+    _memory_windows[key].append(now)
+    return True
+
+
 def check_rate_limit(identifier: str, *, limit: int | None = None, window: int | None = None) -> bool:
     """
-    Return True if allowed. In production without Redis, deny (fail closed).
-    In development without Redis, allow with warning.
+    Return True if allowed.
+    Uses Redis when available; falls back to in-memory on serverless (Vercel).
     """
+    lim = limit or settings.api_rate_limit
+    win = window or settings.api_rate_limit_window
+
     r = get_redis()
     if r is None:
-        if settings.is_production:
-            return False
-        logger.warning("Rate limit bypassed (dev, no Redis): %s", identifier)
-        return True
+        if os.getenv("VERCEL"):
+            logger.debug("Rate limit (memory fallback on Vercel): %s", identifier)
+        else:
+            logger.warning("Rate limit memory fallback (no Redis): %s", identifier)
+        return _memory_sliding_window(f"mem:{identifier}", lim, win)
 
     key = f"rate:{identifier}"
-    return _sliding_window(
-        r,
-        key,
-        limit or settings.api_rate_limit,
-        window or settings.api_rate_limit_window,
-    )
+    return _sliding_window(r, key, lim, win)
 
 
 def check_auth_rate_limit(identifier: str) -> bool:

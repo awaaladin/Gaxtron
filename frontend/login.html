@@ -3,54 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gaxtron – Log In</title>
+  <title>Gaxtron — Sign In</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#0f172a" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#0a0f1a" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <link rel="stylesheet" href="css/styles.css?v=5" />
 </head>
-<body class="auth-page bg-slate-50 min-h-screen flex items-center justify-center p-4">
+<body>
 
-<div class="auth-wrap w-full max-w-md animate-reveal-up">
-  <a href="index.html" class="auth-brand flex items-center justify-center gap-2.5 mb-8 no-underline">
-    <div class="brand-mark">GX</div>
-    <span class="font-semibold text-slate-900 text-lg">Gaxtron</span>
-  </a>
+<div data-aurora style="position:fixed;inset:0;z-index:0"></div>
+<canvas data-particles class="gx-particles" style="position:fixed;inset:0;z-index:0"></canvas>
 
-  <div class="auth-card bg-white rounded-xl border border-slate-200 shadow-md p-8">
-    <h1 class="text-xl font-semibold text-slate-900 mb-1">Sign in</h1>
-    <p class="auth-sub text-slate-500 text-sm mb-6">Access your merchant dashboard</p>
-
-    <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
-
-    <form id="loginForm" novalidate>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-        <input id="email" type="email" class="cp-input" placeholder="you@company.com" autocomplete="email" />
-        <p id="email-err" class="text-xs text-red-600 mt-1 hidden">Valid email required.</p>
-      </div>
-      <div class="mb-5">
-        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
-        <div class="relative">
-          <input id="password" type="password" class="cp-input pr-10" autocomplete="current-password" />
-          <button type="button" id="togglePwd" class="icon-btn absolute right-2 top-1/2 -translate-y-1/2" aria-label="Toggle password">
-            <i data-lucide="eye" class="w-4 h-4"></i>
-          </button>
+<div class="auth-split">
+  <aside class="auth-panel">
+    <div class="auth-panel-grid"></div>
+    <div class="bg-orb bg-orb--btc" style="opacity:0.2;position:absolute"></div>
+    <div class="auth-panel-content animate-reveal-fade">
+      <a href="index.html" class="auth-brand">
+        <div class="brand-mark">GX</div>
+        <span>Gaxtron</span>
+      </a>
+      <h2>Secure access to your payment infrastructure</h2>
+      <p>Monitor settlements, manage API keys, and track on-chain confirmations from a single merchant console.</p>
+      <div class="auth-stats">
+        <div class="auth-stat">
+          <p class="auth-stat-value">3</p>
+          <p class="auth-stat-label">Block confirms</p>
         </div>
-        <p id="pwd-err" class="text-xs text-red-600 mt-1 hidden">Minimum 8 characters.</p>
+        <div class="auth-stat">
+          <p class="auth-stat-value">256</p>
+          <p class="auth-stat-label">Bit HMAC</p>
+        </div>
+        <div class="auth-stat">
+          <p class="auth-stat-value">99.9%</p>
+          <p class="auth-stat-label">Uptime SLA</p>
+        </div>
       </div>
-      <button id="submitBtn" type="submit" class="cp-btn cp-btn-primary w-full py-2.5">Sign in</button>
-    </form>
-
-    <p class="text-center text-sm text-slate-500 mt-6">
-      No account? <a href="register.html" class="text-blue-700 font-medium hover:underline">Register</a>
+    </div>
+    <p style="position:relative;z-index:1;font-size:0.75rem;color:var(--text-dim)">
+      <i data-lucide="lock" style="width:12px;height:12px;display:inline;vertical-align:middle"></i>
+      End-to-end encrypted · Sepolia testnet
     </p>
+  </aside>
+
+  <div class="auth-form-side">
+    <div class="auth-wrap animate-reveal-up">
+      <div class="auth-card gx-glow-border" data-reveal>
+        <h1>Welcome back</h1>
+        <p class="auth-sub">Sign in to your merchant dashboard</p>
+
+        <div id="alert" class="hidden"></div>
+
+        <form id="loginForm" novalidate>
+          <div class="auth-field">
+            <label for="email">Email address</label>
+            <input id="email" type="email" class="cp-input" placeholder="you@company.com" autocomplete="email" />
+          </div>
+          <div class="auth-field">
+            <label for="password">Password</label>
+            <div style="position:relative">
+              <input id="password" type="password" class="cp-input" style="padding-right:2.75rem" autocomplete="current-password" />
+              <button type="button" id="togglePwd" class="icon-btn" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%)" aria-label="Toggle password">
+                <i data-lucide="eye" style="width:16px;height:16px"></i>
+              </button>
+            </div>
+          </div>
+          <button id="submitBtn" type="submit" class="cp-btn cp-btn-primary" style="width:100%;margin-top:0.5rem">Sign in</button>
+        </form>
+
+        <div class="auth-trust">
+          <span class="auth-trust-item"><i data-lucide="shield-check"></i> JWT secured</span>
+          <span class="auth-trust-item"><i data-lucide="key-round"></i> API key access</span>
+        </div>
+
+        <p class="auth-footer">
+          No account? <a href="register.html">Create one free</a>
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
-<script src="js/api.js?v=2"></script>
+<script src="js/animations.js?v=1"></script>
+<script src="js/errors.js?v=1"></script>
+<script src="js/api.js?v=3"></script>
 <script>
   if (getToken()) window.location.href = 'dashboard.html';
 
@@ -67,19 +104,23 @@
     lucide.createIcons();
   };
 
-  function showAlert(msg, type = 'error') {
-    alertEl.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-800 border border-red-100' : 'bg-emerald-50 text-emerald-800 border border-emerald-100'}`;
-    alertEl.textContent = msg;
-    alertEl.classList.remove('hidden');
-  }
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     alertEl.classList.add('hidden');
-    if (!emailEl.value.includes('@') || pwdEl.value.length < 8) {
-      showAlert('Please check your email and password.');
+    emailEl.classList.remove('cp-input--error');
+    pwdEl.classList.remove('cp-input--error');
+
+    if (!emailEl.value.includes('@')) {
+      emailEl.classList.add('cp-input--error');
+      showAlert(alertEl, { status: 422, message: 'Enter a valid email address.' });
       return;
     }
+    if (pwdEl.value.length < 8) {
+      pwdEl.classList.add('cp-input--error');
+      showAlert(alertEl, { status: 422, message: 'Password must be at least 8 characters.' });
+      return;
+    }
+
     setLoading(submitBtn, true, 'Signing in');
     try {
       const data = await Auth.login({ email: emailEl.value.trim(), password: pwdEl.value });
@@ -88,10 +129,12 @@
       else setUser(await Auth.me());
       window.location.href = 'dashboard.html';
     } catch (err) {
-      showAlert(err.message || 'Invalid credentials');
+      showAlert(alertEl, err);
       setLoading(submitBtn, false, 'Sign in');
     }
   });
+
+  lucide.createIcons();
 </script>
 </body>
 </html>
