@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Webhooks — Gaxtron{% endblock %}
+{% block content %}
+<h1>Webhook Delivery Logs</h1>
+<table>
+  <thead><tr><th>Payment</th><th>Event</th><th>Status</th><th>Response</th><th>Attempts</th><th>Delivered</th></tr></thead>
+  <tbody>
+  {% for log in webhook_logs %}
+  <tr>
+    <td>{{ log.payment_id }}</td>
+    <td class="mono">{{ log.event_id|truncatechars:20 }}</td>
+    <td><span class="badge {{ log.status }}">{{ log.status }}</span></td>
+    <td>{{ log.response_code|default:"—" }}</td>
+    <td>{{ log.attempts }}</td>
+    <td>{{ log.delivered_at|default:"—" }}</td>
+  </tr>
+  {% empty %}<tr><td colspan="6">No webhook logs</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

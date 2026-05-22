@@ -1,0 +1,291 @@
+services:
+
+  postgres:
+
+    image: postgres:16-alpine
+
+    environment:
+
+      POSTGRES_USER: gaxtron
+
+      POSTGRES_PASSWORD: gaxtron_secret
+
+      POSTGRES_DB: gaxtron_db
+
+    ports:
+
+      - "5433:5432"
+
+    volumes:
+
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "pg_isready -U gaxtron -d gaxtron_db"]
+
+      interval: 5s
+
+      timeout: 5s
+
+      retries: 5
+
+
+
+  redis:
+
+    image: redis:7-alpine
+
+    command: redis-server --appendonly yes
+
+    ports:
+
+      - "6379:6379"
+
+    volumes:
+
+      - redis_data:/data
+
+    healthcheck:
+
+      test: ["CMD", "redis-cli", "ping"]
+
+      interval: 5s
+
+      timeout: 3s
+
+      retries: 5
+
+
+
+  # One-shot schema init (Postgres)
+
+  migrate:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile.api
+
+    command: python -c "import app.db.models; from app.db.base import Base; from app.db.session import engine; Base.metadata.create_all(bind=engine); print('ok')"
+
+    env_file: .env
+
+    environment:
+
+      DATABASE_URL: postgresql://gaxtron:gaxtron_secret@postgres:5432/gaxtron_db
+
+    working_dir: /app/GaX
+
+    depends_on:
+
+      postgres:
+
+        condition: service_healthy
+
+
+
+  api:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile.api
+
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8002
+
+    ports:
+
+      - "8002:8002"
+
+    env_file: .env
+
+    environment:
+
+      DATABASE_URL: postgresql://gaxtron:gaxtron_secret@postgres:5432/gaxtron_db
+
+      REDIS_URL: redis://redis:6379/0
+
+      ENV: development
+
+      DEBUG: "True"
+
+      CORS_ORIGINS: http://localhost:8002,http://127.0.0.1:8002,http://localhost:8001,http://127.0.0.1:8001
+
+      FASTAPI_URL: http://127.0.0.1:8002
+
+    volumes:
+
+      - ./GaX:/app/GaX
+
+      - ./frontend:/app/frontend
+
+    working_dir: /app/GaX
+
+    depends_on:
+
+      postgres:
+
+        condition: service_healthy
+
+      redis:
+
+        condition: service_healthy
+
+      migrate:
+
+        condition: service_completed_successfully
+
+    healthcheck:
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health/live')"]
+
+      interval: 15s
+
+      timeout: 10s
+
+      retries: 5
+
+
+
+  api-prod:
+
+    profiles: ["production"]
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile.api
+
+    command: gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 4 -b 0.0.0.0:8002 --timeout 120
+
+    ports:
+
+      - "8002:8002"
+
+    env_file: .env
+
+    environment:
+
+      DATABASE_URL: postgresql://gaxtron:gaxtron_secret@postgres:5432/gaxtron_db
+
+      REDIS_URL: redis://redis:6379/0
+
+      ENV: production
+
+      DEBUG: "False"
+
+      REQUIRE_HTTPS_CALLBACKS: "True"
+
+    working_dir: /app/GaX
+
+    depends_on:
+
+      postgres:
+
+        condition: service_healthy
+
+      redis:
+
+        condition: service_healthy
+
+      migrate:
+
+        condition: service_completed_successfully
+
+    restart: unless-stopped
+
+
+
+  worker:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile.api
+
+    command: python -m app.workers.runner
+
+    env_file: .env
+
+    environment:
+
+      DATABASE_URL: postgresql://gaxtron:gaxtron_secret@postgres:5432/gaxtron_db
+
+      REDIS_URL: redis://redis:6379/0
+
+    volumes:
+
+      - ./GaX:/app/GaX
+
+    working_dir: /app/GaX
+
+    depends_on:
+
+      postgres:
+
+        condition: service_healthy
+
+      redis:
+
+        condition: service_healthy
+
+      migrate:
+
+        condition: service_completed_successfully
+
+    restart: unless-stopped
+
+
+
+  dashboard:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile.dashboard
+
+    command: python manage.py runserver 0.0.0.0:8001
+
+    ports:
+
+      - "8001:8001"
+
+    env_file: .env
+
+    environment:
+
+      DATABASE_URL: postgresql://gaxtron:gaxtron_secret@postgres:5432/gaxtron_db
+
+      FASTAPI_URL: http://api:8002
+
+    volumes:
+
+      - ./dashboard:/app/dashboard
+
+    working_dir: /app/dashboard
+
+    depends_on:
+
+      postgres:
+
+        condition: service_healthy
+
+      migrate:
+
+        condition: service_completed_successfully
+
+
+
+volumes:
+
+  postgres_data:
+
+  redis_data:
+
+

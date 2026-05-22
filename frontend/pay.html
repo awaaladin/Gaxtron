@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Pay securely with Ethereum" />
+  <title>Complete your payment — Gaxtron</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/css/checkout.css" />
+</head>
+<body class="checkout-body">
+  <div class="checkout-test-banner" id="testBanner">
+    Test mode — Sepolia network only. Use test ETH, not real money.
+  </div>
+
+  <div id="loadingView" class="checkout-loading">
+    <div class="checkout-spinner"></div>
+    <p>Loading payment…</p>
+  </div>
+
+  <div id="errorView" class="checkout-loading hidden">
+    <p style="color:#dc2626;font-weight:500" id="errorText">Payment not found</p>
+  </div>
+
+  <main id="checkoutView" class="checkout-layout hidden" aria-label="Crypto checkout">
+    <!-- Left: what you're paying for -->
+    <aside class="checkout-summary">
+      <div class="checkout-summary-brand">
+        <div class="mark">GX</div>
+        <span>Gaxtron</span>
+      </div>
+      <p class="checkout-summary-label">Total due</p>
+      <p class="checkout-summary-amount" id="summaryAmount">—</p>
+      <p class="checkout-summary-currency" id="summaryNetwork">Ethereum · Sepolia</p>
+      <div class="checkout-summary-meta">
+        <div class="checkout-summary-row">
+          <span>Payment ID</span>
+          <span id="summaryPaymentId">—</span>
+        </div>
+        <div class="checkout-summary-row">
+          <span>Status</span>
+          <span id="summaryStatus">Awaiting payment</span>
+        </div>
+        <div class="checkout-summary-row">
+          <span>Total</span>
+          <span id="summaryTotal">—</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right: how to pay -->
+    <section class="checkout-pay">
+      <h2>Pay with crypto</h2>
+      <p class="subtitle">Scan the QR code or copy the address — no account or API needed.</p>
+
+      <div class="checkout-steps" aria-hidden="true">
+        <div class="checkout-step active" id="step1" data-step="pending">1. Send</div>
+        <div class="checkout-step" id="step2" data-step="confirming">2. Confirm</div>
+        <div class="checkout-step" id="step3" data-step="confirmed">3. Done</div>
+      </div>
+
+      <!-- Pending: QR + address -->
+      <div id="panelPending">
+        <div class="checkout-qr-wrap">
+          <div class="checkout-qr-frame">
+            <img id="qrCode" width="200" height="200" alt="QR code to pay with Ethereum" />
+            <div class="checkout-qr-badge" title="Ethereum">ETH</div>
+          </div>
+          <p class="checkout-qr-hint">Scan with MetaMask, Trust Wallet, or any wallet that supports Ethereum</p>
+        </div>
+
+        <div class="checkout-address-box">
+          <label for="walletAddress">Wallet address (send exactly the amount shown)</label>
+          <div class="checkout-address-row">
+            <code id="walletAddress">—</code>
+          </div>
+        </div>
+
+        <div class="checkout-actions">
+          <button type="button" class="checkout-btn checkout-btn-secondary" id="copyAddrBtn">Copy address</button>
+          <button type="button" class="checkout-btn checkout-btn-secondary" id="copyAmountBtn">Copy amount</button>
+        </div>
+
+        <ol class="checkout-instructions">
+          <li>Open your wallet and switch to <strong>Sepolia</strong> test network</li>
+          <li>Send <strong id="instructionAmount">—</strong> to the address above</li>
+          <li>Keep this page open — we'll confirm automatically</li>
+        </ol>
+
+        <button type="button" class="checkout-btn checkout-btn-primary" id="openWalletBtn">
+          Open in wallet app
+        </button>
+
+        <p style="font-size:0.75rem;color:#64748b;text-align:center;margin-top:1rem">
+          <span class="checkout-live-dot"></span>Checking for your payment every few seconds
+        </p>
+      </div>
+
+      <!-- Confirming -->
+      <div id="panelConfirming" class="checkout-status-panel hidden">
+        <div class="checkout-spinner"></div>
+        <h3 style="font-size:1.125rem;margin-bottom:0.5rem">Payment received</h3>
+        <p style="color:#64748b;font-size:0.875rem">Waiting for blockchain confirmations…</p>
+        <div class="checkout-progress">
+          <div class="checkout-progress-bar" id="confProgressBar" style="width:0%"></div>
+        </div>
+        <p style="font-size:0.875rem"><strong id="confCount">0</strong> of <strong id="confRequired">3</strong> confirmations</p>
+        <p class="checkout-tx-link" id="txHashConfirming"></p>
+      </div>
+
+      <!-- Confirmed -->
+      <div id="panelConfirmed" class="checkout-status-panel hidden">
+        <div class="checkout-success-icon">✓</div>
+        <h3 style="font-size:1.25rem;color:#059669;margin-bottom:0.5rem">Payment complete</h3>
+        <p style="color:#64748b;font-size:0.875rem">Thank you — your payment has been confirmed on chain.</p>
+        <p class="checkout-tx-link" id="txHashConfirmed"></p>
+        <p style="margin-top:1.5rem;font-size:0.8125rem;color:#64748b">You can safely close this page.</p>
+      </div>
+
+      <!-- Failed / expired -->
+      <div id="panelFailed" class="checkout-status-panel hidden">
+        <h3 style="font-size:1.125rem;color:#dc2626">Payment expired</h3>
+        <p style="color:#64748b;font-size:0.875rem;margin-top:0.5rem">This link is no longer valid. Ask the merchant for a new payment link.</p>
+      </div>
+
+      <footer class="checkout-footer">
+        Secured by Gaxtron · <span id="footerNetwork">Sepolia testnet</span>
+      </footer>
+    </section>
+  </main>
+
+<script>
+(function () {
+  const m = window.location.pathname.match(/\/pay\/(\d+)/);
+  const paymentId = m ? m[1] : null;
+
+  const $ = (id) => document.getElementById(id);
+  let paymentAmount = '';
+  let paymentAmountRaw = '';
+  let paymentAddress = '';
+
+  if (!paymentId) {
+    $('loadingView').classList.add('hidden');
+    $('errorView').classList.remove('hidden');
+    $('errorText').textContent = 'Invalid payment link';
+    return;
+  }
+
+  function ethWeiHex(amountEth) {
+    const parts = String(amountEth).split('.');
+    const whole = BigInt(parts[0] || '0');
+    const frac = (parts[1] || '').padEnd(18, '0').slice(0, 18);
+    const wei = whole * BigInt('1000000000000000000') + BigInt(frac);
+    return '0x' + wei.toString(16);
+  }
+
+  function setSteps(phase) {
+    ['pending', 'confirming', 'confirmed'].forEach((p) => {
+      const el = document.querySelector('.checkout-step[data-step="' + p + '"]');
+      if (!el) return;
+      el.classList.remove('active', 'done');
+      if (p === phase) el.classList.add('active');
+      if (
+        (phase === 'confirming' && p === 'pending') ||
+        (phase === 'confirmed' && (p === 'pending' || p === 'confirming'))
+      ) {
+        el.classList.add('done');
+      }
+    });
+    if (phase === 'confirmed') {
+      document.querySelectorAll('.checkout-step').forEach((el) => {
+        el.classList.remove('active');
+        el.classList.add('done');
+      });
+    }
+  }
+
+  function showPanel(phase) {
+    $('panelPending').classList.toggle('hidden', phase !== 'pending');
+    $('panelConfirming').classList.toggle('hidden', phase !== 'confirming');
+    $('panelConfirmed').classList.toggle('hidden', phase !== 'confirmed');
+    $('panelFailed').classList.toggle('hidden', phase !== 'failed');
+    setSteps(phase === 'failed' ? 'pending' : phase);
+  }
+
+  function phaseFrom(data) {
+    if (data.status === 'confirmed') return 'confirmed';
+    if (data.status === 'failed') return 'failed';
+    if (data.tx_hash && data.confirmations < data.required_confirmations) return 'confirming';
+    return 'pending';
+  }
+
+  function statusLabel(phase) {
+    return {
+      pending: 'Awaiting payment',
+      confirming: 'Confirming…',
+      confirmed: 'Paid',
+      failed: 'Expired',
+    }[phase] || '—';
+  }
+
+  function render(data) {
+    const amount = parseFloat(data.amount);
+    const amountStr = amount.toFixed(6) + ' ETH';
+    paymentAmount = amountStr;
+    paymentAmountRaw = String(data.amount);
+    paymentAddress = data.wallet_address;
+
+    $('summaryAmount').textContent = amount.toFixed(6);
+    $('summaryTotal').textContent = amountStr;
+    $('summaryPaymentId').textContent = '#' + data.id;
+    $('summaryNetwork').textContent = 'Ethereum · ' + (data.network || 'sepolia');
+    $('footerNetwork').textContent = (data.network || 'sepolia') + ' testnet';
+    $('instructionAmount').textContent = amountStr;
+    $('walletAddress').textContent = data.wallet_address;
+    $('confRequired').textContent = data.required_confirmations;
+
+    const weiValue = ethWeiHex(data.amount);
+    const payUri = 'ethereum:' + data.wallet_address + '@11155111?value=' + weiValue;
+    $('qrCode').src =
+      'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=' +
+      encodeURIComponent(payUri);
+
+    const phase = phaseFrom(data);
+    showPanel(phase);
+    $('summaryStatus').textContent = statusLabel(phase);
+
+    if (phase === 'confirming') {
+      const pct = Math.min(100, (data.confirmations / data.required_confirmations) * 100);
+      $('confCount').textContent = data.confirmations;
+      $('confProgressBar').style.width = pct + '%';
+      $('txHashConfirming').textContent = data.tx_hash || '';
+    }
+    if (phase === 'confirmed') {
+      $('txHashConfirmed').textContent = data.tx_hash ? 'Transaction: ' + data.tx_hash : '';
+    }
+  }
+
+  function copyText(text, btn, label) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = label || 'Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  }
+
+  $('copyAddrBtn').onclick = () => copyText(paymentAddress, $('copyAddrBtn'), 'Copied!');
+  $('copyAmountBtn').onclick = () => copyText(paymentAmount, $('copyAmountBtn'), 'Copied!');
+  $('openWalletBtn').onclick = () => {
+    const weiValue = ethWeiHex(paymentAmountRaw);
+    window.location.href = 'ethereum:' + paymentAddress + '@11155111?value=' + weiValue;
+  };
+
+  async function poll() {
+    try {
+      const res = await fetch('/payment/' + paymentId);
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      $('loadingView').classList.add('hidden');
+      $('checkoutView').classList.remove('hidden');
+      render(data);
+      if (data.status === 'confirmed' || data.status === 'failed') return;
+    } catch (e) {
+      if ($('checkoutView').classList.contains('hidden')) {
+        $('loadingView').classList.add('hidden');
+        $('errorView').classList.remove('hidden');
+      }
+    }
+    setTimeout(poll, 3000);
+  }
+
+  poll();
+})();
+</script>
+</body>
+</html>

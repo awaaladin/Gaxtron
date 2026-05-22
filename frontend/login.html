@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaxtron – Log In</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+  <meta name="theme-color" content="#0f172a" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/styles.css?v=3" />
+</head>
+<body class="auth-page bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+<div class="auth-wrap w-full max-w-md animate-reveal-up">
+  <a href="index.html" class="auth-brand flex items-center justify-center gap-2.5 mb-8 no-underline">
+    <div class="brand-mark">GX</div>
+    <span class="font-semibold text-slate-900 text-lg">Gaxtron</span>
+  </a>
+
+  <div class="auth-card bg-white rounded-xl border border-slate-200 shadow-md p-8">
+    <h1 class="text-xl font-semibold text-slate-900 mb-1">Sign in</h1>
+    <p class="auth-sub text-slate-500 text-sm mb-6">Access your merchant dashboard</p>
+
+    <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+        <input id="email" type="email" class="cp-input" placeholder="you@company.com" autocomplete="email" />
+        <p id="email-err" class="text-xs text-red-600 mt-1 hidden">Valid email required.</p>
+      </div>
+      <div class="mb-5">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+        <div class="relative">
+          <input id="password" type="password" class="cp-input pr-10" autocomplete="current-password" />
+          <button type="button" id="togglePwd" class="icon-btn absolute right-2 top-1/2 -translate-y-1/2" aria-label="Toggle password">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <p id="pwd-err" class="text-xs text-red-600 mt-1 hidden">Minimum 8 characters.</p>
+      </div>
+      <button id="submitBtn" type="submit" class="cp-btn cp-btn-primary w-full py-2.5">Sign in</button>
+    </form>
+
+    <p class="text-center text-sm text-slate-500 mt-6">
+      No account? <a href="register.html" class="text-blue-700 font-medium hover:underline">Register</a>
+    </p>
+  </div>
+</div>
+
+<script src="js/api.js?v=2"></script>
+<script>
+  if (getToken()) window.location.href = 'dashboard.html';
+
+  const form = document.getElementById('loginForm');
+  const emailEl = document.getElementById('email');
+  const pwdEl = document.getElementById('password');
+  const alertEl = document.getElementById('alert');
+  const submitBtn = document.getElementById('submitBtn');
+
+  document.getElementById('togglePwd').onclick = () => {
+    const hidden = pwdEl.type === 'password';
+    pwdEl.type = hidden ? 'text' : 'password';
+    document.querySelector('#togglePwd i').setAttribute('data-lucide', hidden ? 'eye-off' : 'eye');
+    lucide.createIcons();
+  };
+
+  function showAlert(msg, type = 'error') {
+    alertEl.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-800 border border-red-100' : 'bg-emerald-50 text-emerald-800 border border-emerald-100'}`;
+    alertEl.textContent = msg;
+    alertEl.classList.remove('hidden');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertEl.classList.add('hidden');
+    if (!emailEl.value.includes('@') || pwdEl.value.length < 8) {
+      showAlert('Please check your email and password.');
+      return;
+    }
+    setLoading(submitBtn, true, 'Signing in');
+    try {
+      const data = await Auth.login({ email: emailEl.value.trim(), password: pwdEl.value });
+      setToken(data.access_token || data.token);
+      if (data.user) setUser(data.user);
+      else setUser(await Auth.me());
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      showAlert(err.message || 'Invalid credentials');
+      setLoading(submitBtn, false, 'Sign in');
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Gaxtron{% endblock %}
+{% block content %}
+<h1>Merchant Dashboard</h1>
+{% if not merchant %}
+<p class="warn">Link your account: register at <code>POST /auth/register</code> on the FastAPI service using the same email.</p>
+{% else %}
+<div class="stats-grid">
+  <div class="stat-card"><span>Total Payments</span><strong>{{ stats.total_payments }}</strong></div>
+  <div class="stat-card success"><span>Successful</span><strong>{{ stats.successful }}</strong></div>
+  <div class="stat-card failed"><span>Failed</span><strong>{{ stats.failed }}</strong></div>
+  <div class="stat-card pending"><span>Pending</span><strong>{{ stats.pending }}</strong></div>
+  <div class="stat-card revenue"><span>Revenue</span><strong>{{ stats.revenue }}</strong></div>
+</div>
+<h2>Recent Payments</h2>
+<table>
+  <thead><tr><th>ID</th><th>Chain</th><th>Amount</th><th>Currency</th><th>Status</th><th>Address</th><th>Created</th></tr></thead>
+  <tbody>
+  {% for p in recent_payments %}
+  <tr>
+    <td>{{ p.id }}</td>
+    <td>{{ p.chain|default:"ETH" }}</td>
+    <td>{{ p.amount }}</td>
+    <td>{{ p.currency }}</td>
+    <td><span class="badge {{ p.status }}">{{ p.status }}</span></td>
+    <td class="mono">{{ p.wallet_address|truncatechars:20 }}</td>
+    <td>{{ p.created_at }}</td>
+  </tr>
+  {% empty %}<tr><td colspan="7">No payments yet</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

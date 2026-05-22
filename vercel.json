@@ -1,19 +1,18 @@
 {
-  "version": 2,
-  "name": "gaxtron-blockchain-service",
-  "builds": [
-    {
-      "src": "GaX/app/main.py",
-      "use": "@vercel/python"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pip install -r GaX/requirements.txt",
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60
     }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index" }
   ],
-  "routes": [
+  "crons": [
     {
-      "src": "/(.*)",
-      "dest": "GaX/app/main.py"
+      "path": "/api/cron/check-payments",
+      "schedule": "* * * * *"
     }
-  ],
-  "env": {
-    "PYTHONPATH": "/var/task/GaX"
-  }
+  ]
 }

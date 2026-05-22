@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaxtron – Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+  <meta name="theme-color" content="#0f172a" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-slate-50 min-h-screen flex">
+
+<aside class="w-56 bg-white border-r border-slate-200 flex flex-col shrink-0 hidden md:flex">
+  <div class="h-14 flex items-center gap-2.5 px-4 border-b border-slate-100">
+    <div class="brand-mark">GX</div>
+    <span class="font-semibold text-sm text-slate-900">Gaxtron</span>
+  </div>
+  <nav class="flex-1 p-3 space-y-0.5">
+    <a href="dashboard.html" class="sidebar-link active"><i data-lucide="layout-dashboard"></i> Overview</a>
+    <a href="#payments" class="sidebar-link" onclick="showTab('payments', this);return false"><i data-lucide="wallet"></i> Payments</a>
+    <a href="#transactions" class="sidebar-link" onclick="showTab('transactions', this);return false"><i data-lucide="arrow-left-right"></i> Transactions</a>
+    <a href="#apikeys" class="sidebar-link" onclick="showTab('apikeys', this);return false"><i data-lucide="key-round"></i> API Keys</a>
+    <a href="#webhooks" class="sidebar-link" onclick="showTab('webhooks', this);return false"><i data-lucide="send"></i> Webhooks</a>
+  </nav>
+  <div class="p-3 border-t border-slate-100">
+    <button onclick="Auth.logout()" class="sidebar-link w-full text-left text-red-600 hover:bg-red-50">
+      <i data-lucide="log-out"></i> Sign out
+    </button>
+  </div>
+</aside>
+
+<main class="flex-1 min-w-0">
+  <header class="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+    <h1 class="text-sm font-semibold text-slate-900" id="pageTitle">Overview</h1>
+    <div class="flex items-center gap-3 text-sm text-slate-500">
+      <i data-lucide="user" class="w-4 h-4"></i>
+      <span id="userEmail">—</span>
+    </div>
+  </header>
+
+  <div class="p-6 max-w-6xl">
+    <!-- Overview -->
+    <section id="tab-overview">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="statsGrid">
+        <div class="stat-card"><p class="text-xs text-slate-500 uppercase tracking-wide">Total payments</p><p class="text-2xl font-semibold mt-2 skeleton h-8 w-16" id="statTotal"></p></div>
+        <div class="stat-card"><p class="text-xs text-slate-500 uppercase tracking-wide">Confirmed</p><p class="text-2xl font-semibold mt-2 text-emerald-700 skeleton h-8 w-16" id="statSuccess"></p></div>
+        <div class="stat-card"><p class="text-xs text-slate-500 uppercase tracking-wide">Pending</p><p class="text-2xl font-semibold mt-2 text-amber-700 skeleton h-8 w-16" id="statPending"></p></div>
+        <div class="stat-card"><p class="text-xs text-slate-500 uppercase tracking-wide">Revenue</p><p class="text-2xl font-semibold mt-2 skeleton h-8 w-24" id="statRevenue"></p></div>
+      </div>
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-slate-900">Recent payments</h2>
+          <button class="cp-btn cp-btn-primary text-sm py-2" onclick="openCreatePayment()">
+            <i data-lucide="plus" class="w-4 h-4"></i> New payment
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="cp-table"><thead><tr><th>ID</th><th>Amount</th><th>Status</th><th>Link</th><th>Created</th></tr></thead>
+          <tbody id="recentPayments"><tr><td colspan="5" class="text-slate-400 text-center py-8">Loading…</td></tr></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Payments tab -->
+    <section id="tab-payments" class="hidden">
+      <div class="stat-card mb-4">
+        <h2 class="font-semibold mb-4">Create payment</h2>
+        <p class="text-sm text-slate-500 mb-4">Sepolia ETH only. Customers pay via the checkout link (works with ngrok / Cloudflare Tunnel).</p>
+        <form id="createPaymentForm" class="grid sm:grid-cols-2 gap-4 max-w-xl">
+          <div><label class="text-sm font-medium text-slate-700">Amount (ETH)</label><input name="amount" type="number" step="any" class="cp-input mt-1" value="0.001" required /></div>
+          <div class="sm:col-span-2"><label class="text-sm font-medium text-slate-700">Webhook callback URL</label>
+            <input name="callback_url" type="url" class="cp-input mt-1" value="https://httpbin.org/post" required />
+          </div>
+          <div><button type="submit" class="cp-btn cp-btn-primary" id="createPayBtn">Create payment link</button></div>
+        </form>
+        <div id="createResult" class="mt-4 hidden p-4 bg-slate-50 rounded-lg border text-sm"></div>
+      </div>
+    </section>
+
+    <section id="tab-transactions" class="hidden">
+      <div class="stat-card overflow-x-auto">
+        <table class="cp-table"><thead><tr><th>Hash</th><th>Amount</th><th>Status</th><th>Confirmations</th><th>Date</th></tr></thead>
+        <tbody id="txTable"></tbody></table>
+      </div>
+    </section>
+
+    <section id="tab-apikeys" class="hidden">
+      <div class="stat-card">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-semibold">API keys</h2>
+          <button class="cp-btn cp-btn-ghost text-sm" onclick="regenerateKey()"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Regenerate</button>
+        </div>
+        <p class="text-sm text-slate-500 mb-4">Payment endpoints require <code class="mono bg-slate-100 px-1 rounded">X-API-Key</code>.</p>
+        <div id="apiKeyList"></div>
+      </div>
+    </section>
+
+    <section id="tab-webhooks" class="hidden">
+      <div class="stat-card overflow-x-auto">
+        <table class="cp-table"><thead><tr><th>Payment</th><th>Event</th><th>Status</th><th>HTTP</th><th>Attempts</th></tr></thead>
+        <tbody id="webhookTable"></tbody></table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="js/api.js?v=2"></script>
+<script>
+  if (!requireAuth()) throw new Error('auth');
+
+  const user = getUser();
+  if (user) document.getElementById('userEmail').textContent = user.email;
+
+  const TAB_TITLES = { overview: 'Overview', payments: 'Payments', transactions: 'Transactions', apikeys: 'API Keys', webhooks: 'Webhooks' };
+
+  function showTab(name, el) {
+    ['overview','payments','transactions','apikeys','webhooks'].forEach(t => {
+      document.getElementById('tab-' + t)?.classList.add('hidden');
+    });
+    document.getElementById('tab-' + name)?.classList.remove('hidden');
+    document.getElementById('pageTitle').textContent = TAB_TITLES[name] || name;
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    if (el) el.classList.add('active');
+    if (name === 'transactions') loadTransactions();
+    if (name === 'apikeys') loadApiKeys();
+    if (name === 'webhooks') loadWebhooks();
+  }
+
+  function openCreatePayment() {
+    const link = document.querySelector('[onclick*="payments"]');
+    showTab('payments', link);
+  }
+
+  document.querySelectorAll('.sidebar-link[href^="#"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const m = link.getAttribute('onclick')?.match(/showTab\('(\w+)'/);
+      if (m) showTab(m[1], link);
+    });
+  });
+
+  async function loadStats() {
+    try {
+      const s = await Dashboard.stats();
+      document.getElementById('statTotal').textContent = s.total_payments;
+      document.getElementById('statTotal').classList.remove('skeleton');
+      document.getElementById('statSuccess').textContent = s.successful;
+      document.getElementById('statSuccess').classList.remove('skeleton');
+      document.getElementById('statPending').textContent = s.pending;
+      document.getElementById('statPending').classList.remove('skeleton');
+      document.getElementById('statRevenue').textContent = s.revenue;
+      document.getElementById('statRevenue').classList.remove('skeleton');
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function loadPayments() {
+    const rows = await Dashboard.payments();
+    const tbody = document.getElementById('recentPayments');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">No payments yet</td></tr>'; return; }
+    tbody.innerHTML = rows.map(p => {
+      const url = p.payment_url || (API_BASE + '/pay/' + p.id);
+      return `<tr>
+      <td>${p.id}</td><td>${formatCurrency(p.amount, '')} ETH</td>
+      <td>${statusBadge(p.status)}</td>
+      <td><a href="${url}" target="_blank" class="text-indigo-600 text-xs hover:underline">Checkout</a></td>
+      <td>${formatDate(p.created_at)}</td></tr>`;
+    }).join('');
+  }
+
+  async function loadTransactions() {
+    const rows = await Transactions.list();
+    document.getElementById('txTable').innerHTML = rows.length ? rows.map(t => `<tr>
+      <td class="mono">${t.tx_hash?.slice(0,14)}…</td>
+      <td>${t.amount} ${t.currency}</td><td>${statusBadge(t.status)}</td>
+      <td>${t.confirmations}</td><td>${formatDate(t.created_at)}</td></tr>`).join('') : '<tr><td colspan="5" class="text-center py-6 text-slate-400">No transactions</td></tr>';
+  }
+
+  async function loadApiKeys() {
+    const keys = await ApiKeys.list();
+    document.getElementById('apiKeyList').innerHTML = keys.map(k => `
+      <div class="flex items-center justify-between py-3 border-b border-slate-100 text-sm">
+        <span class="mono">${k.key_prefix}…</span>
+        <span>${k.name}</span>${statusBadge(k.is_active ? 'confirmed' : 'failed')}
+      </div>`).join('') || '<p class="text-slate-400">No keys</p>';
+  }
+
+  async function regenerateKey() {
+    const keys = await ApiKeys.list();
+    if (!keys.length) {
+      const k = await ApiKeys.create('default');
+      setApiKey(k.api_key);
+      showToast('API key created');
+      loadApiKeys();
+      return;
+    }
+    const r = await ApiKeys.regenerate(keys[0].id);
+    setApiKey(r.api_key);
+    showToast('API key regenerated');
+    loadApiKeys();
+  }
+
+  async function loadWebhooks() {
+    const rows = await Webhooks.logs();
+    document.getElementById('webhookTable').innerHTML = rows.length ? rows.map(w => `<tr>
+      <td>${w.payment_id}</td><td class="mono text-xs">${w.event_id?.slice(0,20)}</td>
+      <td>${statusBadge(w.status)}</td><td>${w.response_code || '—'}</td><td>${w.attempts}</td></tr>`).join('')
+      : '<tr><td colspan="5" class="text-center py-6 text-slate-400">No webhook logs</td></tr>';
+  }
+
+  document.getElementById('createPaymentForm').onsubmit = async (e) => {
+    e.preventDefault();
+    if (!getApiKey()) { showToast('Create an API key first', 'warning'); return; }
+    const fd = new FormData(e.target);
+    const btn = document.getElementById('createPayBtn');
+    setLoading(btn, true, 'Creating');
+    try {
+      const p = await Payments.create({
+        amount: fd.get('amount'),
+        callback_url: fd.get('callback_url'),
+      });
+      const payUrl = p.payment_url || (API_BASE + '/pay/' + (p.payment_id || p.id));
+      const el = document.getElementById('createResult');
+      el.classList.remove('hidden');
+      el.innerHTML = `
+        <div class="p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+          <p class="text-xs font-medium text-indigo-800 uppercase tracking-wide">Customer checkout link</p>
+          <p class="font-semibold text-slate-900 mt-1">Send this to your student — they pay in the browser (QR + wallet). No API needed.</p>
+          <p class="mono text-sm mt-3 break-all text-indigo-700">${payUrl}</p>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button type="button" class="cp-btn cp-btn-primary text-sm" onclick="copyToClipboard('${payUrl}', this)">Copy link</button>
+            <a href="${payUrl}" target="_blank" class="cp-btn cp-btn-ghost text-sm">Preview checkout</a>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 mt-3">Payment #${p.payment_id || p.id} · ${p.status} · Merchant API not required for customer</p>`;
+      showToast('Payment created');
+      loadPayments();
+      loadStats();
+    } catch (err) { showToast(err.message, 'error'); }
+    setLoading(btn, false, 'Create');
+  };
+
+  (async () => {
+    if (!getApiKey()) {
+      try {
+        const k = await ApiKeys.create('default');
+        setApiKey(k.api_key);
+      } catch (_) {}
+    }
+    await loadStats();
+    await loadPayments();
+    lucide.createIcons();
+  })();
+</script>
+</body>
+</html>

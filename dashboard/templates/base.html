@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="http://127.0.0.1:8000/favicon.svg" />
+  <meta name="theme-color" content="#0f172a">
+  <title>{% block title %}Gaxtron Dashboard{% endblock %}</title>
+  <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="brand">Gaxtron</div>
+    {% if user.is_authenticated %}
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <a href="{% url 'transactions' %}">Transactions</a>
+    <a href="{% url 'api_keys' %}">API Keys</a>
+    <a href="{% url 'webhooks' %}">Webhook Logs</a>
+    {% if user.is_superuser %}<a href="{% url 'admin_overview' %}">Admin</a>{% endif %}
+    <a href="{% url 'logout' %}">Logout</a>
+    {% endif %}
+  </nav>
+  <main class="content">
+    {% for message in messages %}<div class="alert">{{ message }}</div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

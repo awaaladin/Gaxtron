@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Admin — Gaxtron{% endblock %}
+{% block content %}
+<h1>Superadmin Overview</h1>
+<p>Total blockchain transactions: <strong>{{ total_transactions }}</strong></p>
+<h2>All Merchants</h2>
+<table>
+  <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Active</th><th>Superadmin</th><th>Joined</th></tr></thead>
+  <tbody>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.id }}</td>
+    <td>{{ u.username }}</td>
+    <td>{{ u.email }}</td>
+    <td>{{ u.is_active }}</td>
+    <td>{{ u.is_superadmin }}</td>
+    <td>{{ u.created_at }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p>Use <a href="/admin/">Django Admin</a> to suspend accounts and monitor all transactions.</p>
+{% endblock %}

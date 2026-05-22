@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaxtron – Register</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Create your Gaxtron merchant account — secure crypto payments" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/styles.css?v=3" />
+</head>
+<body class="auth-page bg-slate-50 min-h-screen flex items-center justify-center p-4 py-10">
+
+<div class="auth-wrap w-full max-w-md animate-reveal-up">
+  <a href="index.html" class="auth-brand flex items-center justify-center gap-2.5 mb-8 no-underline">
+    <div class="brand-mark">GX</div>
+    <span class="font-semibold text-slate-900 text-lg">Gaxtron</span>
+  </a>
+
+  <div class="auth-card bg-white rounded-xl border border-slate-200 shadow-md p-8">
+    <h1 class="text-xl font-semibold text-slate-900 mb-1">Create account</h1>
+    <p class="auth-sub text-slate-500 text-sm mb-6">Start accepting crypto payments</p>
+
+    <div id="apiStatus" class="hidden mb-4 p-3 rounded-lg text-sm bg-amber-50 text-amber-900 border border-amber-200"></div>
+    <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+
+    <form id="registerForm" novalidate>
+      <div class="auth-grid-2 grid grid-cols-2 gap-3 mb-4">
+        <div class="auth-field">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">First name</label>
+          <input id="firstName" type="text" class="cp-input" />
+        </div>
+        <div class="auth-field">
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Last name</label>
+          <input id="lastName" type="text" class="cp-input" />
+        </div>
+      </div>
+      <div class="auth-field mb-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Business name</label>
+        <input id="businessName" type="text" class="cp-input" placeholder="Used as API username" />
+      </div>
+      <div class="auth-field mb-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+        <input id="email" type="email" class="cp-input" autocomplete="email" />
+      </div>
+      <div class="auth-field mb-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+        <div class="relative">
+          <input id="password" type="password" class="cp-input pr-10" autocomplete="new-password" />
+          <button type="button" id="togglePwd" class="icon-btn absolute right-2 top-1/2 -translate-y-1/2">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+      <div class="auth-field mb-5">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Confirm password</label>
+        <input id="confirmPwd" type="password" class="cp-input" />
+      </div>
+      <label class="flex items-start gap-2 mb-5 text-sm text-slate-600 cursor-pointer">
+        <input type="checkbox" id="terms" class="mt-1 accent-blue-700" />
+        <span>I agree to the terms of service</span>
+      </label>
+      <button id="submitBtn" type="submit" class="cp-btn cp-btn-primary w-full py-2.5">Create account</button>
+    </form>
+
+    <p class="auth-footer text-center text-sm text-slate-500 mt-6">
+      Have an account? <a href="login.html" class="text-blue-700 font-medium hover:underline">Sign in</a>
+    </p>
+  </div>
+</div>
+
+<script src="js/api.js?v=2"></script>
+<script>
+  if (getToken()) window.location.href = 'dashboard.html';
+
+  checkApiHealth().then((ok) => {
+    const el = document.getElementById('apiStatus');
+    el.classList.remove('hidden');
+    if (ok) {
+      el.className += ' bg-emerald-50 text-emerald-800 border border-emerald-200';
+      el.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4"></i><span>Secure API connected</span>';
+    } else {
+      el.className += ' bg-amber-50 text-amber-900 border border-amber-200';
+      el.innerHTML = '<i data-lucide="alert-triangle" class="w-4 h-4"></i><span>Server offline. In terminal run: <code class="mono text-xs">.\\scripts\\start_gaxtron.ps1</code> then refresh this page.</span>';
+    }
+    lucide.createIcons();
+  });
+
+  const form = document.getElementById('registerForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const alertEl = document.getElementById('alert');
+
+  document.getElementById('togglePwd').onclick = () => {
+    const p = document.getElementById('password');
+    p.type = p.type === 'password' ? 'text' : 'password';
+    lucide.createIcons();
+  };
+
+  function showAlert(msg, type = 'error') {
+    alertEl.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-800' : 'bg-emerald-50 text-emerald-800'}`;
+    alertEl.textContent = msg;
+    alertEl.classList.remove('hidden');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const pwd = document.getElementById('password').value;
+    const business = document.getElementById('businessName').value.trim();
+    const fn = document.getElementById('firstName').value.trim();
+    const ln = document.getElementById('lastName').value.trim();
+    if (!document.getElementById('terms').checked || pwd.length < 8 || pwd !== document.getElementById('confirmPwd').value) {
+      showAlert('Complete all fields and accept terms.');
+      return;
+    }
+    setLoading(submitBtn, true, 'Creating account');
+    try {
+      const username = business || `${fn}${ln}`.replace(/\s/g, '_').toLowerCase() || email.split('@')[0];
+      const data = await Auth.register({ email, password: pwd, username, business_name: business });
+      setToken(data.access_token || data.token);
+      if (data.user) setUser(data.user);
+      const keyRes = await ApiKeys.create('default');
+      setApiKey(keyRes.api_key);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      showAlert(err.message || 'Registration failed');
+      setLoading(submitBtn, false, 'Create account');
+    }
+  });
+</script>
+</body>
+</html>

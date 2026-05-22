@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Register — Gaxtron{% endblock %}
+{% block content %}
+<div class="auth-box">
+  <h1>Register</h1>
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Register</button>
+  </form>
+  <p><a href="{% url 'login' %}">Already have an account?</a></p>
+</div>
+{% endblock %}

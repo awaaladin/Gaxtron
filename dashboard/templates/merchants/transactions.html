@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Transactions — Gaxtron{% endblock %}
+{% block content %}
+<h1>Transaction History</h1>
+<form method="get" class="filters">
+  <select name="status">
+    <option value="">All statuses</option>
+    <option value="pending" {% if status_filter == "pending" %}selected{% endif %}>Pending</option>
+    <option value="confirmed" {% if status_filter == "confirmed" %}selected{% endif %}>Confirmed</option>
+    <option value="failed" {% if status_filter == "failed" %}selected{% endif %}>Failed</option>
+  </select>
+  <input type="date" name="from" value="{{ date_from }}">
+  <button type="submit">Filter</button>
+</form>
+<table>
+  <thead><tr><th>Hash</th><th>Amount</th><th>Currency</th><th>Status</th><th>Confirmations</th><th>Date</th></tr></thead>
+  <tbody>
+  {% for tx in transactions %}
+  <tr>
+    <td class="mono">{{ tx.tx_hash|truncatechars:16 }}</td>
+    <td>{{ tx.amount }}</td>
+    <td>{{ tx.currency }}</td>
+    <td><span class="badge {{ tx.status }}">{{ tx.status }}</span></td>
+    <td>{{ tx.confirmations }}</td>
+    <td>{{ tx.created_at }}</td>
+  </tr>
+  {% empty %}<tr><td colspan="6">No transactions</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}
