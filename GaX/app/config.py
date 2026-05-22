@@ -1,5 +1,7 @@
 from functools import lru_cache
+import os
 from typing import Literal
+from urllib.parse import urlparse
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -73,7 +75,26 @@ class Settings(BaseSettings):
 
     @property
     def allowed_host_list(self) -> list[str]:
-        return [h.strip() for h in self.api_allowed_hosts.split(",") if h.strip()]
+        hosts = [h.strip() for h in self.api_allowed_hosts.split(",") if h.strip()]
+        if os.getenv("VERCEL"):
+            hosts.extend([".vercel.app", "localhost", "127.0.0.1"])
+            vercel_url = os.getenv("VERCEL_URL", "")
+            if vercel_url:
+                hosts.append(vercel_url.strip())
+        if self.public_base_url:
+            host = urlparse(self.public_base_url).hostname
+            if host:
+                hosts.append(host)
+        return list(dict.fromkeys(hosts))
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        origins = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        if self.public_base_url:
+            origins.append(self.public_base_url.rstrip("/"))
+        if os.getenv("VERCEL_URL"):
+            origins.append(f"https://{os.getenv('VERCEL_URL', '').strip()}")
+        return list(dict.fromkeys(origins))
 
     @field_validator("secret_key", "webhook_secret", "wallet_encryption_key", mode="before")
     @classmethod
@@ -91,10 +112,6 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.env == "production"
-
-    @property
-    def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     @property
     def enabled_chain_list(self) -> list[str]:
@@ -129,5 +146,6 @@ def validate_production_settings() -> None:
     if s.debug:
         raise RuntimeError("DEBUG must be False in production")
 
-    if not s.require_https_callbacks:
+    # Vercel: allow httpbin/test callbacks during MVP; enforce HTTPS in production elsewhere
+    if not s.require_https_callbacks and not os.getenv("VERCEL"):
         raise RuntimeError("REQUIRE_HTTPS_CALLBACKS must be True in production")

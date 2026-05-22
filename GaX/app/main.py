@@ -1,5 +1,7 @@
 import logging
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -23,19 +25,43 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
+def _resolve_frontend_dir() -> str:
+    """Repo layout: Gaxtron/frontend and Gaxtron/GaX/app/main.py."""
+    here = Path(__file__).resolve()
+    candidates = [
+        here.parents[2] / "frontend",       # repo root (Vercel + local)
+        here.parents[1] / "frontend",       # GaX/frontend fallback
+        here.parents[3] / "frontend",         # extra depth fallback
+    ]
+    for path in candidates:
+        if path.is_dir():
+            return str(path)
+    return str(candidates[0])
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    validate_production_settings()
+    try:
+        validate_production_settings()
+    except RuntimeError as exc:
+        logger.error("Production validation failed: %s", exc)
+        if not os.getenv("VERCEL"):
+            raise
+
     import app.db.models  # noqa: F401
 
-    from app.db.migrate_schema import run_migrations
+    try:
+        from app.db.migrate_schema import run_migrations
 
-    Base.metadata.create_all(bind=engine)
-    run_migrations()
+        Base.metadata.create_all(bind=engine)
+        run_migrations()
+    except Exception:
+        logger.exception("Database init failed at startup (app will still serve /health/live)")
+
     logger.info(
-        "Gaxtron API started [env=%s debug=%s public_url=%s]",
+        "Gaxtron API started [env=%s vercel=%s public_url=%s]",
         settings.env,
-        settings.debug,
+        bool(os.getenv("VERCEL")),
         settings.public_base_url,
     )
     yield
@@ -56,7 +82,7 @@ app.add_middleware(GZipMiddleware, minimum_size=500)
 app.add_middleware(RequestIdMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 
-if settings.is_production:
+if settings.is_production or os.getenv("VERCEL"):
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=settings.allowed_host_list,
@@ -72,7 +98,7 @@ if settings.debug or settings.env == "development":
         "http://localhost:8000",
         "http://127.0.0.1:8000",
     ])
-_cors = list(dict.fromkeys(_cors))  # dedupe
+_cors = list(dict.fromkeys(_cors))
 
 app.add_middleware(
     CORSMiddleware,
@@ -89,15 +115,7 @@ app.include_router(cron.router)
 app.include_router(api_keys.router)
 app.include_router(dashboard.router)
 
-import os
-
-_frontend_dir = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
-)
-if not os.path.isdir(_frontend_dir):
-    _alt = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "frontend"))
-    if os.path.isdir(_alt):
-        _frontend_dir = _alt
+_frontend_dir = _resolve_frontend_dir()
 
 
 @app.get("/favicon.ico")
@@ -106,6 +124,14 @@ def favicon():
     path = os.path.join(_frontend_dir, "favicon.svg")
     if os.path.isfile(path):
         return FileResponse(path, media_type="image/svg+xml")
+    raise HTTPException(404)
+
+
+@app.get("/site.webmanifest")
+def webmanifest():
+    path = os.path.join(_frontend_dir, "site.webmanifest")
+    if os.path.isfile(path):
+        return FileResponse(path, media_type="application/manifest+json")
     raise HTTPException(404)
 
 
@@ -137,7 +163,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 def health():
     db_ok = check_database()
     redis_ok = check_redis()
-    status_label = "ok" if db_ok and redis_ok else "degraded"
+    status_label = "ok" if db_ok else "degraded"
     chains = check_all_chains()
     return {
         "status": status_label,
@@ -159,7 +185,6 @@ def liveness():
     return {"status": "alive"}
 
 
-# Merchant UI on same port as API (no CORS): http://127.0.0.1:8002/register.html
 _UI_PAGES = ("index.html", "login.html", "register.html", "dashboard.html", "pay.html")
 
 if os.path.isdir(_frontend_dir):
@@ -180,3 +205,5 @@ if os.path.isdir(_frontend_dir):
             raise HTTPException(404)
 
         app.add_api_route(f"/{page}", _page_handler, methods=["GET"])
+else:
+    logger.warning("Frontend directory not found: %s", _frontend_dir)
