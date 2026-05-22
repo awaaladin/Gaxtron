@@ -28,9 +28,9 @@ async def lifespan(app: FastAPI):
     validate_production_settings()
     import app.db.models  # noqa: F401
 
-    Base.metadata.create_all(bind=engine)
     from app.db.migrate_schema import run_migrations
 
+    Base.metadata.create_all(bind=engine)
     run_migrations()
     logger.info(
         "Gaxtron API started [env=%s debug=%s public_url=%s]",

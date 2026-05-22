@@ -4,16 +4,62 @@
 
 | Trigger | Frequency | Purpose |
 |---------|-----------|---------|
-| **Vercel Cron** | Every **1 minute** (fastest on Hobby) | Scan all pending payments + deliver webhooks |
+| **Vercel Cron** | **Once per day** on Hobby (`0 0 * * *`); Pro = every minute | Backup scan for pending payments |
 | **Checkout poll** | Every **3 seconds** | `GET /payment/{id}` re-checks Sepolia for that payment |
 
 Vercel Cron **cannot** run every few seconds on Hobby. Checkout polling gives near real-time UX while the customer has the page open.
 
 ## 1. External services (free tier)
 
-- **Neon** or **Supabase** — Postgres → `DATABASE_URL`
-- **Upstash** — Redis → `REDIS_URL` (optional; cron + DB still work without it)
-- **Alchemy/Infura** — `BLOCKCHAIN_RPC_URL` (Sepolia)
+### Postgres `DATABASE_URL` (use Neon — not local Docker)
+
+1. Go to https://neon.tech → Sign up (free)
+2. Create project → region closest to you
+3. Copy **Connection string** (looks like):
+   ```
+   postgresql://neondb_owner:PASSWORD@ep-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+4. Paste into Vercel as `DATABASE_URL`
+
+Local Docker URL (`127.0.0.1:5433`) **only works on your PC**, not on Vercel.
+
+### Blockchain RPC `BLOCKCHAIN_RPC_URL` (Sepolia)
+
+**Recommended — Alchemy (free):**
+
+1. https://dashboard.alchemy.com → Sign up
+2. **Create App** → Chain: **Ethereum**, Network: **Ethereum Sepolia**
+3. Copy **HTTPS** URL:
+   ```
+   https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+   ```
+4. Paste into Vercel as `BLOCKCHAIN_RPC_URL`
+
+**Alternatives:** [Infura](https://infura.io) (Sepolia endpoint) or public `https://rpc.sepolia.org` (slow/unreliable for production).
+
+### Redis (optional)
+
+- **Upstash** https://upstash.com → Redis → copy `REDIS_URL`
+
+### `CRON_SECRET` (generate in terminal)
+
+PowerShell or Git Bash:
+
+```powershell
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Paste result into Vercel as `CRON_SECRET` (no quotes). Vercel sends it as `Authorization: Bearer <value>` when cron runs.
+
+Also generate (same command, run 3 times or use):
+
+```powershell
+python -c "import secrets; print('SECRET_KEY='+secrets.token_hex(32))"
+python -c "import secrets; print('WEBHOOK_SECRET='+secrets.token_hex(32))"
+python -c "import secrets; print('WALLET_ENCRYPTION_KEY='+secrets.token_hex(32))"
+```
+
+Each must be **at least 32 characters**.
 
 ## 2. Vercel environment variables
 
