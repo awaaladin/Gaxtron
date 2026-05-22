@@ -24,14 +24,18 @@ class PaymentProcessor:
     """
 
     def __init__(self):
-        all_services: dict[str, BaseChainService] = {
-            "ETH": EthereumService(),
-            "TRON": TronService(),
-            "BTC": BitcoinService(),
-            "SOL": SolanaService(),
+        registry: dict[str, type[BaseChainService]] = {
+            "ETH": EthereumService,
+            "TRON": TronService,
+            "BTC": BitcoinService,
+            "SOL": SolanaService,
         }
-        enabled = set(settings.enabled_chain_list)
-        self.services = {k: v for k, v in all_services.items() if k in enabled}
+        enabled = settings.enabled_chain_list
+        self.services: dict[str, BaseChainService] = {}
+        for chain in enabled:
+            cls = registry.get(chain.upper())
+            if cls:
+                self.services[chain.upper()] = cls()
 
     def get_service(self, chain: str) -> BaseChainService:
         chain = chain.upper()
