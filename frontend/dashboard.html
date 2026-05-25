@@ -8,7 +8,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0a0f1a" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css?v=5" />
+  <link rel="stylesheet" href="css/styles.css?v=6" />
 </head>
 <body>
 
@@ -49,6 +49,27 @@
     </header>
 
     <div class="dash-content">
+      <!-- API Key (always visible) -->
+      <div class="api-key-panel gx-glow-border" id="apiKeyPanel">
+        <div class="api-key-panel-head">
+          <div>
+            <h2 style="font-size:0.9375rem;margin-bottom:0.25rem">Your API key</h2>
+            <p style="font-size:0.75rem;color:var(--text-dim)">Use header <code class="mono" style="background:var(--surface-2);padding:0.125rem 0.375rem;border-radius:4px">X-API-Key</code> for <code class="mono">POST /create-payment</code></p>
+          </div>
+          <button type="button" class="cp-btn cp-btn-ghost" style="font-size:0.75rem;padding:0.375rem 0.75rem" onclick="regenerateKey()">
+            <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Regenerate
+          </button>
+        </div>
+        <div class="api-key-field">
+          <code id="apiKeyDisplay">Loading…</code>
+          <button type="button" class="icon-btn" id="toggleApiKeyBtn" onclick="toggleApiKeyVisibility()" aria-label="Show API key">
+            <i data-lucide="eye" style="width:16px;height:16px"></i>
+          </button>
+          <button type="button" class="cp-btn cp-btn-primary" style="font-size:0.75rem;padding:0.375rem 0.875rem" id="copyApiKeyBtn" onclick="copyApiKey()">Copy</button>
+        </div>
+        <p style="font-size:0.6875rem;color:var(--text-dim);margin-top:0.625rem" id="apiKeyHint">Key stored in this browser only. Regenerate if you lose it.</p>
+      </div>
+
       <!-- Overview -->
       <section id="tab-overview">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem" id="statsGrid">
@@ -82,7 +103,7 @@
           </div>
           <div style="overflow-x:auto">
             <table class="cp-table">
-              <thead><tr><th>ID</th><th>Amount</th><th>Status</th><th>Checkout</th><th>Created</th></tr></thead>
+              <thead><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Checkout</th><th>Created</th></tr></thead>
               <tbody id="recentPayments"><tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-dim)">Loading…</td></tr></tbody>
             </table>
           </div>
@@ -154,12 +175,77 @@
 
 <script src="js/animations.js?v=1"></script>
 <script src="js/errors.js?v=1"></script>
-<script src="js/api.js?v=3"></script>
+<script src="js/api.js?v=4"></script>
 <script>
   if (!requireAuth()) throw new Error('auth');
 
   const user = getUser();
   if (user) document.getElementById('userEmail').textContent = user.email;
+
+  let apiKeyVisible = false;
+
+  function maskApiKey(key) {
+    if (!key) return 'No API key — click Regenerate';
+    if (key.length <= 16) return '••••••••••••••••';
+    return key.slice(0, 8) + '••••••••••••••••' + key.slice(-4);
+  }
+
+  function renderApiKeyPanel() {
+    const key = getApiKey();
+    const el = document.getElementById('apiKeyDisplay');
+    el.textContent = apiKeyVisible && key ? key : maskApiKey(key);
+    document.getElementById('copyApiKeyBtn').disabled = !key;
+  }
+
+  function toggleApiKeyVisibility() {
+    if (!getApiKey()) { showToast({ status: 403, message: 'Generate an API key first.' }, 'warning'); return; }
+    apiKeyVisible = !apiKeyVisible;
+    renderApiKeyPanel();
+    const icon = document.querySelector('#toggleApiKeyBtn i');
+    if (icon) icon.setAttribute('data-lucide', apiKeyVisible ? 'eye-off' : 'eye');
+    lucide.createIcons();
+  }
+
+  function copyApiKey() {
+    const key = getApiKey();
+    if (!key) { showToast({ status: 403, message: 'No API key to copy.' }, 'warning'); return; }
+    copyToClipboard(key, document.getElementById('copyApiKeyBtn'));
+  }
+
+  function qrUrl(data, size = 200) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=8&data=${encodeURIComponent(data)}`;
+  }
+
+  function renderPaymentResult(p) {
+    const payUrl = p.payment_url || (API_BASE + '/pay/' + (p.payment_token || p.public_token || p.payment_id || p.id));
+    const token = p.payment_token || p.public_token || ('#' + (p.payment_id || p.id));
+    const wallet = p.wallet_address || '';
+    const el = document.getElementById('createResult');
+    el.classList.remove('hidden');
+    el.innerHTML = `
+      <div class="stat-card gx-glow-border payment-result">
+        <div class="payment-qr-box">
+          <img src="${qrUrl(payUrl)}" alt="Checkout QR code" width="180" height="180" />
+          <p class="payment-qr-label">Scan to open checkout</p>
+        </div>
+        <div>
+          <p style="font-size:0.6875rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em">Checkout ready</p>
+          <p style="font-weight:600;margin:0.5rem 0;font-size:0.9375rem">Share link or QR with your customer</p>
+          <p style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.5rem">Payment reference</p>
+          <div class="payment-ref">${token}</div>
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.875rem;word-break:break-all" class="mono">${payUrl}</p>
+          ${wallet ? `<p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.75rem">Deposit address</p>
+          <p class="mono" style="font-size:0.6875rem;color:var(--btc);word-break:break-all;margin-top:0.25rem">${wallet}</p>` : ''}
+          <div class="payment-actions">
+            <button type="button" class="cp-btn cp-btn-primary" style="font-size:0.8125rem" onclick="copyToClipboard('${payUrl.replace(/'/g, "\\'")}', this)">Copy link</button>
+            <button type="button" class="cp-btn cp-btn-ghost" style="font-size:0.8125rem" onclick="copyToClipboard('${token.replace(/'/g, "\\'")}', this)">Copy reference</button>
+            ${wallet ? `<button type="button" class="cp-btn cp-btn-ghost" style="font-size:0.8125rem" onclick="copyToClipboard('${wallet.replace(/'/g, "\\'")}', this)">Copy address</button>` : ''}
+            <a href="${payUrl}" target="_blank" class="cp-btn cp-btn-btc" style="font-size:0.8125rem">Preview checkout</a>
+          </div>
+          <p style="font-size:0.6875rem;color:var(--text-dim);margin-top:0.875rem">${p.amount || ''} ETH · ${p.status || 'pending'}</p>
+        </div>
+      </div>`;
+  }
 
   const TAB_TITLES = { overview: 'Overview', payments: 'Payments', transactions: 'Transactions', apikeys: 'API Keys', webhooks: 'Webhooks' };
 
@@ -206,12 +292,13 @@
         return;
       }
       tbody.innerHTML = rows.map(p => {
-        const url = p.payment_url || (API_BASE + '/pay/' + p.id);
+        const url = p.payment_url || (API_BASE + '/pay/' + (p.public_token || p.id));
+        const ref = p.public_token || ('#' + p.id);
         return `<tr>
-          <td class="mono">#${p.id}</td>
+          <td class="mono" style="font-size:0.6875rem;color:var(--btc)" title="${ref}">${ref.slice(0, 18)}…</td>
           <td style="color:var(--btc);font-family:var(--mono)">${formatCurrency(p.amount, '')} ETH</td>
           <td>${statusBadge(p.status)}</td>
-          <td><a href="${url}" target="_blank" style="color:var(--accent);font-size:0.8125rem;text-decoration:none">Open checkout →</a></td>
+          <td><a href="${url}" target="_blank" style="color:var(--accent);font-size:0.8125rem;text-decoration:none">Checkout →</a></td>
           <td>${formatDate(p.created_at)}</td>
         </tr>`;
       }).join('');
@@ -234,29 +321,36 @@
   async function loadApiKeys() {
     try {
       const keys = await ApiKeys.list();
-      document.getElementById('apiKeyList').innerHTML = keys.map(k => `
+      const stored = getApiKey();
+      document.getElementById('apiKeyList').innerHTML = `
+        ${stored ? `<div class="api-key-field" style="margin-bottom:1rem">
+          <code>${apiKeyVisible ? stored : maskApiKey(stored)}</code>
+          <button type="button" class="cp-btn cp-btn-primary" style="font-size:0.75rem" onclick="copyApiKey()">Copy full key</button>
+        </div>` : '<p style="color:var(--warning);font-size:0.875rem;margin-bottom:1rem">No key in browser — regenerate to get a copyable key.</p>'}
+        ${keys.map(k => `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem 0;border-bottom:1px solid var(--border);font-size:0.8125rem">
           <span class="mono" style="color:var(--accent)">${k.key_prefix}…</span>
           <span style="color:var(--text-dim)">${k.name}</span>
           ${statusBadge(k.is_active ? 'confirmed' : 'failed')}
-        </div>`).join('') || '<p style="color:var(--text-dim);font-size:0.875rem">No keys — one will be created automatically</p>';
+        </div>`).join('') || ''}`;
     } catch (e) { showToast(e, 'error'); }
   }
 
   async function regenerateKey() {
     try {
       const keys = await ApiKeys.list();
+      let r;
       if (!keys.length) {
-        const k = await ApiKeys.create('default');
-        setApiKey(k.api_key);
-        showToast('API key created', 'success');
-        loadApiKeys();
-        return;
+        r = await ApiKeys.create('default');
+      } else {
+        r = await ApiKeys.regenerate(keys[0].id);
       }
-      const r = await ApiKeys.regenerate(keys[0].id);
       setApiKey(r.api_key);
-      showToast('API key regenerated — update your integrations', 'success');
+      apiKeyVisible = true;
+      renderApiKeyPanel();
+      showToast('API key ready — copy it now', 'success');
       loadApiKeys();
+      lucide.createIcons();
     } catch (e) { showToast(e, 'error'); }
   }
 
@@ -282,20 +376,7 @@
     setLoading(btn, true, 'Creating');
     try {
       const p = await Payments.create({ amount: fd.get('amount'), callback_url: fd.get('callback_url') });
-      const payUrl = p.payment_url || (API_BASE + '/pay/' + (p.payment_id || p.id));
-      const el = document.getElementById('createResult');
-      el.classList.remove('hidden');
-      el.innerHTML = `
-        <div style="padding:1.25rem;background:var(--indigo-soft);border:1px solid rgba(99,102,241,0.3);border-radius:var(--radius-lg)">
-          <p style="font-size:0.6875rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em">Checkout link ready</p>
-          <p style="font-weight:600;margin-top:0.5rem;font-size:0.9375rem">Share with your customer — they pay in the browser</p>
-          <p class="mono" style="margin-top:0.75rem;word-break:break-all;font-size:0.8125rem;color:var(--text-muted)">${payUrl}</p>
-          <div style="display:flex;flex-wrap:gap:0.5rem;margin-top:0.875rem">
-            <button type="button" class="cp-btn cp-btn-primary" style="font-size:0.8125rem" onclick="copyToClipboard('${payUrl}', this)">Copy link</button>
-            <a href="${payUrl}" target="_blank" class="cp-btn cp-btn-ghost" style="font-size:0.8125rem">Preview checkout</a>
-          </div>
-        </div>
-        <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.75rem">Payment #${p.payment_id || p.id} · ${p.status}</p>`;
+      renderPaymentResult(p);
       showToast('Payment link created', 'success');
       loadPayments();
       loadStats();
@@ -308,8 +389,10 @@
       try {
         const k = await ApiKeys.create('default');
         setApiKey(k.api_key);
+        apiKeyVisible = true;
       } catch (_) {}
     }
+    renderApiKeyPanel();
     await loadStats();
     await loadPayments();
     lucide.createIcons();

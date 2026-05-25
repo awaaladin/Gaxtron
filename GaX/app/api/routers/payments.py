@@ -24,7 +24,8 @@ router = APIRouter(tags=["payments"])
 def _to_create_response(payment) -> CreatePaymentResponse:
     return CreatePaymentResponse(
         payment_id=payment.id,
-        payment_url=PaymentService.build_payment_url(payment.id),
+        payment_token=payment.public_token or str(payment.id),
+        payment_url=PaymentService.build_payment_url(payment),
         wallet_address=payment.wallet_address,
         amount=payment.amount,
         currency=payment.currency,
@@ -49,7 +50,7 @@ def _to_payment_response(payment) -> PaymentResponse:
         callback_url=payment.callback_url,
         tx_hash=payment.tx_hash,
         confirmations=payment.confirmations or 0,
-        payment_url=PaymentService.build_payment_url(payment.id),
+        payment_url=PaymentService.build_payment_url(payment),
         created_at=payment.created_at,
         confirmed_at=payment.confirmed_at,
         expires_at=payment.expires_at,
@@ -68,7 +69,7 @@ def create_payment(
         db.commit()
         db.refresh(payment)
         enqueue_payment_check(payment.id)
-        logger.info("Payment %s url=%s", payment.id, settings.payment_url(payment.id))
+        logger.info("Payment %s url=%s", payment.id, PaymentService.build_payment_url(payment))
         return _to_create_response(payment)
     except ValueError as e:
         db.rollback()
@@ -113,7 +114,7 @@ def verify_payment(
         wallet_address=payment.wallet_address,
         tx_hash=payment.tx_hash,
         confirmations=payment.confirmations or 0,
-        payment_url=PaymentService.build_payment_url(payment.id),
+        payment_url=PaymentService.build_payment_url(payment),
         confirmed_at=payment.confirmed_at,
         expires_at=payment.expires_at,
     )

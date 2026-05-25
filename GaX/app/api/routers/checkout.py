@@ -24,21 +24,22 @@ def _frontend_dir() -> str:
     return os.path.abspath(os.path.join(here, "..", "..", "..", "..", "frontend"))
 
 
-@router.get("/payment/{payment_id}", response_model=PublicPaymentStatus)
-def get_payment_status(payment_id: int, db: Session = Depends(get_db)):
+@router.get("/payment/{payment_ref}", response_model=PublicPaymentStatus)
+def get_payment_status(payment_ref: str, db: Session = Depends(get_db)):
     """Public status for checkout polling (no auth). Re-checks chain when still pending."""
-    payment = PaymentService.get_payment(db, payment_id)
+    payment = PaymentService.get_payment_by_ref(db, payment_ref)
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
 
     if settings.checkout_reconcile_on_poll and payment.status == "pending":
         try:
-            get_reconciler().run_batch(payment_id=payment_id)
+            get_reconciler().run_batch(payment_id=payment.id)
             db.refresh(payment)
         except Exception:
             pass  # status poll should not fail if RPC is slow
     return PublicPaymentStatus(
         id=payment.id,
+        public_token=payment.public_token,
         amount=payment.amount,
         currency=payment.currency,
         chain=payment.chain,
@@ -54,10 +55,10 @@ def get_payment_status(payment_id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/pay/{payment_id}")
-def checkout_page(payment_id: int, db: Session = Depends(get_db)):
+@router.get("/pay/{payment_ref}")
+def checkout_page(payment_ref: str, db: Session = Depends(get_db)):
     """Hosted checkout — share this link with customers."""
-    payment = PaymentService.get_payment(db, payment_id)
+    payment = PaymentService.get_payment_by_ref(db, payment_ref)
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
 
@@ -65,9 +66,9 @@ def checkout_page(payment_id: int, db: Session = Depends(get_db)):
     if os.path.isfile(pay_html):
         return FileResponse(pay_html, media_type="text/html")
 
-    return HTMLResponse(_fallback_checkout_html(payment_id))
+    return HTMLResponse(_fallback_checkout_html(payment_ref))
 
 
-def _fallback_checkout_html(payment_id: int) -> str:
-    return f"""<!DOCTYPE html><html><body><p>Loading payment {payment_id}…</p>
-    <script>location.replace('/pay/{payment_id}');</script></body></html>"""
+def _fallback_checkout_html(payment_ref: str) -> str:
+    return f"""<!DOCTYPE html><html><body><p>Loading payment…</p>
+    <script>location.replace('/pay/{payment_ref}');</script></body></html>"""

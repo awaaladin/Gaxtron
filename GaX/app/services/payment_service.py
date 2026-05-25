@@ -19,8 +19,26 @@ ETH_CURRENCY = "ETH"
 
 class PaymentService:
     @staticmethod
-    def build_payment_url(payment_id: int) -> str:
-        return settings.payment_url(payment_id)
+    def generate_public_token() -> str:
+        return f"pay_{uuid.uuid4().hex}"
+
+    @staticmethod
+    def build_payment_url(payment: Payment) -> str:
+        ref = payment.public_token or str(payment.id)
+        return settings.payment_url(ref)
+
+    @staticmethod
+    def get_payment_by_ref(db: Session, ref: str, user_id: int | None = None) -> Payment | None:
+        q = db.query(Payment)
+        if ref.startswith("pay_"):
+            q = q.filter(Payment.public_token == ref)
+        elif ref.isdigit():
+            q = q.filter(Payment.id == int(ref))
+        else:
+            return None
+        if user_id is not None:
+            q = q.filter(Payment.user_id == user_id)
+        return q.first()
 
     @staticmethod
     def create_payment(db: Session, user_id: int, data: CreatePaymentRequest) -> Payment:
@@ -45,6 +63,7 @@ class PaymentService:
 
         wallet = WalletService.generate_wallet(db, ETH_CHAIN, ETH_CURRENCY, user_id=user_id)
         event_id = str(uuid.uuid4())
+        public_token = PaymentService.generate_public_token()
         expires_at = datetime.utcnow() + timedelta(minutes=settings.payment_expiry_minutes)
 
         payment = Payment(
@@ -56,6 +75,7 @@ class PaymentService:
             wallet_address=wallet.address,
             callback_url=str(data.callback_url),
             idempotency_key=data.idempotency_key,
+            public_token=public_token,
             event_id=event_id,
             expires_at=expires_at,
             confirmations=0,
@@ -66,11 +86,12 @@ class PaymentService:
         db.flush()
 
         logger.info(
-            "ETH payment %s created user=%s amount=%s url=%s",
+            "ETH payment %s token=%s user=%s amount=%s url=%s",
             payment.id,
+            public_token,
             user_id,
             payment.amount,
-            PaymentService.build_payment_url(payment.id),
+            PaymentService.build_payment_url(payment),
         )
         return payment
 

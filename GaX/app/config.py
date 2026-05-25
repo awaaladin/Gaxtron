@@ -117,8 +117,8 @@ class Settings(BaseSettings):
     def enabled_chain_list(self) -> list[str]:
         return [c.strip().upper() for c in self.enabled_chains.split(",") if c.strip()]
 
-    def payment_url(self, payment_id: int) -> str:
-        return f"{self.public_base_url.rstrip('/')}/pay/{payment_id}"
+    def payment_url(self, payment_ref: str) -> str:
+        return f"{self.public_base_url.rstrip('/')}/pay/{payment_ref}"
 
 
 @lru_cache

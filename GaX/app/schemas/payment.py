@@ -25,6 +25,7 @@ class CreatePaymentRequest(BaseModel):
 
 class CreatePaymentResponse(BaseModel):
     payment_id: int
+    payment_token: str
     payment_url: str
     wallet_address: str
     amount: Decimal
@@ -60,6 +61,7 @@ class PublicPaymentStatus(BaseModel):
     """Public checkout polling — no secrets."""
 
     id: int
+    public_token: str | None = None
     amount: Decimal
     currency: str
     chain: str

@@ -135,8 +135,8 @@
 
 <script>
 (function () {
-  const m = window.location.pathname.match(/\/pay\/(\d+)/);
-  const paymentId = m ? m[1] : null;
+  const m = window.location.pathname.match(/\/pay\/([^/?#]+)/);
+  const paymentId = m ? decodeURIComponent(m[1]) : null;
 
   const $ = (id) => document.getElementById(id);
   let paymentAmount = '';
@@ -212,7 +212,7 @@
 
     $('summaryAmount').textContent = amount.toFixed(6);
     $('summaryTotal').textContent = amountStr;
-    $('summaryPaymentId').textContent = '#' + data.id;
+    $('summaryPaymentId').textContent = data.public_token || ('#' + data.id);
     $('summaryNetwork').textContent = 'Ethereum · ' + (data.network || 'sepolia');
     $('footerNetwork').textContent = (data.network || 'sepolia') + ' testnet';
     $('instructionAmount').textContent = amountStr;

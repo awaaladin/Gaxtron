@@ -81,8 +81,8 @@ def list_payments(db: Session = Depends(get_db), user: User = Depends(get_curren
             "wallet_address": p.wallet_address,
             "tx_hash": p.tx_hash,
             "confirmations": p.confirmations or 0,
-            "payment_url": PaymentService.build_payment_url(p.id),
-            "public_base_url": settings.public_base_url,
+            "payment_url": PaymentService.build_payment_url(p),
+            "public_token": p.public_token,
             "created_at": p.created_at.isoformat() if p.created_at else None,
             "confirmed_at": p.confirmed_at.isoformat() if p.confirmed_at else None,
         }

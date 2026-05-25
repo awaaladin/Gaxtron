@@ -21,6 +21,7 @@ class Payment(Base):
     idempotency_key: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
     tx_hash: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     confirmations: Mapped[int] = mapped_column(Integer, default=0)
+    public_token: Mapped[str | None] = mapped_column(String(72), unique=True, nullable=True, index=True)
     event_id: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
