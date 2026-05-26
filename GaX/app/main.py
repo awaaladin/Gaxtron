@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from app.api.routers import api_keys, auth, checkout, cron, dashboard, payments
+from app.api.routers import agents, api_keys, auth, checkout, cron, dashboard, payments
 from app.config import settings, validate_production_settings
 from app.core.exceptions import AppError, to_http_exception
 from app.core.logging_config import setup_logging
@@ -109,6 +109,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(agents.router)
 app.include_router(payments.router)
 app.include_router(checkout.router)
 app.include_router(cron.router)
@@ -185,7 +186,7 @@ def liveness():
     return {"status": "alive"}
 
 
-_UI_PAGES = ("index.html", "login.html", "register.html", "dashboard.html", "pay.html")
+_UI_PAGES = ("index.html", "login.html", "register.html", "dashboard.html", "pay.html", "profile.html", "analytics.html")
 
 if os.path.isdir(_frontend_dir):
     app.mount("/css", StaticFiles(directory=os.path.join(_frontend_dir, "css")), name="ui-css")
@@ -196,14 +197,26 @@ if os.path.isdir(_frontend_dir):
     def ui_root():
         return RedirectResponse(url="/index.html")
 
-    for page in _UI_PAGES:
-        _path = os.path.join(_frontend_dir, page)
+    _registered_pages = set()
 
-        def _page_handler(p=page, fp=_path):
-            if os.path.isfile(fp):
-                return FileResponse(fp)
-            raise HTTPException(404)
+    def _register_page(page: str) -> None:
+        if page in _registered_pages:
+            return
+        fp = os.path.join(_frontend_dir, page)
+        if not os.path.isfile(fp):
+            return
+
+        def _page_handler(file_path=fp):
+            return FileResponse(file_path)
 
         app.add_api_route(f"/{page}", _page_handler, methods=["GET"])
+        _registered_pages.add(page)
+
+    for page in _UI_PAGES:
+        _register_page(page)
+
+    for name in os.listdir(_frontend_dir):
+        if name.endswith(".html"):
+            _register_page(name)
 else:
     logger.warning("Frontend directory not found: %s", _frontend_dir)

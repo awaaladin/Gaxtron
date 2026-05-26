@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaxtron — Market Analytics</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="theme-color" content="#080c12" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/dashboard.css?v=4" />
+  <script src="js/theme.js?v=1"></script>
+</head>
+<body class="dash-page">
+
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dashSidebar">
+    <div class="dash-sidebar-inner">
+      <div class="dash-sidebar-head">
+        <div class="brand-mark">GX</div>
+        <div class="sidebar-label">
+          <div class="sidebar-brand-name">Gaxtron</div>
+          <div class="sidebar-brand-sub">Payment layer</div>
+        </div>
+      </div>
+      <nav>
+        <span class="nav-group-label sidebar-label">Core</span>
+        <a href="dashboard.html" class="sidebar-link"><i data-lucide="layout-dashboard"></i><span class="sidebar-label">Overview</span></a>
+        <a href="analytics.html" class="sidebar-link active"><i data-lucide="line-chart"></i><span class="sidebar-label">Markets</span></a>
+        <a href="dashboard.html#payments" class="sidebar-link"><i data-lucide="wallet"></i><span class="sidebar-label">Payments</span></a>
+        <a href="dashboard.html#transactions" class="sidebar-link"><i data-lucide="arrow-left-right"></i><span class="sidebar-label">Transactions</span></a>
+        <span class="nav-group-label sidebar-label">Account</span>
+        <a href="profile.html" class="sidebar-link"><i data-lucide="user"></i><span class="sidebar-label">Profile</span></a>
+      </nav>
+      <div class="network-badge">
+        <div class="network-dot"></div>
+        <span class="network-text">Live market data</span>
+      </div>
+      <div class="dash-sidebar-foot">
+        <button type="button" onclick="Auth.logout()" class="sidebar-link sidebar-link--danger">
+          <i data-lucide="log-out"></i><span class="sidebar-label">Sign out</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div>
+        <h1>Market analytics</h1>
+        <p class="dash-topbar-sub">Real-time prices · 24h chart</p>
+      </div>
+      <div class="dash-topbar-actions">
+        <span class="market-live" id="marketLiveStatus">Connecting…</span>
+        <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+          <i data-theme-icon data-lucide="moon"></i>
+        </button>
+        <a href="profile.html" class="user-pill" id="userPill">
+          <div class="user-avatar" id="userAvatar">—</div>
+          <span class="user-email" id="userEmail">—</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="dash-content market-content">
+      <div class="market-hero section-card">
+        <div class="section-body">
+          <div class="market-hero-top">
+            <div>
+              <p class="market-symbol" id="marketCoinSymbol">ETH</p>
+              <h2 class="market-name" id="marketCoinName">Ethereum</h2>
+            </div>
+            <div class="market-select-wrap">
+              <label for="coinSelect" class="form-label">Select coin</label>
+              <select id="coinSelect" class="cp-input market-select"></select>
+            </div>
+          </div>
+          <p class="market-price" id="marketPrice">—</p>
+          <p class="market-change market-change--up" id="marketChange">—</p>
+        </div>
+      </div>
+
+      <div class="section-card market-chart-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Price movement</div>
+            <div class="section-sub">Last 24 hours · USD</div>
+          </div>
+        </div>
+        <div class="market-chart-wrap">
+          <canvas id="marketChart" aria-label="Price chart"></canvas>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">All markets</div>
+            <div class="section-sub">Tap a coin to view its chart</div>
+          </div>
+        </div>
+        <div class="coin-list" id="coinList">
+          <p style="padding:1.5rem;color:var(--text-muted);text-align:center">Loading market data…</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/sidebar.js?v=2"></script>
+<script src="js/errors.js?v=1"></script>
+<script src="js/api.js?v=4"></script>
+<script src="js/markets.js?v=1"></script>
+<script>
+  if (!requireAuth()) throw new Error('auth');
+  const user = getUser();
+  if (user) {
+    document.getElementById('userEmail').textContent = user.email;
+    document.getElementById('userAvatar').textContent = user.email.slice(0, 2).toUpperCase();
+  }
+  lucide.createIcons();
+</script>
+</body>
+</html>
