@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaxtron — Profile</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="theme-color" content="#080c12" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/dashboard.css?v=3" />
+  <script src="js/theme.js?v=1"></script>
+</head>
+<body class="dash-page">
+
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dashSidebar">
+    <div class="dash-sidebar-inner">
+      <div class="dash-sidebar-head">
+        <div class="brand-mark">GX</div>
+        <div class="sidebar-label">
+          <div class="sidebar-brand-name">Gaxtron</div>
+          <div class="sidebar-brand-sub">Payment layer</div>
+        </div>
+      </div>
+      <nav>
+        <a href="dashboard.html" class="sidebar-link"><i data-lucide="layout-dashboard"></i><span class="sidebar-label">Overview</span></a>
+        <a href="dashboard.html#payments" class="sidebar-link"><i data-lucide="wallet"></i><span class="sidebar-label">Payments</span></a>
+        <a href="dashboard.html#transactions" class="sidebar-link"><i data-lucide="arrow-left-right"></i><span class="sidebar-label">Transactions</span></a>
+        <a href="dashboard.html#apikeys" class="sidebar-link"><i data-lucide="key-round"></i><span class="sidebar-label">API Keys</span></a>
+        <a href="profile.html" class="sidebar-link active"><i data-lucide="user"></i><span class="sidebar-label">Profile</span></a>
+      </nav>
+      <div class="network-badge">
+        <div class="network-dot"></div>
+        <span class="network-text">Sepolia · ETH</span>
+      </div>
+      <div class="dash-sidebar-foot">
+        <button type="button" onclick="Auth.logout()" class="sidebar-link sidebar-link--danger">
+          <i data-lucide="log-out"></i><span class="sidebar-label">Sign out</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div>
+        <h1>Profile</h1>
+        <p class="dash-topbar-sub">Account settings</p>
+      </div>
+      <div class="dash-topbar-actions">
+        <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+          <i data-theme-icon data-lucide="moon"></i>
+        </button>
+        <a href="profile.html" class="user-pill">
+          <div class="user-avatar" id="userAvatar">—</div>
+          <span class="user-email" id="userEmail">—</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="section-card">
+        <div class="profile-hero">
+          <div class="profile-avatar-lg" id="profileAvatar">—</div>
+          <div>
+            <p class="profile-name" id="profileName">—</p>
+            <p class="profile-email" id="profileEmail">—</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="profile-grid">
+            <div>
+              <p class="profile-field-label">Username</p>
+              <p class="profile-field-value" id="profileUsername">—</p>
+            </div>
+            <div>
+              <p class="profile-field-label">Merchant ID</p>
+              <p class="profile-field-value mono" id="profileId">—</p>
+            </div>
+            <div>
+              <p class="profile-field-label">Network</p>
+              <p class="profile-field-value">Sepolia testnet · ETH</p>
+            </div>
+            <div>
+              <p class="profile-field-label">Account status</p>
+              <p class="profile-field-value" id="profileStatus">Active</p>
+            </div>
+          </div>
+          <div style="margin-top:1.5rem;display:flex;gap:0.75rem;flex-wrap:wrap">
+            <a href="dashboard.html" class="btn-primary" style="text-decoration:none">Back to dashboard</a>
+            <button type="button" class="btn-ghost" onclick="Auth.logout()">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/sidebar.js?v=2"></script>
+<script src="js/errors.js?v=1"></script>
+<script src="js/api.js?v=4"></script>
+<script>
+  if (!requireAuth()) throw new Error('auth');
+
+  function fillProfile(user) {
+    const email = user.email || '—';
+    const username = user.username || user.business_name || email.split('@')[0];
+    const initials = email.slice(0, 2).toUpperCase();
+    document.getElementById('userEmail').textContent = email;
+    document.getElementById('userAvatar').textContent = initials;
+    document.getElementById('profileAvatar').textContent = initials;
+    document.getElementById('profileName').textContent = username;
+    document.getElementById('profileEmail').textContent = email;
+    document.getElementById('profileUsername').textContent = username;
+    document.getElementById('profileId').textContent = user.id != null ? `#${user.id}` : '—';
+    document.getElementById('profileStatus').textContent = user.is_active === false ? 'Inactive' : 'Active';
+  }
+
+  (async () => {
+    const cached = getUser();
+    if (cached) fillProfile(cached);
+    try {
+      const fresh = await Auth.me();
+      if (fresh) {
+        setUser(fresh);
+        fillProfile(fresh);
+      }
+    } catch (_) {}
+    lucide.createIcons();
+  })();
+</script>
+</body>
+</html>

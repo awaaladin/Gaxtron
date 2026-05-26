@@ -8,7 +8,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0f0d1a" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/dashboard.css?v=2" />
+  <link rel="stylesheet" href="css/dashboard.css?v=3" />
   <script src="js/theme.js?v=1"></script>
 </head>
 <body class="dash-page">
@@ -71,13 +71,17 @@
         <p class="dash-topbar-sub" id="pageSubtitle">Merchant dashboard · Sepolia testnet</p>
       </div>
       <div class="dash-topbar-actions">
+        <button type="button" class="notif-btn" id="notifBtn" aria-label="Notifications">
+          <i data-lucide="bell" style="width:16px;height:16px"></i>
+          <span class="notif-badge hidden" id="notifBadge">0</span>
+        </button>
         <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
           <i data-theme-icon data-lucide="moon"></i>
         </button>
-        <div class="user-pill">
+        <a href="profile.html" class="user-pill">
           <div class="user-avatar" id="userAvatar">—</div>
           <span class="user-email" id="userEmail">—</span>
-        </div>
+        </a>
       </div>
     </header>
 
@@ -111,19 +115,19 @@
         <div class="stats-grid" id="statsGrid">
           <div class="stat-card">
             <p class="stat-label">Total payments</p>
-            <p class="stat-value stat-value--neutral skeleton" style="height:2rem;width:3rem" id="statTotal"></p>
+            <p class="stat-value stat-value--neutral skeleton stat-skeleton" id="statTotal"></p>
           </div>
           <div class="stat-card">
             <p class="stat-label">Confirmed</p>
-            <p class="stat-value stat-value--success skeleton" style="height:2rem;width:3rem" id="statSuccess"></p>
+            <p class="stat-value stat-value--success skeleton stat-skeleton" id="statSuccess"></p>
           </div>
           <div class="stat-card">
             <p class="stat-label">Pending</p>
-            <p class="stat-value stat-value--warning skeleton" style="height:2rem;width:3rem" id="statPending"></p>
+            <p class="stat-value stat-value--warning skeleton stat-skeleton" id="statPending"></p>
           </div>
           <div class="stat-card">
             <p class="stat-label">Revenue (ETH)</p>
-            <p class="stat-value stat-value--accent skeleton" style="height:2rem;width:5rem" id="statRevenue"></p>
+            <p class="stat-value stat-value--accent skeleton stat-skeleton" id="statRevenue"></p>
           </div>
         </div>
 
@@ -256,7 +260,23 @@
   </main>
 </div>
 
+<div class="notif-backdrop" id="notifBackdrop"></div>
+<aside class="notif-panel" id="notifPanel" aria-label="Notifications">
+  <div class="notif-panel-head">
+    <div>
+      <h2>Notifications</h2>
+      <p class="notif-panel-sub">Live payment updates</p>
+    </div>
+    <button type="button" class="btn-icon" id="notifClose" aria-label="Close">
+      <i data-lucide="x" style="width:14px;height:14px"></i>
+    </button>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+</aside>
+<div class="notif-toast" id="notifToast" aria-live="polite"></div>
+
 <script src="js/sidebar.js?v=2"></script>
+<script src="js/notifications.js?v=1"></script>
 <script src="js/errors.js?v=1"></script>
 <script src="js/api.js?v=4"></script>
 <script>
@@ -373,8 +393,8 @@
       const set = (id, val, cls) => {
         const el = document.getElementById(id);
         el.textContent = val;
-        el.classList.remove('skeleton');
-        el.className = 'stat-value ' + (cls || 'stat-value--neutral');
+        el.classList.remove('skeleton', 'stat-skeleton');
+        el.className = `stat-value ${cls || 'stat-value--neutral'}`;
       };
       set('statTotal', s.total_payments);
       set('statSuccess', s.successful, 'stat-value--success');

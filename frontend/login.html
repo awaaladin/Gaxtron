@@ -5,88 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gaxtron — Sign In</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#faf5ff" />
+  <meta name="theme-color" content="#080c12" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css?v=11" />
+  <link rel="stylesheet" href="css/site.css?v=1" />
   <script src="js/theme.js?v=1"></script>
 </head>
-<body>
+<body class="site-page">
 
-<div class="auth-split">
+<div class="auth-page">
   <aside class="auth-panel">
-    <div class="auth-panel-content animate-reveal-fade">
-      <a href="index.html" class="auth-brand">
+    <div>
+      <a href="index.html" class="site-brand">
         <div class="brand-mark">GX</div>
         <span>Gaxtron</span>
       </a>
       <h2>Secure access to your payment infrastructure</h2>
-      <p>Monitor settlements, manage API keys, and track on-chain confirmations from a single merchant console.</p>
+      <p>Monitor settlements, manage API keys, and track on-chain confirmations from one merchant console.</p>
       <div class="auth-stats">
-        <div class="auth-stat">
-          <p class="auth-stat-value">3</p>
-          <p class="auth-stat-label">Block confirms</p>
-        </div>
-        <div class="auth-stat">
-          <p class="auth-stat-value">256</p>
-          <p class="auth-stat-label">Bit HMAC</p>
-        </div>
-        <div class="auth-stat">
-          <p class="auth-stat-value">99.9%</p>
-          <p class="auth-stat-label">Uptime SLA</p>
-        </div>
+        <div><p class="auth-stat-value">3</p><p class="auth-stat-label">Block confirms</p></div>
+        <div><p class="auth-stat-value">256</p><p class="auth-stat-label">Bit HMAC</p></div>
+        <div><p class="auth-stat-value">99.9%</p><p class="auth-stat-label">Uptime SLA</p></div>
       </div>
     </div>
-    <p style="position:relative;z-index:1;font-size:0.75rem;color:var(--text-dim)">
-      <i data-lucide="lock" style="width:12px;height:12px;display:inline;vertical-align:middle"></i>
-      End-to-end encrypted · Sepolia testnet
-    </p>
+    <p style="font-size:0.75rem;color:var(--text-muted)">Sepolia testnet · End-to-end encrypted</p>
   </aside>
 
-  <div class="auth-form-side">
-    <div style="position:fixed;top:1rem;right:1rem;z-index:50">
-      <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+  <div class="auth-main">
+    <div class="auth-topbar">
+      <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
         <i data-theme-icon data-lucide="moon"></i>
       </button>
     </div>
-    <div class="auth-wrap animate-reveal-up">
-      <div class="auth-card" data-reveal>
-        <h1>Welcome back</h1>
-        <p class="auth-sub">Sign in to your merchant dashboard</p>
-
-        <div id="alert" class="hidden"></div>
-
-        <form id="loginForm" novalidate>
-          <div class="auth-field">
-            <label for="email">Email address</label>
-            <input id="email" type="email" class="cp-input" placeholder="you@company.com" autocomplete="email" />
-          </div>
-          <div class="auth-field">
-            <label for="password">Password</label>
-            <div style="position:relative">
-              <input id="password" type="password" class="cp-input" style="padding-right:2.75rem" autocomplete="current-password" />
-              <button type="button" id="togglePwd" class="icon-btn" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%)" aria-label="Toggle password">
-                <i data-lucide="eye" style="width:16px;height:16px"></i>
-              </button>
-            </div>
-          </div>
-          <button id="submitBtn" type="submit" class="cp-btn cp-btn-primary" style="width:100%;margin-top:0.5rem">Sign in</button>
-        </form>
-
-        <div class="auth-trust">
-          <span class="auth-trust-item"><i data-lucide="shield-check"></i> JWT secured</span>
-          <span class="auth-trust-item"><i data-lucide="key-round"></i> API key access</span>
+    <div class="auth-card">
+      <h1>Welcome back</h1>
+      <p class="auth-sub">Sign in to your merchant dashboard</p>
+      <div id="alert" class="hidden"></div>
+      <form id="loginForm" novalidate>
+        <div class="auth-field">
+          <label for="email">Email address</label>
+          <input id="email" type="email" class="cp-input" placeholder="you@company.com" autocomplete="email" />
         </div>
-
-        <p class="auth-footer">
-          No account? <a href="register.html">Create one free</a>
-        </p>
+        <div class="auth-field">
+          <label for="password">Password</label>
+          <div style="position:relative">
+            <input id="password" type="password" class="cp-input" style="padding-right:2.5rem" autocomplete="current-password" />
+            <button type="button" id="togglePwd" class="icon-btn" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%)" aria-label="Toggle password">
+              <i data-lucide="eye" style="width:16px;height:16px"></i>
+            </button>
+          </div>
+        </div>
+        <button id="submitBtn" type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem">Sign in</button>
+      </form>
+      <div class="auth-trust">
+        <span><i data-lucide="shield-check" style="width:14px;height:14px;vertical-align:middle"></i> JWT secured</span>
+        <span><i data-lucide="key-round" style="width:14px;height:14px;vertical-align:middle"></i> API key access</span>
       </div>
+      <p class="auth-footer">No account? <a href="register.html">Create one free</a></p>
     </div>
   </div>
 </div>
 
-<script src="js/animations.js?v=2"></script>
 <script src="js/errors.js?v=1"></script>
 <script src="js/api.js?v=4"></script>
 <script>
