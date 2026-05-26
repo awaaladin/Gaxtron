@@ -229,3 +229,18 @@ body.site-page::before {
 .pricing-list li { font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: 0.5rem; padding-left: 1.25rem; position: relative; }
 .pricing-list li::before { content: '✓'; position: absolute; left: 0; color: var(--accent-cyan); font-weight: 700; }
 .pricing-card--featured { border-color: var(--border-accent); background: var(--gradient-glow); }
+
+.cp-alert {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  margin-bottom: 1rem;
+  font-size: 0.8125rem;
+}
+.cp-alert--error { border-color: rgba(248, 113, 113, 0.35); }
+.cp-alert-title { font-weight: 600; margin-bottom: 0.125rem; }
+.cp-alert-message { color: var(--text-secondary); line-height: 1.5; }
+.cp-alert-dismiss { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.125rem; }
