@@ -8,7 +8,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0f0d1a" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/dashboard.css?v=4" />
+  <link rel="stylesheet" href="css/dashboard.css?v=5" />
   <script src="js/theme.js?v=1"></script>
 </head>
 <body class="dash-page">
@@ -105,10 +105,12 @@
           </div>
           <div class="key-display">
             <div class="key-value" id="apiKeyDisplay">Loading…</div>
-            <button type="button" class="btn-icon" id="toggleApiKeyBtn" onclick="toggleApiKeyVisibility()" aria-label="Show API key">
-              <i data-lucide="eye" style="width:14px;height:14px"></i>
-            </button>
-            <button type="button" class="btn-primary" id="copyApiKeyBtn" onclick="copyApiKey()">Copy</button>
+            <div class="key-actions">
+              <button type="button" class="btn-icon" id="toggleApiKeyBtn" onclick="toggleApiKeyVisibility()" aria-label="Show API key">
+                <i data-lucide="eye" style="width:14px;height:14px"></i>
+              </button>
+              <button type="button" class="btn-primary" id="copyApiKeyBtn" onclick="copyApiKey()">Copy</button>
+            </div>
           </div>
           <p class="key-note" id="apiKeyHint">Stored in this browser only. Regenerate if you lose it.</p>
         </div>
