@@ -6,19 +6,14 @@
   <title>Gaxtron — Sign In</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#0a0f1a" />
+  <meta name="theme-color" content="#faf5ff" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css?v=5" />
+  <link rel="stylesheet" href="css/styles.css?v=7" />
 </head>
 <body>
 
-<div data-aurora style="position:fixed;inset:0;z-index:0"></div>
-<canvas data-particles class="gx-particles" style="position:fixed;inset:0;z-index:0"></canvas>
-
 <div class="auth-split">
   <aside class="auth-panel">
-    <div class="auth-panel-grid"></div>
-    <div class="bg-orb bg-orb--btc" style="opacity:0.2;position:absolute"></div>
     <div class="auth-panel-content animate-reveal-fade">
       <a href="index.html" class="auth-brand">
         <div class="brand-mark">GX</div>
@@ -49,7 +44,7 @@
 
   <div class="auth-form-side">
     <div class="auth-wrap animate-reveal-up">
-      <div class="auth-card gx-glow-border" data-reveal>
+      <div class="auth-card" data-reveal>
         <h1>Welcome back</h1>
         <p class="auth-sub">Sign in to your merchant dashboard</p>
 
@@ -85,9 +80,9 @@
   </div>
 </div>
 
-<script src="js/animations.js?v=1"></script>
+<script src="js/animations.js?v=2"></script>
 <script src="js/errors.js?v=1"></script>
-<script src="js/api.js?v=3"></script>
+<script src="js/api.js?v=4"></script>
 <script>
   if (getToken()) window.location.href = 'dashboard.html';
 
