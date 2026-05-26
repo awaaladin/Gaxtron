@@ -8,27 +8,31 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#faf5ff" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css?v=7" />
+  <link rel="stylesheet" href="css/styles.css?v=11" />
+  <script src="js/theme.js?v=1"></script>
 </head>
 <body>
 
 <div class="dash-shell">
-  <aside class="dash-sidebar">
+  <div class="dash-frame">
+  <aside class="dash-sidebar" id="dashSidebar">
+    <div class="dash-sidebar-inner">
     <div class="dash-sidebar-head">
       <div class="brand-mark">GX</div>
-      <span style="font-weight:600;font-size:0.875rem">Gaxtron</span>
+      <span class="sidebar-label">Gaxtron</span>
     </div>
     <nav>
-      <a href="dashboard.html" class="sidebar-link active"><i data-lucide="layout-dashboard"></i> Overview</a>
-      <a href="#payments" class="sidebar-link" onclick="showTab('payments', this);return false"><i data-lucide="wallet"></i> Payments</a>
-      <a href="#transactions" class="sidebar-link" onclick="showTab('transactions', this);return false"><i data-lucide="arrow-left-right"></i> Transactions</a>
-      <a href="#apikeys" class="sidebar-link" onclick="showTab('apikeys', this);return false"><i data-lucide="key-round"></i> API Keys</a>
-      <a href="#webhooks" class="sidebar-link" onclick="showTab('webhooks', this);return false"><i data-lucide="webhook"></i> Webhooks</a>
+      <a href="dashboard.html" class="sidebar-link active"><i data-lucide="layout-dashboard"></i><span class="sidebar-label">Overview</span></a>
+      <a href="#payments" class="sidebar-link" onclick="showTab('payments', this);return false"><i data-lucide="wallet"></i><span class="sidebar-label">Payments</span></a>
+      <a href="#transactions" class="sidebar-link" onclick="showTab('transactions', this);return false"><i data-lucide="arrow-left-right"></i><span class="sidebar-label">Transactions</span></a>
+      <a href="#apikeys" class="sidebar-link" onclick="showTab('apikeys', this);return false"><i data-lucide="key-round"></i><span class="sidebar-label">API Keys</span></a>
+      <a href="#webhooks" class="sidebar-link" onclick="showTab('webhooks', this);return false"><i data-lucide="webhook"></i><span class="sidebar-label">Webhooks</span></a>
     </nav>
-    <div style="padding:0.75rem;border-top:1px solid var(--border)">
-      <button onclick="Auth.logout()" class="sidebar-link" style="width:100%;border:none;background:none;cursor:pointer;color:#f87171">
-        <i data-lucide="log-out"></i> Sign out
+    <div class="dash-sidebar-foot">
+      <button type="button" onclick="Auth.logout()" class="sidebar-link sidebar-link--danger">
+        <i data-lucide="log-out"></i><span class="sidebar-label">Sign out</span>
       </button>
+    </div>
     </div>
   </aside>
 
@@ -38,11 +42,16 @@
         <h1 id="pageTitle">Overview</h1>
         <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.125rem">Sepolia testnet · ETH only</p>
       </div>
-      <div class="dash-user">
+      <div class="dash-header-actions">
+        <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+          <i data-theme-icon data-lucide="moon"></i>
+        </button>
+        <div class="dash-user">
         <div style="width:36px;height:36px;border-radius:50%;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;border:1px solid rgba(124,58,237,0.2)">
           <i data-lucide="user" style="width:14px;height:14px;color:var(--primary)"></i>
         </div>
         <span id="userEmail">—</span>
+        </div>
       </div>
     </header>
 
@@ -169,8 +178,10 @@
       </section>
     </div>
   </div>
+  </div>
 </div>
 
+<script src="js/sidebar.js?v=2"></script>
 <script src="js/errors.js?v=1"></script>
 <script src="js/api.js?v=4"></script>
 <script>

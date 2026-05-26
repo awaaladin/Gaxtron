@@ -9,10 +9,13 @@
   <meta name="theme-color" content="#faf5ff" />
   <meta name="description" content="Institutional-grade Ethereum payment gateway. Accept Sepolia ETH with hosted checkout, webhooks, and REST API." />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css?v=7" />
+  <link rel="stylesheet" href="css/styles.css?v=11" />
+  <script src="js/theme.js?v=1"></script>
 </head>
 <body>
 
+<div class="landing-shell">
+<div class="landing-inner">
 <div class="landing-wrap">
   <nav class="gx-nav">
     <div class="gx-nav-inner">
@@ -27,6 +30,9 @@
         <a href="/docs" target="_blank">API</a>
       </div>
       <div style="display:flex;gap:0.5rem;align-items:center">
+        <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+          <i data-theme-icon data-lucide="moon"></i>
+        </button>
         <a href="login.html" class="cp-btn cp-btn-ghost" style="font-size:0.8125rem;padding:0.5rem 1rem">Log in</a>
         <a href="register.html" class="cp-btn cp-btn-primary" style="font-size:0.8125rem;padding:0.5rem 1rem">Get started</a>
       </div>
@@ -220,6 +226,8 @@
   <footer class="gx-footer">
     <p>&copy; 2025 Gaxtron · Non-custodial crypto payment infrastructure</p>
   </footer>
+</div>
+</div>
 </div>
 
 <script src="js/animations.js?v=2"></script>

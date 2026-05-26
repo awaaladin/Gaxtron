@@ -9,7 +9,8 @@
   <meta name="theme-color" content="#faf5ff" />
   <meta name="description" content="Create your Gaxtron merchant account — accept Ethereum payments on Sepolia" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/styles.css?v=7" />
+  <link rel="stylesheet" href="css/styles.css?v=11" />
+  <script src="js/theme.js?v=1"></script>
 </head>
 <body>
 
@@ -53,6 +54,11 @@
   </aside>
 
   <div class="auth-form-side">
+    <div style="position:fixed;top:1rem;right:1rem;z-index:50">
+      <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        <i data-theme-icon data-lucide="moon"></i>
+      </button>
+    </div>
     <div class="auth-wrap animate-reveal-up">
       <div class="auth-card" data-reveal>
         <h1>Create merchant account</h1>
