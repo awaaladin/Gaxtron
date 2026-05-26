@@ -8,7 +8,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0f0d1a" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/dashboard.css?v=1" />
+  <link rel="stylesheet" href="css/dashboard.css?v=2" />
   <script src="js/theme.js?v=1"></script>
 </head>
 <body class="dash-page">
@@ -210,15 +210,26 @@
         <div class="section-card">
           <div class="section-header">
             <div>
-              <div class="section-title">API keys</div>
-              <div class="section-sub">Required header: <code class="mono" style="font-size:0.6875rem;color:var(--accent)">X-API-Key</code></div>
+              <div class="section-title">Using your API key</div>
+              <div class="section-sub">Manage credentials in the panel above</div>
             </div>
             <button type="button" class="btn-ghost" onclick="regenerateKey()">
               <i data-lucide="refresh-cw" style="width:13px;height:13px"></i>
               Regenerate
             </button>
           </div>
-          <div class="section-body" id="apiKeyList"></div>
+          <div class="section-body api-docs">
+            <p class="api-docs-lead">Send your key on every server-side request. Never expose it in client-side code or public repos.</p>
+            <div class="api-docs-block">
+              <span class="api-docs-label">Header</span>
+              <code class="api-docs-code">X-API-Key: your_key_here</code>
+            </div>
+            <div class="api-docs-block">
+              <span class="api-docs-label">Create payment</span>
+              <code class="api-docs-code">POST /create-payment</code>
+            </div>
+            <p class="api-docs-note">Regenerating invalidates the previous key immediately. Update any integrations before rotating.</p>
+          </div>
         </div>
       </section>
 
@@ -348,7 +359,6 @@
     document.querySelectorAll('.sidebar-link[data-tab]').forEach(l => l.classList.remove('active'));
     if (el) el.classList.add('active');
     if (name === 'transactions') loadTransactions();
-    if (name === 'apikeys') loadApiKeys();
     if (name === 'webhooks') loadWebhooks();
   }
 
@@ -408,24 +418,6 @@
     } catch (e) { showToast(e, 'error'); }
   }
 
-  async function loadApiKeys() {
-    try {
-      const keys = await ApiKeys.list();
-      const stored = getApiKey();
-      document.getElementById('apiKeyList').innerHTML = `
-        ${stored ? `<div class="key-display" style="margin-bottom:1rem">
-          <div class="key-value">${apiKeyVisible ? stored : stored.slice(0, 8) + '••••••••••••••••' + stored.slice(-4)}</div>
-          <button type="button" class="btn-primary" onclick="copyApiKey()">Copy full key</button>
-        </div>` : '<p style="color:var(--amber);font-size:0.875rem;margin-bottom:1rem">No key in browser — regenerate to get a copyable key.</p>'}
-        ${keys.map(k => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem 0;border-bottom:1px solid var(--border);font-size:0.8125rem;gap:1rem;flex-wrap:wrap">
-          <span class="mono ref-link">${k.key_prefix}…</span>
-          <span style="color:var(--text-muted)">${k.name}</span>
-          ${statusBadge(k.is_active ? 'confirmed' : 'failed')}
-        </div>`).join('') || ''}`;
-    } catch (e) { showToast(e, 'error'); }
-  }
-
   async function regenerateKey() {
     try {
       const keys = await ApiKeys.list();
@@ -433,13 +425,13 @@
       if (!keys.length) {
         r = await ApiKeys.create('default');
       } else {
-        r = await ApiKeys.regenerate(keys[0].id);
+        const active = keys.find(k => k.is_active) || keys[0];
+        r = await ApiKeys.regenerate(active.id);
       }
       setApiKey(r.api_key);
       apiKeyVisible = true;
       renderApiKeyPanel();
       showToast('API key ready — copy it now', 'success');
-      loadApiKeys();
       lucide.createIcons();
     } catch (e) { showToast(e, 'error'); }
   }
@@ -477,9 +469,12 @@
   (async () => {
     if (!getApiKey()) {
       try {
-        const k = await ApiKeys.create('default');
-        setApiKey(k.api_key);
-        apiKeyVisible = true;
+        const keys = await ApiKeys.list();
+        if (!keys.length) {
+          const k = await ApiKeys.create('default');
+          setApiKey(k.api_key);
+          apiKeyVisible = true;
+        }
       } catch (_) {}
     }
     renderApiKeyPanel();
