@@ -329,7 +329,7 @@
 <script src="js/sidebar.js?v=2"></script>
 <script src="js/notifications.js?v=1"></script>
 <script src="js/errors.js?v=1"></script>
-<script src="js/api.js?v=4"></script>
+<script src="js/api.js?v=5"></script>
 <script>
   if (!requireAuth()) throw new Error('auth');
 
@@ -442,9 +442,10 @@
   async function loadStats() {
     try {
       const s = await Dashboard.stats();
+      if (!s) return;
       const set = (id, val, cls) => {
         const el = document.getElementById(id);
-        el.textContent = val;
+        el.textContent = val ?? '0';
         el.classList.remove('skeleton', 'stat-skeleton');
         el.className = `stat-value ${cls || 'stat-value--neutral'}`;
       };
@@ -452,14 +453,14 @@
       set('statSuccess', s.successful, 'stat-value--success');
       set('statPending', s.pending, 'stat-value--warning');
       set('statRevenue', s.revenue, 'stat-value--accent');
-    } catch (e) { showToast(e, 'error'); }
+    } catch (e) { showToast(e.message || e, 'error'); }
   }
 
   async function loadPayments() {
     try {
       const rows = await Dashboard.payments();
       const tbody = document.getElementById('recentPayments');
-      if (!rows.length) {
+      if (!Array.isArray(rows) || !rows.length) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No payments yet — create your first one</td></tr>';
         return;
       }
@@ -474,25 +475,30 @@
           <td><span class="created-time">${formatDate(p.created_at)}</span></td>
         </tr>`;
       }).join('');
-    } catch (e) { showToast(e, 'error'); }
+    } catch (e) { showToast(e.message || e, 'error'); }
   }
 
   async function loadTransactions() {
     try {
       const rows = await Transactions.list();
-      document.getElementById('txTable').innerHTML = rows.length ? rows.map(t => `<tr>
+      if (!Array.isArray(rows) || !rows.length) {
+        document.getElementById('txTable').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No transactions yet</td></tr>';
+        return;
+      }
+      document.getElementById('txTable').innerHTML = rows.map(t => `<tr>
         <td class="mono ref-link">${t.tx_hash?.slice(0,14)}…</td>
         <td class="amount-val">${t.amount} ${t.currency}</td>
         <td>${statusBadge(t.status)}</td>
         <td class="mono">${t.confirmations}</td>
         <td><span class="created-time">${formatDate(t.created_at)}</span></td>
-      </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No transactions yet</td></tr>';
-    } catch (e) { showToast(e, 'error'); }
+      </tr>`).join('');
+    } catch (e) { showToast(e.message || e, 'error'); }
   }
 
   async function regenerateKey() {
     try {
       const keys = await ApiKeys.list();
+      if (!Array.isArray(keys)) return;
       let r;
       if (!keys.length) {
         r = await ApiKeys.create('default');
@@ -511,15 +517,18 @@
   async function loadWebhooks() {
     try {
       const rows = await Webhooks.logs();
-      document.getElementById('webhookTable').innerHTML = rows.length ? rows.map(w => `<tr>
+      if (!Array.isArray(rows) || !rows.length) {
+        document.getElementById('webhookTable').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No webhook deliveries yet</td></tr>';
+        return;
+      }
+      document.getElementById('webhookTable').innerHTML = rows.map(w => `<tr>
         <td class="mono">#${w.payment_id}</td>
         <td class="mono" style="font-size:0.75rem">${w.event_id?.slice(0,20)}…</td>
         <td>${statusBadge(w.status)}</td>
         <td class="mono">${w.response_code || '—'}</td>
         <td>${w.attempts}</td>
-      </tr>`).join('')
-        : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No webhook deliveries yet</td></tr>';
-    } catch (e) { showToast(e, 'error'); }
+      </tr>`).join('');
+    } catch (e) { showToast(e.message || e, 'error'); }
   }
 
   document.getElementById('createPaymentForm').onsubmit = async (e) => {
@@ -573,7 +582,7 @@
     if (!getApiKey()) {
       try {
         const keys = await ApiKeys.list();
-        if (!keys.length) {
+        if (Array.isArray(keys) && !keys.length) {
           const k = await ApiKeys.create('default');
           setApiKey(k.api_key);
           apiKeyVisible = true;

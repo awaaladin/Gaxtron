@@ -127,6 +127,7 @@
     if (typeof Dashboard === 'undefined' || !getToken()) return;
     try {
       const rows = await Dashboard.payments();
+      if (!Array.isArray(rows)) return;
       const prev = loadStates();
       const next = { ...prev };
 

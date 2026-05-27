@@ -35,6 +35,7 @@ async function apiFetch(endpoint, options = {}) {
   const apiKey = getApiKey();
   const headers = {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.useApiKey && apiKey ? { 'X-API-Key': apiKey } : {}),
     ...(options.headers || {}),
@@ -54,15 +55,8 @@ async function apiFetch(endpoint, options = {}) {
       `Cannot reach Gaxtron API at ${API_BASE}. Run: .\\scripts\\start_gaxtron.ps1`
     );
     err.cause = networkErr;
+    err.status = 0;
     throw err;
-  }
-
-  if (res.status === 401) {
-    clearToken();
-    if (!window.location.pathname.includes('login')) {
-      window.location.href = '/login.html';
-    }
-    return;
   }
 
   const data = await res.json().catch(() => ({}));
@@ -73,6 +67,20 @@ async function apiFetch(endpoint, options = {}) {
       : Array.isArray(detail)
         ? detail[0]?.msg
         : `HTTP ${res.status}`;
+
+  if (res.status === 401) {
+    clearToken();
+    const err = new Error(message || 'Session expired');
+    err.status = 401;
+    if (window.GaxtronErrors) {
+      const resolved = GaxtronErrors.resolveError(err);
+      err.message = resolved.message;
+    }
+    if (!window.location.pathname.includes('login')) {
+      window.location.href = '/login.html';
+    }
+    throw err;
+  }
 
   if (!res.ok) {
     const err = new Error(message || `HTTP ${res.status}`);

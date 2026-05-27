@@ -34,10 +34,11 @@ def _content_security_policy() -> str:
     """Merchant UI loads Tailwind/Lucide/fonts from CDNs — allow them (blocked by default-src 'self' alone)."""
     common = (
         "frame-ancestors 'none'; base-uri 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; "
+        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; "
-        "connect-src 'self'; img-src 'self' data: https://api.qrserver.com; "
+        "connect-src 'self' https://api.coingecko.com; "
+        "img-src 'self' data: https://api.qrserver.com; "
     )
     if settings.debug or settings.env == "development":
         return f"default-src 'self'; {common}"
