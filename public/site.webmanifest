@@ -4,7 +4,7 @@
   "description": "Crypto payment gateway — Sepolia ETH",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf5ff",
+  "background_color": "#080c12",
   "theme_color": "#7c3aed",
   "icons": [
     {

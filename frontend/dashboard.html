@@ -52,6 +52,12 @@
           <i data-lucide="webhook"></i>
           <span class="sidebar-label">Webhooks</span>
         </a>
+
+        <span class="nav-group-label sidebar-label">Agent</span>
+        <a href="#agent" class="sidebar-link" data-tab="agent" onclick="showTab('agent', this);return false">
+          <i data-lucide="bot"></i>
+          <span class="sidebar-label">Payment Agent</span>
+        </a>
       </nav>
 
       <div class="network-badge">
@@ -262,6 +268,45 @@
           </div>
         </div>
       </section>
+
+      <!-- Payment Agent (Track 3) -->
+      <section id="tab-agent" class="hidden">
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Payment Orchestrator Agent</div>
+              <div class="section-sub">Autonomous routing — health → fraud → fees → chain → execute → verify · Track 3</div>
+            </div>
+          </div>
+          <div class="section-body" style="display:flex;flex-direction:column;gap:1rem;max-width:640px">
+            <div>
+              <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.35rem">Goal (command)</label>
+              <textarea id="agentGoal" rows="2" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit">Process crypto payment with lowest fees and fastest confirmation</textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+              <div>
+                <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.35rem">Amount (ETH)</label>
+                <input id="agentAmount" type="text" value="0.01" style="width:100%;padding:0.55rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)" />
+              </div>
+              <div>
+                <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.35rem">Currency</label>
+                <select id="agentCurrency" style="width:100%;padding:0.55rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
+                  <option value="ETH">ETH</option>
+                  <option value="USDT">USDT</option>
+                  <option value="SOL">SOL</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.35rem">Webhook callback URL</label>
+              <input id="agentCallback" type="url" value="https://example.com/webhook" style="width:100%;padding:0.55rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)" />
+            </div>
+            <button type="button" class="btn-primary" id="runPaymentAgentBtn" onclick="runPaymentAgent()">Run Payment Agent</button>
+            <p id="agentRunStatus" style="font-size:0.8125rem;color:var(--text-muted);margin:0"></p>
+            <pre id="agentRunOutput" class="hidden" style="white-space:pre-wrap;font-size:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;max-height:360px;overflow:auto;margin:0"></pre>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 </div>
@@ -372,10 +417,11 @@
     transactions: ['Transactions', 'On-chain activity · Sepolia'],
     apikeys: ['API Keys', 'Credential management'],
     webhooks: ['Webhooks', 'Delivery log'],
+    agent: ['Payment Agent', 'Autonomous crypto payment orchestrator · Track 3'],
   };
 
   function showTab(name, el) {
-    ['overview','payments','transactions','apikeys','webhooks'].forEach(t => {
+    ['overview','payments','transactions','apikeys','webhooks','agent'].forEach(t => {
       document.getElementById('tab-' + t)?.classList.add('hidden');
     });
     document.getElementById('tab-' + name)?.classList.remove('hidden');
@@ -491,6 +537,37 @@
     } catch (err) { showToast(err, 'error'); }
     setLoading(btn, false, 'Create payment link');
   };
+
+  async function runPaymentAgent() {
+    const goal = document.getElementById('agentGoal').value.trim();
+    const amount = document.getElementById('agentAmount').value.trim();
+    const callback_url = document.getElementById('agentCallback').value.trim();
+    const currency_preference = document.getElementById('agentCurrency').value;
+    const statusEl = document.getElementById('agentRunStatus');
+    const outEl = document.getElementById('agentRunOutput');
+    const btn = document.getElementById('runPaymentAgentBtn');
+    if (!getApiKey()) { showToast({ message: 'Generate an API key first (API Keys tab).' }, 'warning'); return; }
+    btn.disabled = true;
+    statusEl.textContent = 'Agent running payment pipeline…';
+    outEl.classList.add('hidden');
+    try {
+      const data = await apiFetch('/agents/payment/route', {
+        method: 'POST',
+        useApiKey: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goal, amount, callback_url, currency_preference }),
+      });
+      outEl.textContent = JSON.stringify(data, null, 2);
+      outEl.classList.remove('hidden');
+      statusEl.textContent = `Done — ${data.status} · ${data.tasks_completed}/${data.tasks_total} stages`;
+      if (data.payment) renderPaymentResult(data.payment);
+    } catch (e) {
+      statusEl.textContent = e.message || 'Agent run failed';
+      showToast(e, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
 
   (async () => {
     if (!getApiKey()) {

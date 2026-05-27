@@ -118,6 +118,38 @@ app.include_router(dashboard.router)
 
 _frontend_dir = _resolve_frontend_dir()
 
+_ERROR_PAGES = {
+    400: "400.html",
+    401: "401.html",
+    403: "403.html",
+    404: "404.html",
+    429: "429.html",
+    500: "500.html",
+    503: "503.html",
+}
+
+
+def _accepts_html(request: Request) -> bool:
+    accept = request.headers.get("accept", "")
+    if not accept:
+        return False
+    for part in accept.split(","):
+        media = part.strip().split(";", 1)[0].lower()
+        if media == "text/html":
+            return True
+        if media in ("application/json", "application/*"):
+            return False
+    return "text/html" in accept.lower()
+
+
+def _error_page_response(request: Request, status_code: int, detail: str):
+    if _accepts_html(request):
+        page = _ERROR_PAGES.get(status_code, "500.html")
+        path = os.path.join(_frontend_dir, page)
+        if os.path.isfile(path):
+            return FileResponse(path, status_code=status_code)
+    return JSONResponse(status_code=status_code, content={"detail": detail})
+
 
 @app.get("/favicon.ico")
 @app.get("/favicon.svg")
@@ -138,11 +170,13 @@ def webmanifest():
 
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+    return _error_page_response(request, exc.status_code, exc.message)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_handler(request: Request, exc: RequestValidationError):
+    if _accepts_html(request):
+        return _error_page_response(request, 400, "Validation error")
     return JSONResponse(
         status_code=HTTP_422_UNPROCESSABLE_ENTITY,
         content={"detail": exc.errors()},
@@ -151,13 +185,14 @@ async def validation_handler(request: Request, exc: RequestValidationError):
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+    return _error_page_response(request, exc.status_code, detail)
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.exception("Unhandled error on %s", request.url.path)
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    return _error_page_response(request, 500, "Internal server error")
 
 
 @app.get("/health")

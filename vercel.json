@@ -5,5 +5,11 @@
       "path": "/api/cron/check-payments",
       "schedule": "0 0 * * *"
     }
+  ],
+  "headers": [
+    {
+      "source": "/css/errors.css",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+    }
   ]
 }
