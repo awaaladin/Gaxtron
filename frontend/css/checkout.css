@@ -340,3 +340,106 @@
 }
 
 .checkout-tx-link { font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; word-break: break-all; margin-top: 0.75rem; color: var(--text-muted); }
+
+.checkout-wallet-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.checkout-wallet-divider::before,
+.checkout-wallet-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.checkout-btn-wallet {
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary) 0%, #9333ea 100%);
+  color: #fff;
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+.checkout-btn-wallet:hover { opacity: 0.92; }
+
+.checkout-wallet-status {
+  font-size: 0.75rem;
+  text-align: center;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+.checkout-wallet-status--ok { color: var(--lime-dark); }
+.checkout-wallet-status--err { color: #dc2626; }
+
+.checkout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.checkout-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 27, 75, 0.45);
+  backdrop-filter: blur(4px);
+}
+.checkout-modal-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 22rem;
+  background: var(--glass-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.checkout-modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.checkout-modal-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+}
+.checkout-modal-address-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.checkout-modal-address {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  word-break: break-all;
+  color: var(--primary);
+  margin: 0.25rem 0 0.75rem;
+}
+.checkout-modal-hint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+.checkout-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.checkout-btn-full { width: 100%; }
+body.checkout-modal-open { overflow: hidden; }
+
+#qrcode { display: block; border-radius: 12px; }

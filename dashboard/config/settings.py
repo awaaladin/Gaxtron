@@ -79,7 +79,8 @@ LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login/"
 
-FASTAPI_URL = os.getenv("FASTAPI_URL", "http://localhost:8000")
+FASTAPI_URL = os.getenv("FASTAPI_URL", "http://127.0.0.1:8002")
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", FASTAPI_URL).rstrip("/")
 
 # Production security (when DEBUG=False)
 if not DEBUG:

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Pay securely with Ethereum" />
   <title>Complete your payment — Gaxtron</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="stylesheet" href="/css/checkout.css?v=3" />
+  <link rel="icon" type="image/svg+xml" href="{{ gaxtron_public_url }}/favicon.svg" />
+  <link rel="stylesheet" href="{{ gaxtron_public_url }}/css/checkout.css?v=3" />
 </head>
 <body class="checkout-body">
   <div class="checkout-test-banner" id="testBanner">
@@ -27,7 +27,6 @@
   </div>
 
   <main id="checkoutView" class="checkout-layout hidden" aria-label="Crypto checkout">
-    <!-- Left: what you're paying for -->
     <aside class="checkout-summary">
       <div class="checkout-summary-brand">
         <div class="mark">GX</div>
@@ -52,18 +51,16 @@
       </div>
     </aside>
 
-    <!-- Right: how to pay -->
     <section class="checkout-pay">
       <h2>Pay with crypto</h2>
-      <p class="subtitle">Scan the QR code or copy the address — no account or API needed.</p>
+      <p class="subtitle">Scan the QR code, copy the address, or connect MetaMask.</p>
 
       <div class="checkout-steps" aria-hidden="true">
-        <div class="checkout-step active" id="step1" data-step="pending">1. Send</div>
-        <div class="checkout-step" id="step2" data-step="confirming">2. Confirm</div>
-        <div class="checkout-step" id="step3" data-step="confirmed">3. Done</div>
+        <div class="checkout-step active" data-step="pending">1. Send</div>
+        <div class="checkout-step" data-step="confirming">2. Confirm</div>
+        <div class="checkout-step" data-step="confirmed">3. Done</div>
       </div>
 
-      <!-- Pending: QR + address -->
       <div id="panelPending">
         <div class="checkout-qr-wrap">
           <div class="checkout-qr-frame">
@@ -107,7 +104,6 @@
         </p>
       </div>
 
-      <!-- Confirming -->
       <div id="panelConfirming" class="checkout-status-panel hidden">
         <div class="checkout-spinner"></div>
         <h3 style="font-size:1.125rem;margin-bottom:0.5rem">Payment received</h3>
@@ -119,7 +115,6 @@
         <p class="checkout-tx-link" id="txHashConfirming"></p>
       </div>
 
-      <!-- Confirmed -->
       <div id="panelConfirmed" class="checkout-status-panel hidden">
         <div class="checkout-success-icon">✓</div>
         <h3 style="font-size:1.25rem;color:var(--lime-dark);margin-bottom:0.5rem">Payment complete</h3>
@@ -128,7 +123,6 @@
         <p style="margin-top:1.5rem;font-size:0.8125rem;color:#64748b">You can safely close this page.</p>
       </div>
 
-      <!-- Failed / expired -->
       <div id="panelFailed" class="checkout-status-panel hidden">
         <h3 style="font-size:1.125rem;color:#dc2626">Payment expired</h3>
         <p style="color:#64748b;font-size:0.875rem;margin-top:0.5rem">This link is no longer valid. Ask the merchant for a new payment link.</p>
@@ -140,7 +134,6 @@
     </section>
   </main>
 
-  <!-- MetaMask confirm modal -->
   <div id="paymentModal" class="checkout-modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="checkout-modal-backdrop"></div>
     <div class="checkout-modal-card">
@@ -156,8 +149,18 @@
     </div>
   </div>
 
+<script>
+  window.CHECKOUT_API_BASE = "{{ gaxtron_public_url }}";
+</script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="/js/wallet.js?v=1"></script>
-<script src="/js/checkout-page.js?v=1"></script>
+<script src="{{ gaxtron_public_url }}/js/wallet.js?v=1"></script>
+<script src="{{ gaxtron_public_url }}/js/checkout-page.js?v=1"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.GaxtronCheckout) {
+      GaxtronCheckout.init("{{ payment_ref|escapejs }}");
+    }
+  });
+</script>
 </body>
 </html>

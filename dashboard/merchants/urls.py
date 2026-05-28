@@ -5,6 +5,7 @@ from merchants import views
 
 urlpatterns = [
     path("", views.dashboard_view, name="dashboard"),
+    path("pay/<str:payment_ref>/", views.pay_view, name="pay"),
     path("login/", auth_views.LoginView.as_view(template_name="merchants/login.html"), name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("register/", views.register_view, name="register"),

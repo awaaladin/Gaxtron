@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -124,3 +125,15 @@ def admin_overview(request):
 def logout_view(request):
     logout(request)
     return redirect("login")
+
+
+def pay_view(request, payment_ref: str):
+    """Hosted checkout UI — polls FastAPI for status (backend stays authoritative)."""
+    return render(
+        request,
+        "merchants/pay.html",
+        {
+            "payment_ref": payment_ref,
+            "gaxtron_public_url": settings.PUBLIC_BASE_URL,
+        },
+    )

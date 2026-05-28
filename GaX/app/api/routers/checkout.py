@@ -45,6 +45,7 @@ def get_payment_status(payment_ref: str, db: Session = Depends(get_db)):
         chain=payment.chain,
         status=payment.status,
         wallet_address=payment.wallet_address,
+        address=payment.wallet_address,
         tx_hash=payment.tx_hash,
         confirmations=payment.confirmations or 0,
         required_confirmations=settings.eth_required_confirmations,

@@ -67,6 +67,7 @@ class PublicPaymentStatus(BaseModel):
     chain: str
     status: str
     wallet_address: str
+    address: str | None = None  # alias for wallet/QR clients
     tx_hash: str | None
     confirmations: int
     required_confirmations: int
