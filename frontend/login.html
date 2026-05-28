@@ -56,6 +56,13 @@
         </div>
         <button id="submitBtn" type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem">Sign in</button>
       </form>
+
+      <div class="auth-divider"><span>or</span></div>
+      <button type="button" id="walletLoginBtn" class="btn btn-wallet" style="width:100%">
+        <i data-lucide="wallet" style="width:16px;height:16px"></i>
+        Sign in with wallet
+      </button>
+
       <div class="auth-trust">
         <span><i data-lucide="shield-check" style="width:14px;height:14px;vertical-align:middle"></i> JWT secured</span>
         <span><i data-lucide="key-round" style="width:14px;height:14px;vertical-align:middle"></i> API key access</span>
@@ -66,7 +73,8 @@
 </div>
 
 <script src="js/errors.js?v=1"></script>
-<script src="js/api.js?v=4"></script>
+<script src="js/api.js?v=6"></script>
+<script src="js/wallet-auth.js?v=1"></script>
 <script>
   if (getToken()) window.location.href = 'dashboard.html';
 
@@ -110,6 +118,21 @@
     } catch (err) {
       showAlert(alertEl, err);
       setLoading(submitBtn, false, 'Sign in');
+    }
+  });
+
+  document.getElementById('walletLoginBtn').addEventListener('click', async () => {
+    alertEl.classList.add('hidden');
+    const walletBtn = document.getElementById('walletLoginBtn');
+    setLoading(walletBtn, true, 'Connecting');
+    try {
+      await GaxtronWalletAuth.loginWithWallet({ redirect: false });
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      showAlert(alertEl, err.message || err);
+      setLoading(walletBtn, false, 'Sign in with wallet');
+      walletBtn.innerHTML = '<i data-lucide="wallet" style="width:16px;height:16px"></i> Sign in with wallet';
+      lucide.createIcons();
     }
   });
 

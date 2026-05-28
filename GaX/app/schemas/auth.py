@@ -22,5 +22,17 @@ class UserResponse(BaseModel):
     email: str
     username: str
     is_active: bool
+    wallet_address: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class WalletNonceResponse(BaseModel):
+    nonce: str
+    message: str
+
+
+class WalletVerifyRequest(BaseModel):
+    address: str
+    signature: str
+    nonce: str

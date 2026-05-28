@@ -107,6 +107,26 @@ def run_migrations() -> None:
                     )
                 logger.info("Added transactions.chain")
 
+        if "users" in tables:
+            user_cols = {c["name"] for c in insp.get_columns("users")}
+            if "wallet_address" not in user_cols:
+                if is_pg:
+                    conn.execute(
+                        text(
+                            "ALTER TABLE users ADD COLUMN IF NOT EXISTS "
+                            "wallet_address VARCHAR(42)"
+                        )
+                    )
+                    conn.execute(
+                        text(
+                            "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_wallet_address "
+                            "ON users (wallet_address)"
+                        )
+                    )
+                else:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN wallet_address VARCHAR(42)"))
+                logger.info("Added users.wallet_address")
+
 
 if __name__ == "__main__":
     run_migrations()

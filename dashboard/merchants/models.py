@@ -10,6 +10,7 @@ class GaxtronUser(models.Model):
     email = models.CharField(max_length=255)
     username = models.CharField(max_length=100)
     hashed_password = models.CharField(max_length=255)
+    wallet_address = models.CharField(max_length=42, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_superadmin = models.BooleanField(default=False)
     created_at = models.DateTimeField()

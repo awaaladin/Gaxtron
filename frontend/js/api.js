@@ -142,6 +142,9 @@ const Auth = {
       },
     }),
   me: () => apiFetch('/auth/me'),
+  walletNonce: () => apiFetch('/auth/wallet/nonce'),
+  walletVerify: (body) =>
+    apiFetch('/auth/wallet/verify', { method: 'POST', body }),
   logout() {
     clearToken();
     localStorage.removeItem('gaxtron_user');
