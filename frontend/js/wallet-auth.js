@@ -2,9 +2,24 @@
  * Optional wallet login — sign nonce, verify on backend, receive JWT.
  */
 (function (global) {
+  function hasWallet() {
+    return typeof global.ethereum !== 'undefined';
+  }
+
+  class WalletNotInstalledError extends Error {
+    constructor() {
+      super(
+        'MetaMask is a browser extension that holds your crypto wallet. ' +
+        'Install it from metamask.io, refresh this page, then try again — or sign in with email below.'
+      );
+      this.name = 'WalletNotInstalledError';
+      this.code = 'NO_WALLET';
+    }
+  }
+
   async function loginWithWallet(opts = {}) {
-    if (!global.ethereum) {
-      throw new Error('MetaMask is not installed. Use email sign-in or install MetaMask.');
+    if (!hasWallet()) {
+      throw new WalletNotInstalledError();
     }
 
     const accounts = await global.ethereum.request({ method: 'eth_requestAccounts' });
@@ -58,5 +73,5 @@
     return data;
   }
 
-  global.GaxtronWalletAuth = { loginWithWallet };
+  global.GaxtronWalletAuth = { loginWithWallet, hasWallet, WalletNotInstalledError };
 })(window);

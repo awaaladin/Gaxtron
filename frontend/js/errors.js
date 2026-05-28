@@ -106,6 +106,10 @@
     } else if (input && typeof input === 'object') {
       status = input.status || input.statusCode || null;
       raw = input.message || input.detail || '';
+      if (input.title) {
+        const base = CATALOG[status] || CATALOG.default;
+        return { ...base, title: input.title, message: raw || base.message, raw, status };
+      }
       if (typeof raw !== 'string') raw = JSON.stringify(raw);
     }
 

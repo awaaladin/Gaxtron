@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from app.api.routers import agents, api_keys, auth, checkout, cron, dashboard, payments
+from app.api.routers import agents, api_keys, auth, checkout, cron, dashboard, markets, payments
 from app.config import settings, validate_production_settings
 from app.core.exceptions import AppError, to_http_exception
 from app.core.logging_config import setup_logging
@@ -115,6 +115,7 @@ app.include_router(checkout.router)
 app.include_router(cron.router)
 app.include_router(api_keys.router)
 app.include_router(dashboard.router)
+app.include_router(markets.router)
 
 _frontend_dir = _resolve_frontend_dir()
 

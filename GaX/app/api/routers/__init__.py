@@ -1,4 +1,4 @@
-from app.api.routers import agents, api_keys, auth, checkout, cron, dashboard, payments
+from app.api.routers import agents, api_keys, auth, checkout, cron, dashboard, markets, payments
 
 __all__ = [
     "agents",
@@ -7,5 +7,6 @@ __all__ = [
     "checkout",
     "cron",
     "dashboard",
+    "markets",
     "payments",
 ]

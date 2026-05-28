@@ -7,8 +7,9 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#080c12" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/site.css?v=1" />
+  <link rel="stylesheet" href="css/site.css?v=2" />
   <script src="js/theme.js?v=1"></script>
+  <script src="js/auth-viz.js?v=1"></script>
 </head>
 <body class="site-page">
 
@@ -25,6 +26,10 @@
         <div><p class="auth-stat-value">3</p><p class="auth-stat-label">Block confirms</p></div>
         <div><p class="auth-stat-value">256</p><p class="auth-stat-label">Bit HMAC</p></div>
         <div><p class="auth-stat-value">99.9%</p><p class="auth-stat-label">Uptime SLA</p></div>
+      </div>
+      <div class="auth-viz-wrap">
+        <canvas id="authViz" class="auth-viz-canvas" aria-hidden="true"></canvas>
+        <p class="auth-viz-caption">Settlement pipeline · live volume</p>
       </div>
     </div>
     <p style="font-size:0.75rem;color:var(--text-muted)">Sepolia testnet · End-to-end encrypted</p>
@@ -74,7 +79,7 @@
 
 <script src="js/errors.js?v=1"></script>
 <script src="js/api.js?v=6"></script>
-<script src="js/wallet-auth.js?v=1"></script>
+<script src="js/wallet-auth.js?v=2"></script>
 <script>
   if (getToken()) window.location.href = 'dashboard.html';
 
@@ -129,7 +134,12 @@
       await GaxtronWalletAuth.loginWithWallet({ redirect: false });
       window.location.href = 'dashboard.html';
     } catch (err) {
-      showAlert(alertEl, err.message || err);
+      const isWallet = err.code === 'NO_WALLET' || err.name === 'WalletNotInstalledError';
+      showAlert(alertEl, {
+        status: isWallet ? 0 : (err.status || 500),
+        message: err.message || err,
+        title: isWallet ? 'Install a wallet' : undefined,
+      }, { compact: true });
       setLoading(walletBtn, false, 'Sign in with wallet');
       walletBtn.innerHTML = '<i data-lucide="wallet" style="width:16px;height:16px"></i> Sign in with wallet';
       lucide.createIcons();

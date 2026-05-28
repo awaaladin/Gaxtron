@@ -8,7 +8,7 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0f0d1a" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/dashboard.css?v=5" />
+  <link rel="stylesheet" href="css/dashboard.css?v=6" />
   <script src="js/theme.js?v=1"></script>
 </head>
 <body class="dash-page">
@@ -101,8 +101,8 @@
         <div class="api-card-inner">
           <div class="api-header">
             <div>
-              <div class="api-title">Your API key</div>
-              <div class="api-hint">Use header <code>X-API-Key</code> for <code>POST /create-payment</code></div>
+              <div class="api-title">Merchant API</div>
+              <div class="api-hint">One secret key unlocks payments, status checks, and webhooks — like Stripe</div>
             </div>
             <button type="button" class="btn-ghost" onclick="regenerateKey()">
               <i data-lucide="refresh-cw" style="width:13px;height:13px"></i>
@@ -226,25 +226,40 @@
         <div class="section-card">
           <div class="section-header">
             <div>
-              <div class="section-title">Using your API key</div>
-              <div class="section-sub">Manage credentials in the panel above</div>
+              <div class="section-title">Integrate like Stripe</div>
+              <div class="section-sub">Server-side only · never expose your secret key in the browser</div>
             </div>
             <button type="button" class="btn-ghost" onclick="regenerateKey()">
               <i data-lucide="refresh-cw" style="width:13px;height:13px"></i>
-              Regenerate
+              Regenerate key
             </button>
           </div>
           <div class="section-body api-docs">
-            <p class="api-docs-lead">Send your key on every server-side request. Never expose it in client-side code or public repos.</p>
-            <div class="api-docs-block">
-              <span class="api-docs-label">Header</span>
-              <code class="api-docs-code">X-API-Key: your_key_here</code>
+            <p class="api-docs-lead">Copy your API key from the panel above. Once integrated on your server, you can create checkouts, verify payments, and list transactions programmatically.</p>
+
+            <div class="api-docs-grid">
+              <div class="api-docs-block">
+                <span class="api-docs-label">Authentication</span>
+                <code class="api-docs-code">X-API-Key: gax_your_secret_key</code>
+              </div>
+              <div class="api-docs-block">
+                <span class="api-docs-label">Base URL</span>
+                <code class="api-docs-code" id="apiBaseUrlDisplay">—</code>
+              </div>
             </div>
-            <div class="api-docs-block">
-              <span class="api-docs-label">Create payment</span>
-              <code class="api-docs-code">POST /create-payment</code>
-            </div>
-            <p class="api-docs-note">Regenerating invalidates the previous key immediately. Update any integrations before rotating.</p>
+
+            <h3 class="api-docs-h3">Quick start (Node.js)</h3>
+            <pre class="api-code-block" id="sdkNodeSnippet">Loading…</pre>
+
+            <h3 class="api-docs-h3">Endpoints</h3>
+            <ul class="api-endpoint-list">
+              <li><code>POST /create-payment</code> — create checkout link</li>
+              <li><code>GET /verify-payment/{id}</code> — payment status</li>
+              <li><code>GET /payments</code> — list your payments</li>
+              <li><code>GET /payment/{id}/merchant</code> — full payment record</li>
+            </ul>
+
+            <p class="api-docs-note">Include <code>gaxtron.js</code> on your backend or call REST directly. Customers pay via <code>payment_url</code>; Gaxtron confirms on-chain and sends webhooks to your <code>callback_url</code>.</p>
           </div>
         </div>
       </section>
@@ -577,6 +592,34 @@
       btn.disabled = false;
     }
   }
+
+  lucide.createIcons();
+
+  function updateApiDocsSnippet() {
+    const base = typeof API_BASE !== 'undefined' ? API_BASE : window.location.origin;
+    const el = document.getElementById('apiBaseUrlDisplay');
+    if (el) el.textContent = base;
+    const snip = document.getElementById('sdkNodeSnippet');
+    if (snip) {
+      snip.textContent = `const { Gaxtron } = require('./gaxtron'); // or import in ESM
+
+const gaxtron = new Gaxtron(process.env.GAXTRON_API_KEY, {
+  baseUrl: '${base}',
+});
+
+// Create a checkout — send payment_url to your customer
+const payment = await gaxtron.createPayment({
+  amount: '0.01',
+  callback_url: 'https://yoursite.com/webhooks/gaxtron',
+});
+
+console.log(payment.payment_url);
+
+// Later: check status
+const status = await gaxtron.verifyPayment(payment.payment_id);`;
+    }
+  }
+  updateApiDocsSnippet();
 
   (async () => {
     if (!getApiKey()) {

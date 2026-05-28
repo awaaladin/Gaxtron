@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user_api_key
 from app.core.exceptions import AppError, to_http_exception
 from app.config import settings
+from app.db.models.payment import Payment
 from app.db.models.user import User
 from app.db.session import get_db
 from app.schemas.payment import (
@@ -81,6 +82,22 @@ def create_payment(
         db.rollback()
         logger.exception("create_payment failed for user %s", user.id)
         raise HTTPException(status_code=500, detail="Failed to create payment")
+
+
+@router.get("/payments", response_model=list[PaymentResponse])
+def list_payments_merchant(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user_api_key),
+):
+    """List payments for the merchant tied to this API key (server-side integration)."""
+    rows = (
+        db.query(Payment)
+        .filter(Payment.user_id == user.id)
+        .order_by(Payment.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    return [_to_payment_response(p) for p in rows]
 
 
 @router.get("/payment/{payment_id}/merchant", response_model=PaymentResponse)

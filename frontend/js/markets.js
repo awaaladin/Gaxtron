@@ -1,4 +1,4 @@
-/** Live crypto market data — CoinGecko public API */
+/** Live crypto market data — via Gaxtron API proxy (reliable on production). */
 (function (global) {
   const COINS = {
     bitcoin: { symbol: 'BTC', name: 'Bitcoin' },
@@ -11,11 +11,16 @@
     polkadot: { symbol: 'DOT', name: 'Polkadot' },
   };
 
-  const POLL_MS = 15000;
+  const POLL_MS = 20000;
   let selectedId = 'ethereum';
   let chart = null;
   let pollTimer = null;
   let lastPrices = {};
+
+  function apiBase() {
+    if (typeof API_BASE !== 'undefined') return API_BASE;
+    return global.location.origin;
+  }
 
   function fmtUsd(n) {
     if (n >= 1000) return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -36,25 +41,25 @@
   }
 
   async function fetchPrices() {
-    const ids = Object.keys(COINS).join(',');
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
-    const res = await fetch(url);
+    const res = await fetch(apiBase() + '/markets/prices', { headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error('Market data unavailable');
     return res.json();
   }
 
   async function fetchChart(coinId) {
-    const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=1`;
-    const res = await fetch(url);
+    const res = await fetch(apiBase() + '/markets/chart/' + encodeURIComponent(coinId), {
+      headers: { Accept: 'application/json' },
+    });
     if (!res.ok) throw new Error('Chart data unavailable');
     const data = await res.json();
-    return data.prices.map(([t, p]) => ({ x: t, y: p }));
+    const prices = data.prices || [];
+    return prices.map(([t, p]) => ({ x: t, y: p }));
   }
 
   function renderCoinList(prices) {
     const list = document.getElementById('coinList');
     if (!list) return;
-    list.innerHTML = Object.entries(COINS).map(([id, meta]) => {
+    const html = Object.entries(COINS).map(([id, meta]) => {
       const p = prices[id];
       if (!p) return '';
       const change = p.usd_24h_change ?? 0;
@@ -74,6 +79,11 @@
         </button>`;
     }).join('');
 
+    if (!html) {
+      list.innerHTML = '<p style="padding:1.5rem;color:var(--text-muted);text-align:center">No market data</p>';
+      return;
+    }
+    list.innerHTML = html;
     list.querySelectorAll('.coin-row').forEach((btn) => {
       btn.addEventListener('click', () => selectCoin(btn.dataset.coin));
     });
@@ -96,7 +106,7 @@
 
   function buildChart(points) {
     const canvas = document.getElementById('marketChart');
-    if (!canvas || !global.Chart) return;
+    if (!canvas || !global.Chart || !points.length) return;
 
     const labels = points.map((pt) => new Date(pt.x).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     const data = points.map((pt) => pt.y);
@@ -135,9 +145,7 @@
         plugins: {
           legend: { display: false },
           tooltip: {
-            callbacks: {
-              label: (ctx) => fmtUsd(ctx.parsed.y),
-            },
+            callbacks: { label: (ctx) => fmtUsd(ctx.parsed.y) },
           },
         },
         scales: {
@@ -162,8 +170,9 @@
     try {
       const points = await fetchChart(selectedId);
       buildChart(points);
-    } catch (_) {
-      setLiveStatus('Chart refresh failed', false);
+    } catch (e) {
+      console.error('Chart load failed', e);
+      setLiveStatus('Chart unavailable — retrying…', false);
     }
   }
 
@@ -172,16 +181,19 @@
       const prices = await fetchPrices();
       renderCoinList(prices);
       updateHero(prices);
-      setLiveStatus('Live · updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-    } catch (_) {
-      setLiveStatus('Reconnecting to market feed…', false);
+      const suffix = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setLiveStatus('Live · ' + suffix);
+    } catch (e) {
+      console.error('Market refresh failed', e);
+      setLiveStatus('Market feed reconnecting…', false);
     }
   }
 
   async function selectCoin(id) {
     if (!COINS[id]) return;
     selectedId = id;
-    document.getElementById('coinSelect').value = id;
+    const sel = document.getElementById('coinSelect');
+    if (sel) sel.value = id;
     await refresh();
     await loadChart();
   }
@@ -196,8 +208,7 @@
       select.addEventListener('change', (e) => selectCoin(e.target.value));
     }
 
-    refresh();
-    loadChart();
+    refresh().then(loadChart);
     pollTimer = setInterval(async () => {
       await refresh();
       await loadChart();
