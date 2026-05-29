@@ -140,23 +140,6 @@ def mcp_manifest():
     return get_mcp_manifest()
 
 
-@router.get("/payment/demo")
-def payment_agent_demo(db: Session = Depends(get_db)):
-    """Run full payment orchestrator pipeline (no auth — demo only)."""
-    goal = AgentGoal(
-        description="Process crypto payment with lowest fees and fastest confirmation",
-        context={
-            "amount": "0.01",
-            "callback_url": "https://example.com/webhook",
-            "user_id": 1,
-            "currency_preference": "ETH",
-            "recent_payment_count": 0,
-        },
-    )
-    run = PaymentRoutingAgent(db=db, log_dir=None).run(goal)
-    return _serialize_run(run)
-
-
 @router.get("/gcp/readiness")
 def gcp_readiness():
     """Google Cloud Marketplace readiness checklist."""

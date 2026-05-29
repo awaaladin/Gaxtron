@@ -40,9 +40,14 @@
     el.style.color = ok ? 'var(--green)' : 'var(--amber)';
   }
 
+  async function parseApiError(res) {
+    const data = await res.json().catch(() => ({}));
+    return data.detail || `HTTP ${res.status}`;
+  }
+
   async function fetchPrices() {
     const res = await fetch(apiBase() + '/markets/prices', { headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error('Market data unavailable');
+    if (!res.ok) throw new Error(await parseApiError(res));
     return res.json();
   }
 
@@ -50,9 +55,10 @@
     const res = await fetch(apiBase() + '/markets/chart/' + encodeURIComponent(coinId), {
       headers: { Accept: 'application/json' },
     });
-    if (!res.ok) throw new Error('Chart data unavailable');
+    if (!res.ok) throw new Error(await parseApiError(res));
     const data = await res.json();
     const prices = data.prices || [];
+    if (!prices.length) throw new Error('No chart data returned');
     return prices.map(([t, p]) => ({ x: t, y: p }));
   }
 

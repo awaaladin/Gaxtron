@@ -783,16 +783,12 @@
         }
 
         function updateBalanceDisplay(balanceData) {
-            // Use backend data, fallback to 0 if not present
-            const mockData = {
+            const balances = {
                 btc: balanceData.btc || 0,
                 eth: balanceData.eth || 0,
-                usdt: balanceData.usdt || 0
+                usdt: balanceData.usdt || 0,
             };
-            // Example: 1 USD = 1500 NGN (Naira)
-            const prices = { btc: 45000 * 1500, eth: 3000 * 1500, usdt: 1 * 1500 };
-            const totalValue = (mockData.btc * prices.btc) + (mockData.eth * prices.eth) + (mockData.usdt * prices.usdt);
-            document.getElementById('totalBalance').textContent = `₦${totalValue.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('totalBalance').textContent = '—';
             document.getElementById('cryptoCards').innerHTML = `
                 <div class="crypto-card">
                     <div class="crypto-header">
@@ -802,8 +798,7 @@
                             <div class="crypto-symbol">BTC</div>
                         </div>
                     </div>
-                    <div class="crypto-balance">${mockData.btc.toFixed(8)} BTC</div>
-                    <div class="crypto-value">≈ ₦${(mockData.btc * prices.btc).toLocaleString('en-NG')}</div>
+                    <div class="crypto-balance">${balances.btc.toFixed(8)} BTC</div>
                 </div>
                 <div class="crypto-card">
                     <div class="crypto-header">
@@ -813,8 +808,7 @@
                             <div class="crypto-symbol">ETH</div>
                         </div>
                     </div>
-                    <div class="crypto-balance">${mockData.eth.toFixed(6)} ETH</div>
-                    <div class="crypto-value">≈ ₦${(mockData.eth * prices.eth).toLocaleString('en-NG')}</div>
+                    <div class="crypto-balance">${balances.eth.toFixed(6)} ETH</div>
                 </div>
                 <div class="crypto-card">
                     <div class="crypto-header">
@@ -824,8 +818,7 @@
                             <div class="crypto-symbol">USDT</div>
                         </div>
                     </div>
-                    <div class="crypto-balance">${mockData.usdt.toFixed(2)} USDT</div>
-                    <div class="crypto-value">≈ ₦${(mockData.usdt * prices.usdt).toLocaleString('en-NG')}</div>
+                    <div class="crypto-balance">${balances.usdt.toFixed(2)} USDT</div>
                 </div>
             `;
         }
@@ -849,47 +842,9 @@
         }
 
         function displayTransactions(transactions) {
-            // Mock transaction data for demonstration
-            const mockTransactions = transactions.length ? transactions : [
-                {
-                    id: 1,
-                    type: 'send',
-                    amount: -0.00123456,
-                    currency: 'BTC',
-                    address: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2',
-                    timestamp: new Date(Date.now() - 86400000).toLocaleString(),
-                    status: 'completed'
-                },
-                {
-                    id: 2,
-                    type: 'receive',
-                    amount: 0.5,
-                    currency: 'ETH',
-                    address: '0x742d35Cc6Fc3c9e1fcE8b1dd1f6C5434b1A2e4d8',
-                    timestamp: new Date(Date.now() - 172800000).toLocaleString(),
-                    status: 'completed'
-                },
-                {
-                    id: 3,
-                    type: 'send',
-                    amount: -250.00,
-                    currency: 'USDT',
-                    address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-                    timestamp: new Date(Date.now() - 259200000).toLocaleString(),
-                    status: 'completed'
-                },
-                {
-                    id: 4,
-                    type: 'receive',
-                    amount: 1000.00,
-                    currency: 'USDT',
-                    address: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2',
-                    timestamp: new Date(Date.now() - 345600000).toLocaleString(),
-                    status: 'completed'
-                }
-            ];
+            const rows = Array.isArray(transactions) ? transactions : [];
 
-            if (mockTransactions.length === 0) {
+            if (rows.length === 0) {
                 document.getElementById('txList').innerHTML = `
                     <div style="text-align: center; padding: 40px;">
                         <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 16px; opacity: 0.5;"></i>
@@ -900,7 +855,7 @@
                 return;
             }
 
-            const transactionHTML = mockTransactions.map(tx => `
+            const transactionHTML = rows.map(tx => `
                 <div class="transaction-item">
                     <div class="transaction-icon ${tx.type === 'send' ? 'send-icon' : 'receive-icon'}">
                         <i class="fas ${tx.type === 'send' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>

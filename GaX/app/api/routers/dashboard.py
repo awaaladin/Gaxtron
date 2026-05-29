@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Query
@@ -28,13 +29,33 @@ def dashboard_stats(db: Session = Depends(get_db), user: User = Depends(get_curr
         .filter(Payment.user_id == user.id, Payment.status == "confirmed")
         .scalar()
     )
+    since_7d = datetime.utcnow() - timedelta(days=7)
+    volume_7d = (
+        db.query(func.coalesce(func.sum(Payment.amount), 0))
+        .filter(
+            Payment.user_id == user.id,
+            Payment.status == "confirmed",
+            func.coalesce(Payment.confirmed_at, Payment.created_at) >= since_7d,
+        )
+        .scalar()
+    )
+    pct = lambda n: round((n / total * 100) if total else 0, 1)
     return {
         "total_payments": total,
         "successful": confirmed,
         "failed": failed,
         "pending": pending,
         "revenue": str(revenue or Decimal("0")),
+        "volume_7d": str(volume_7d or Decimal("0")),
         "success_rate": round((confirmed / total * 100) if total else 0, 1),
+        "status_breakdown": {
+            "confirmed": confirmed,
+            "pending": pending,
+            "failed": failed,
+            "confirmed_pct": pct(confirmed),
+            "pending_pct": pct(pending),
+            "failed_pct": pct(failed),
+        },
     }
 
 

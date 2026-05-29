@@ -34,7 +34,6 @@ DEFAULT_BASE = "http://localhost:8000"
 MERCHANT_EMAIL = f"merchant_{uuid.uuid4().hex[:8]}@gaxtron.dev"
 MERCHANT_USER = "demo_merchant"
 MERCHANT_PASS = "SecureMerchantP@ss1"
-CALLBACK_URL = "https://httpbin.org/post"
 
 
 def step(title: str) -> None:
@@ -47,7 +46,7 @@ def main() -> int:
     parser.add_argument("--email", default=MERCHANT_EMAIL)
     parser.add_argument("--username", default=MERCHANT_USER)
     parser.add_argument("--password", default=MERCHANT_PASS)
-    parser.add_argument("--callback-url", default=CALLBACK_URL)
+    parser.add_argument("--callback-url", required=True, help="HTTPS webhook URL for payment callbacks")
     parser.add_argument("--amount", default="0.001")
     parser.add_argument("--currency", choices=["ETH", "USDT"], default="ETH")
     parser.add_argument("--sync-dashboard", action="store_true", help="Create Django login for same email")
