@@ -7,9 +7,9 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#080c12" />
   <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/site.css?v=3" />
+  <link rel="stylesheet" href="css/site.css?v=5" />
   <script src="js/theme.js?v=1"></script>
-  <script src="js/auth-viz.js?v=2"></script>
+  <script src="js/auth-viz.js?v=4"></script>
 </head>
 <body class="site-page">
 
@@ -28,8 +28,32 @@
         <div><p class="auth-stat-value">99.9%</p><p class="auth-stat-label">Uptime SLA</p></div>
       </div>
       <div class="auth-viz-wrap">
-        <canvas id="authViz" class="auth-viz-canvas" aria-hidden="true"></canvas>
-        <p class="auth-viz-caption">On-chain settlement · rolling 24h</p>
+        <div class="auth-preview" role="img" aria-label="Merchant payments overview preview">
+          <div class="auth-preview-toolbar">
+            <span class="auth-preview-toolbar-title">Payments</span>
+            <span class="auth-preview-toolbar-meta">Last 7 days</span>
+          </div>
+          <div class="auth-preview-kpi">
+            <div>
+              <p class="auth-preview-kpi-label">Gross volume</p>
+              <p class="auth-preview-kpi-value"><span data-auth-volume>24.8</span> <span class="auth-preview-kpi-unit">ETH</span></p>
+            </div>
+            <span class="auth-preview-kpi-badge">+12.4%</span>
+          </div>
+          <canvas id="authViz" class="auth-preview-spark" aria-hidden="true"></canvas>
+          <p class="auth-preview-spark-label">Volume</p>
+          <div class="auth-preview-stack" aria-hidden="true">
+            <div class="auth-preview-stack-row"><span>Confirmed</span><div class="auth-preview-stack-track"><i style="--w:72%"></i></div></div>
+            <div class="auth-preview-stack-row"><span>Pending</span><div class="auth-preview-stack-track"><i class="auth-preview-stack-accent" style="--w:18%"></i></div></div>
+            <div class="auth-preview-stack-row"><span>Failed</span><div class="auth-preview-stack-track"><i class="auth-preview-stack-muted" style="--w:10%"></i></div></div>
+          </div>
+          <div class="auth-preview-pipeline" aria-hidden="true">
+            <div class="auth-preview-step is-done"><span>Initiated</span></div>
+            <div class="auth-preview-step is-done"><span>On-chain</span></div>
+            <div class="auth-preview-step is-active"><span>Confirming</span></div>
+            <div class="auth-preview-step"><span>Settled</span></div>
+          </div>
+        </div>
       </div>
     </div>
     <p style="font-size:0.75rem;color:var(--text-muted)">Sepolia testnet · End-to-end encrypted</p>
