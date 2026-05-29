@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user_api_key
@@ -16,10 +16,19 @@ from app.schemas.payment import (
     VerifyPaymentResponse,
 )
 from app.services.payment_service import PaymentService
+from app.services.reconcile_service import get_reconciler
 from app.workers.queue import enqueue_payment_check
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["payments"])
+
+
+def _reconcile_payment_background(payment_id: int) -> None:
+    """Serverless-friendly: scan chain right after payment creation (no Redis worker required)."""
+    try:
+        get_reconciler().run_batch(payment_id=payment_id)
+    except Exception:
+        logger.exception("Background reconcile failed for payment %s", payment_id)
 
 
 def _to_create_response(payment) -> CreatePaymentResponse:
@@ -63,6 +72,7 @@ def _to_payment_response(payment) -> PaymentResponse:
 @router.post("/create-payment", response_model=CreatePaymentResponse, status_code=status.HTTP_201_CREATED)
 def create_payment(
     data: CreatePaymentRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user_api_key),
 ):
@@ -72,6 +82,7 @@ def create_payment(
         db.commit()
         db.refresh(payment)
         enqueue_payment_check(payment.id)
+        background_tasks.add_task(_reconcile_payment_background, payment.id)
         logger.info("Payment %s url=%s", payment.id, PaymentService.build_payment_url(payment))
         return _to_create_response(payment)
     except ValueError as e:
@@ -124,6 +135,13 @@ def verify_payment(
     payment = PaymentService.get_payment(db, payment_id, user.id)
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
+    if payment.status == "pending":
+        try:
+            get_reconciler().run_batch(payment_id=payment.id)
+            db.expire(payment)
+            payment = PaymentService.get_payment(db, payment_id, user.id)
+        except Exception:
+            logger.exception("Reconcile on verify failed for payment %s", payment_id)
     return VerifyPaymentResponse(
         id=payment.id,
         status=payment.status,
