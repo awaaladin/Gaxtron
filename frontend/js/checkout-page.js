@@ -304,9 +304,26 @@
     pollTimer = setInterval(poll, POLL_MS);
   }
 
+  function resolvePaymentRef() {
+    if (global.CHECKOUT_PAYMENT_REF) {
+      return String(global.CHECKOUT_PAYMENT_REF);
+    }
+    const path = global.location.pathname;
+    const patterns = [
+      /\/pay\/([^/?#]+)/,
+      /\/checkout\/([^/?#]+)/,
+      /\/link\/([^/?#]+)/,
+    ];
+    for (const re of patterns) {
+      const m = path.match(re);
+      if (m) return decodeURIComponent(m[1]);
+    }
+    const qs = new URLSearchParams(global.location.search);
+    return qs.get('ref') || qs.get('token') || qs.get('payment') || null;
+  }
+
   function initFromPath() {
-    const m = global.location.pathname.match(/\/pay\/([^/?#]+)/);
-    init(m ? decodeURIComponent(m[1]) : null);
+    init(resolvePaymentRef());
   }
 
   global.GaxtronCheckout = {

@@ -23,10 +23,12 @@ router = APIRouter(tags=["payments"])
 
 
 def _to_create_response(payment) -> CreatePaymentResponse:
+    url = PaymentService.build_payment_url(payment)
     return CreatePaymentResponse(
         payment_id=payment.id,
         payment_token=payment.public_token or str(payment.id),
-        payment_url=PaymentService.build_payment_url(payment),
+        payment_url=url,
+        checkout_url=url,
         wallet_address=payment.wallet_address,
         amount=payment.amount,
         currency=payment.currency,

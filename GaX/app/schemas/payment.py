@@ -27,6 +27,7 @@ class CreatePaymentResponse(BaseModel):
     payment_id: int
     payment_token: str
     payment_url: str
+    checkout_url: str
     wallet_address: str
     amount: Decimal
     currency: str = "ETH"

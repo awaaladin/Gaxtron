@@ -44,13 +44,18 @@
       return data;
     }
 
-    /** Create a hosted checkout payment (returns payment_url for your customer). */
+    /** Create payment — returns payment_url / checkout_url for customer redirect or QR. */
     createPayment({ amount, callback_url, idempotency_key }) {
       return this.request('POST', '/create-payment', {
         amount: String(amount),
         callback_url,
         ...(idempotency_key ? { idempotency_key } : {}),
       });
+    }
+
+    /** Hosted checkout URL (same as payment_url on create response). */
+    checkoutUrl(paymentRef) {
+      return `${this.baseUrl}/pay/${paymentRef}`;
     }
 
     /** Check payment status (pending / confirmed / failed). */

@@ -118,7 +118,12 @@ class Settings(BaseSettings):
         return [c.strip().upper() for c in self.enabled_chains.split(",") if c.strip()]
 
     def payment_url(self, payment_ref: str) -> str:
+        """Canonical hosted checkout URL — share via link, redirect, or QR."""
         return f"{self.public_base_url.rstrip('/')}/pay/{payment_ref}"
+
+    def checkout_url(self, payment_ref: str) -> str:
+        """Alias for payment_url (Stripe-style hosted checkout)."""
+        return self.payment_url(payment_ref)
 
 
 @lru_cache

@@ -1019,6 +1019,11 @@ body.dash-page::before {
 
 .checkout-link:hover { color: var(--accent-cyan); }
 
+.checkout-link--primary {
+  font-weight: 600;
+  color: var(--accent-cyan) !important;
+}
+
 /* API docs tab */
 .api-docs { display: flex; flex-direction: column; gap: 1rem; }
 
