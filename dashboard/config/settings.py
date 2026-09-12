@@ -10,7 +10,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-me")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+if os.getenv("VERCEL"):
+    ALLOWED_HOSTS.append(".vercel.app")
+    if os.getenv("VERCEL_URL"):
+        ALLOWED_HOSTS.append(os.getenv("VERCEL_URL"))
+
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+if os.getenv("VERCEL"):
+    CSRF_TRUSTED_ORIGINS.append("https://*.vercel.app")
+    if os.getenv("VERCEL_URL"):
+        CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('VERCEL_URL')}")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -25,6 +36,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -75,6 +87,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+# WhiteNoise serves directly via Django's staticfiles finders — no `collectstatic` build step
+# needed, which matters because Vercel's Python builder has no build-command hook to run one.
+WHITENOISE_USE_FINDERS = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/login/"
