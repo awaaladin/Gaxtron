@@ -1,166 +1,169 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Pay securely with Ethereum" />
-  <title>Complete your payment — Gaxtron</title>
-  <link rel="icon" type="image/svg+xml" href="{{ gaxtron_public_url }}/favicon.svg" />
-  <link rel="stylesheet" href="{{ gaxtron_public_url }}/css/checkout.css?v=3" />
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="description" content="Pay securely with Ethereum"/>
+<title>Complete your payment — Gaxtron</title>
+<link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}"/>
+<meta name="theme-color" content="#0B0B0A"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="{% static 'js/tailwind-config.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/base.css' %}"/>
 </head>
-<body class="checkout-body">
-  <div class="checkout-test-banner" id="testBanner">
-    Test mode — Sepolia network only. Use test ETH, not real money.
-  </div>
+<body class="bg-background text-on-surface font-body-md">
 
-  <div id="loadingView" class="checkout-loading">
-    <div class="checkout-spinner"></div>
-    <p>Loading payment…</p>
-  </div>
+<div class="bg-surface-container-lowest border-b border-outline-variant text-center py-2 font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant" id="testBanner">
+  Test mode — Sepolia network only. Use test ETH, not real money.
+</div>
 
-  <div id="errorView" class="checkout-loading hidden">
-    <div style="max-width:22rem;margin:0 auto;text-align:center;padding:2rem">
-      <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem">⚠</div>
-      <p style="font-weight:600;font-size:1rem;margin-bottom:0.375rem" id="errorTitle">Payment unavailable</p>
-      <p style="color:var(--checkout-muted);font-size:0.875rem;line-height:1.6" id="errorText">This payment link is invalid or has expired.</p>
+<div id="loadingView" class="flex flex-col items-center justify-center gap-stack-md min-h-[70vh]">
+  <div class="checkout-spinner"></div>
+  <p class="font-body-md text-on-surface-variant">Loading payment…</p>
+</div>
+
+<div id="errorView" class="hidden flex flex-col items-center justify-center min-h-[70vh]">
+  <div class="max-w-sm mx-auto text-center p-8">
+    <span class="material-symbols-outlined text-error text-[40px] mb-stack-md">error</span>
+    <p class="font-headline-md text-[18px] text-on-surface mb-2" id="errorTitle">Payment unavailable</p>
+    <p class="font-body-md text-on-surface-variant" id="errorText">This payment link is invalid or has expired.</p>
+  </div>
+</div>
+
+<main id="checkoutView" class="hidden max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-0 md:min-h-screen" aria-label="Crypto checkout">
+
+  <aside class="border-r border-outline-variant p-margin-mobile md:p-margin-desktop flex flex-col bg-surface-container-lowest">
+    <div class="flex items-center gap-stack-sm mb-stack-lg">
+      <span class="font-headline-md text-[18px] font-bold text-primary tracking-tighter">GAXTRON</span>
     </div>
-  </div>
+    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Total due</p>
+    <p class="font-display-lg text-[44px] text-on-surface" id="summaryAmount">—</p>
+    <p class="font-label-caps text-label-caps text-primary uppercase mt-1" id="summaryNetwork">Ethereum · Sepolia</p>
 
-  <main id="checkoutView" class="checkout-layout hidden" aria-label="Crypto checkout">
-    <aside class="checkout-summary">
-      <div class="checkout-summary-brand">
-        <div class="mark">GX</div>
-        <span>Gaxtron</span>
+    <div class="mt-stack-lg border-t border-outline-variant pt-stack-md flex flex-col gap-stack-sm">
+      <div class="flex justify-between font-mono-data text-mono-data">
+        <span class="text-on-surface-variant">Payment ID</span>
+        <span class="text-on-surface" id="summaryPaymentId">—</span>
       </div>
-      <p class="checkout-summary-label">Total due</p>
-      <p class="checkout-summary-amount" id="summaryAmount">—</p>
-      <p class="checkout-summary-currency" id="summaryNetwork">Ethereum · Sepolia</p>
-      <div class="checkout-summary-meta">
-        <div class="checkout-summary-row">
-          <span>Payment ID</span>
-          <span id="summaryPaymentId">—</span>
-        </div>
-        <div class="checkout-summary-row">
-          <span>Status</span>
-          <span id="summaryStatus">Awaiting payment</span>
-        </div>
-        <div class="checkout-summary-row">
-          <span>Total</span>
-          <span id="summaryTotal">—</span>
-        </div>
+      <div class="flex justify-between font-mono-data text-mono-data">
+        <span class="text-on-surface-variant">Status</span>
+        <span class="text-on-surface" id="summaryStatus">Awaiting payment</span>
       </div>
-    </aside>
-
-    <section class="checkout-pay">
-      <h2>Pay with crypto</h2>
-      <p class="subtitle">Scan the QR code, copy the address, or connect MetaMask.</p>
-
-      <div class="checkout-steps" aria-hidden="true">
-        <div class="checkout-step active" data-step="pending">1. Send</div>
-        <div class="checkout-step" data-step="confirming">2. Confirm</div>
-        <div class="checkout-step" data-step="confirmed">3. Done</div>
-      </div>
-
-      <div id="panelPending">
-        <div class="checkout-qr-wrap">
-          <div class="checkout-qr-frame">
-            <canvas id="qrcode" width="200" height="200" aria-label="QR code to pay with Ethereum"></canvas>
-            <img id="qrCode" class="hidden" width="200" height="200" alt="" />
-            <div class="checkout-qr-badge" title="Ethereum">ETH</div>
-          </div>
-          <p class="checkout-qr-hint">Scan with MetaMask, Trust Wallet, or any wallet that supports Ethereum</p>
-        </div>
-
-        <div class="checkout-address-box">
-          <label for="walletAddress">Wallet address (send exactly the amount shown)</label>
-          <div class="checkout-address-row">
-            <code id="walletAddress">—</code>
-          </div>
-        </div>
-
-        <div class="checkout-actions">
-          <button type="button" class="checkout-btn checkout-btn-secondary" id="copyAddrBtn">Copy address</button>
-          <button type="button" class="checkout-btn checkout-btn-secondary" id="copyAmountBtn">Copy amount</button>
-        </div>
-
-        <div class="checkout-wallet-divider"><span>or pay in browser</span></div>
-        <button type="button" class="checkout-btn checkout-btn-wallet" id="connectWalletBtn">
-          Connect MetaMask &amp; pay
-        </button>
-        <p id="walletStatus" class="checkout-wallet-status hidden" aria-live="polite"></p>
-
-        <ol class="checkout-instructions">
-          <li>Open your wallet and switch to <strong>Sepolia</strong> test network</li>
-          <li>Send <strong id="instructionAmount">—</strong> to the address above</li>
-          <li>Keep this page open — we'll confirm automatically</li>
-        </ol>
-
-        <button type="button" class="checkout-btn checkout-btn-primary" id="openWalletBtn">
-          Open in wallet app
-        </button>
-
-        <p style="font-size:0.75rem;color:#64748b;text-align:center;margin-top:1rem">
-          <span class="checkout-live-dot"></span>Checking for your payment every few seconds
-        </p>
-      </div>
-
-      <div id="panelConfirming" class="checkout-status-panel hidden">
-        <div class="checkout-spinner"></div>
-        <h3 style="font-size:1.125rem;margin-bottom:0.5rem">Payment received</h3>
-        <p style="color:#64748b;font-size:0.875rem">Waiting for blockchain confirmations…</p>
-        <div class="checkout-progress">
-          <div class="checkout-progress-bar" id="confProgressBar" style="width:0%"></div>
-        </div>
-        <p style="font-size:0.875rem"><strong id="confCount">0</strong> of <strong id="confRequired">3</strong> confirmations</p>
-        <p class="checkout-tx-link" id="txHashConfirming"></p>
-      </div>
-
-      <div id="panelConfirmed" class="checkout-status-panel hidden">
-        <div class="checkout-success-icon">✓</div>
-        <h3 style="font-size:1.25rem;color:var(--lime-dark);margin-bottom:0.5rem">Payment complete</h3>
-        <p style="color:var(--text-muted);font-size:0.875rem">Thank you — your payment has been confirmed on chain.</p>
-        <p class="checkout-tx-link" id="txHashConfirmed"></p>
-        <p style="margin-top:1.5rem;font-size:0.8125rem;color:#64748b">You can safely close this page.</p>
-      </div>
-
-      <div id="panelFailed" class="checkout-status-panel hidden">
-        <h3 style="font-size:1.125rem;color:#dc2626">Payment expired</h3>
-        <p style="color:#64748b;font-size:0.875rem;margin-top:0.5rem">This link is no longer valid. Ask the merchant for a new payment link.</p>
-      </div>
-
-      <footer class="checkout-footer">
-        Secured by Gaxtron · <span id="footerNetwork">Sepolia testnet</span>
-      </footer>
-    </section>
-  </main>
-
-  <div id="paymentModal" class="checkout-modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="checkout-modal-backdrop"></div>
-    <div class="checkout-modal-card">
-      <h2 id="modalTitle" class="checkout-modal-title">Confirm payment</h2>
-      <p class="checkout-modal-amount" id="modalAmount">—</p>
-      <p class="checkout-modal-address-label">Send to</p>
-      <code class="checkout-modal-address" id="modalAddress">—</code>
-      <p class="checkout-modal-hint" id="paymentAmount">Review the amount in MetaMask before confirming.</p>
-      <div class="checkout-modal-actions">
-        <button type="button" class="checkout-btn checkout-btn-primary" id="confirmPayBtn">Pay now</button>
-        <button type="button" class="checkout-btn checkout-btn-secondary checkout-btn-full" id="modalCancelBtn">Cancel</button>
+      <div class="flex justify-between font-mono-data text-mono-data">
+        <span class="text-on-surface-variant">Total</span>
+        <span class="text-on-surface" id="summaryTotal">—</span>
       </div>
     </div>
+  </aside>
+
+  <section class="p-margin-mobile md:p-margin-desktop flex flex-col">
+    <h2 class="font-headline-md text-headline-md text-on-surface mb-2">Pay with crypto</h2>
+    <p class="font-body-md text-on-surface-variant mb-stack-lg">Scan the QR, copy the address, or connect MetaMask.</p>
+
+    <div class="grid grid-cols-3 gap-0 mb-stack-lg" aria-hidden="true">
+      <div class="checkout-step active" id="step1" data-step="pending">1. Send</div>
+      <div class="checkout-step" id="step2" data-step="confirming">2. Confirm</div>
+      <div class="checkout-step" id="step3" data-step="confirmed">3. Done</div>
+    </div>
+
+    <div id="panelPending">
+      <div class="flex flex-col items-center gap-stack-sm mb-stack-lg">
+        <div class="relative bg-white p-3 border border-outline-variant">
+          <canvas id="qrcode" width="200" height="200" aria-label="QR code to pay with Ethereum"></canvas>
+          <img id="qrCode" class="hidden" width="200" height="200" alt=""/>
+        </div>
+        <p class="font-label-caps text-[10px] text-on-surface-variant uppercase">Scan with MetaMask, Trust Wallet, or any ETH wallet</p>
+      </div>
+
+      <div class="flat-border p-4 mb-stack-md">
+        <label for="walletAddress" class="font-label-caps text-[10px] text-on-surface-variant uppercase">Wallet address — send exactly the amount shown</label>
+        <code id="walletAddress" class="block font-mono-data text-[13px] text-on-surface mt-2 break-all">—</code>
+      </div>
+
+      <div class="flex gap-stack-md mb-stack-lg">
+        <button type="button" class="flex-1 border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 hover:bg-surface-container-low transition-colors" id="copyAddrBtn">Copy address</button>
+        <button type="button" class="flex-1 border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 hover:bg-surface-container-low transition-colors" id="copyAmountBtn">Copy amount</button>
+      </div>
+
+      <div class="flex items-center gap-stack-md mb-stack-md">
+        <div class="flex-1 border-t border-outline-variant"></div>
+        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase">or pay in browser</span>
+        <div class="flex-1 border-t border-outline-variant"></div>
+      </div>
+      <button type="button" class="w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 tracking-widest hover:bg-primary-container transition-colors flex items-center justify-center gap-2" id="connectWalletBtn">
+        <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span> Connect MetaMask &amp; pay
+      </button>
+      <p id="walletStatus" class="hidden font-label-caps text-[11px] mt-2" aria-live="polite"></p>
+
+      <ol class="font-body-md text-on-surface-variant text-[13px] list-decimal list-inside space-y-1 mt-stack-lg">
+        <li>Open your wallet and switch to <strong class="text-on-surface">Sepolia</strong> test network</li>
+        <li>Send <strong id="instructionAmount" class="text-on-surface">—</strong> to the address above</li>
+        <li>Keep this page open — we'll confirm automatically</li>
+      </ol>
+
+      <button type="button" class="w-full border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 mt-stack-md hover:bg-surface-container-low transition-colors" id="openWalletBtn">
+        Open in wallet app
+      </button>
+
+      <p class="font-label-caps text-[10px] text-on-surface-variant text-center mt-stack-md flex items-center justify-center gap-2">
+        <span class="w-2 h-2 bg-primary inline-block"></span> Checking for your payment every few seconds
+      </p>
+    </div>
+
+    <div id="panelConfirming" class="hidden flex flex-col items-center text-center gap-stack-md py-stack-lg">
+      <div class="checkout-spinner"></div>
+      <h3 class="font-headline-md text-[18px] text-on-surface">Payment received</h3>
+      <p class="font-body-md text-on-surface-variant text-[13px]">Waiting for blockchain confirmations…</p>
+      <div class="w-full bg-surface-container-highest h-1">
+        <div class="bg-primary h-1" id="confProgressBar" style="width:0%"></div>
+      </div>
+      <p class="font-mono-data text-mono-data"><strong id="confCount">0</strong> of <strong id="confRequired">3</strong> confirmations</p>
+      <p class="font-mono-data text-[11px] text-on-surface-variant break-all" id="txHashConfirming"></p>
+    </div>
+
+    <div id="panelConfirmed" class="hidden flex flex-col items-center text-center gap-stack-md py-stack-lg">
+      <span class="material-symbols-outlined text-primary text-[48px]">check_circle</span>
+      <h3 class="font-headline-md text-[20px] text-primary">Payment complete</h3>
+      <p class="font-body-md text-on-surface-variant text-[13px]">Thank you — your payment has been confirmed on chain.</p>
+      <p class="font-mono-data text-[11px] text-on-surface-variant break-all" id="txHashConfirmed"></p>
+      <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mt-stack-md">You can safely close this page</p>
+    </div>
+
+    <div id="panelFailed" class="hidden flex flex-col items-center text-center gap-stack-md py-stack-lg">
+      <h3 class="font-headline-md text-[18px] text-error">Payment expired</h3>
+      <p class="font-body-md text-on-surface-variant text-[13px]">This link is no longer valid. Ask the merchant for a new payment link.</p>
+    </div>
+
+    <footer class="mt-auto pt-stack-lg text-center font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">
+      Secured by Gaxtron · <span id="footerNetwork">Sepolia testnet</span>
+    </footer>
+  </section>
+</main>
+
+<div id="paymentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="checkout-modal-backdrop"></div>
+  <div class="relative bg-surface-container-lowest border-2 border-outline-variant p-8 max-w-sm w-full">
+    <h2 id="modalTitle" class="font-headline-md text-[20px] text-on-surface mb-2">Confirm payment</h2>
+    <p class="font-display-lg text-[28px] text-primary mb-stack-md" id="modalAmount">—</p>
+    <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-1">Send to</p>
+    <code class="block font-mono-data text-[12px] text-on-surface break-all mb-stack-md" id="modalAddress">—</code>
+    <p class="font-body-md text-on-surface-variant text-[12px] mb-stack-lg" id="paymentAmount">Review the amount in MetaMask before confirming.</p>
+    <div class="flex flex-col gap-stack-sm">
+      <button type="button" class="bg-primary text-on-primary font-label-caps text-label-caps py-3 hover:bg-primary-container transition-colors" id="confirmPayBtn">Pay now</button>
+      <button type="button" class="border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 hover:bg-surface-container-low transition-colors" id="modalCancelBtn">Cancel</button>
+    </div>
   </div>
+</div>
 
 <script>
-  window.CHECKOUT_API_BASE = "{{ gaxtron_public_url }}";
+  window.CHECKOUT_API_BASE = "";
+  window.CHECKOUT_PAYMENT_REF = "{{ payment_ref|escapejs }}";
 </script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="{{ gaxtron_public_url }}/js/wallet.js?v=1"></script>
-<script src="{{ gaxtron_public_url }}/js/checkout-page.js?v=1"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    if (window.GaxtronCheckout) {
-      GaxtronCheckout.init("{{ payment_ref|escapejs }}");
-    }
-  });
-</script>
+<script src="{% static 'js/wallet.js' %}"></script>
+<script src="{% static 'js/checkout-page.js' %}"></script>
 </body>
 </html>

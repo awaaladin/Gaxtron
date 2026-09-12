@@ -1,3 +1,0 @@
-from app.database import Base
-
-# ...existing code...

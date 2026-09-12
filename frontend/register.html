@@ -1,91 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gaxtron — Create Account</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="theme-color" content="#080c12" />
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/site.css?v=6" />
-  <script src="js/theme.js?v=1"></script>
-  <script src="js/auth-panel.js?v=1"></script>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gaxtron | Create Account</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<meta name="theme-color" content="#0B0B0A"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="css/base.css"/>
 </head>
-<body class="site-page">
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<main class="flex min-h-screen">
 
-<div class="auth-page">
-  <aside class="auth-panel">
-    <div>
-      <a href="index.html" class="site-brand">
-        <div class="brand-mark">GX</div>
-        <span>Gaxtron</span>
-      </a>
-      <h2>Start accepting crypto in minutes</h2>
-      <p>Register once, get your API key, and create your first payment link. We handle confirmations and webhooks.</p>
-      <div class="auth-stats" style="flex-direction:column;gap:1rem;margin-top:1.5rem">
-        <p style="font-size:0.8125rem;color:var(--text-secondary)"><strong style="color:var(--text-primary)">Instant API access</strong> — key on signup</p>
-        <p style="font-size:0.8125rem;color:var(--text-secondary)"><strong style="color:var(--text-primary)">Hosted checkout</strong> — share payment links</p>
-        <p style="font-size:0.8125rem;color:var(--text-secondary)"><strong style="color:var(--text-primary)">Sepolia ETH</strong> — 3-block confirms</p>
+  <!-- Left: marketing panel -->
+  <section class="hidden lg:flex w-1/2 flex-col justify-between p-margin-desktop bg-surface-container-lowest border-r border-outline-variant relative overflow-hidden">
+    <div class="absolute -left-24 -top-24 opacity-[0.04] pointer-events-none select-none">
+      <span class="font-display-lg text-[420px] leading-none font-bold">G</span>
+    </div>
+    <div class="z-10">
+      <span class="font-label-caps text-label-caps text-primary tracking-widest block mb-stack-sm">GAXTRON</span>
+      <h1 class="font-display-lg text-display-lg text-on-surface leading-tight max-w-md">Start accepting crypto in minutes.</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-sm mt-stack-md">Register once, get your API key, and create your first payment link. We handle confirmations and webhooks.</p>
+    </div>
+    <div class="z-10 grid grid-cols-1 gap-stack-sm border-t border-outline-variant pt-stack-lg">
+      <div class="flex items-center gap-stack-sm">
+        <span class="material-symbols-outlined text-primary text-[18px]">bolt</span>
+        <span class="font-label-caps text-label-caps text-on-surface-variant">Instant API key — issued on signup</span>
       </div>
-      <ul class="auth-features">
-        <li><strong>Instant API key</strong> — issued when you register</li>
-        <li><strong>Hosted checkout</strong> — share payment links with customers</li>
-        <li><strong>Sepolia testnet</strong> — real on-chain flow, no fake balances</li>
-      </ul>
+      <div class="flex items-center gap-stack-sm">
+        <span class="material-symbols-outlined text-primary text-[18px]">link</span>
+        <span class="font-label-caps text-label-caps text-on-surface-variant">Hosted checkout — share payment links</span>
+      </div>
+      <div class="flex items-center gap-stack-sm">
+        <span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+        <span class="font-label-caps text-label-caps text-on-surface-variant">Sepolia testnet — real on-chain flow</span>
+      </div>
     </div>
-    <p style="font-size:0.75rem;color:var(--text-muted)">Free on Sepolia · No credit card</p>
-  </aside>
+  </section>
 
-  <div class="auth-main">
-    <div class="auth-topbar">
-      <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-        <i data-theme-icon data-lucide="moon"></i>
-      </button>
-    </div>
-    <div class="auth-card">
-      <h1>Create merchant account</h1>
-      <p class="auth-sub">Set up your crypto payment gateway</p>
+  <!-- Right: registration form -->
+  <section class="w-full lg:w-1/2 flex items-center justify-center p-margin-mobile md:p-margin-desktop">
+    <div class="w-full max-w-md flex flex-col gap-stack-lg py-stack-lg">
+      <header class="flex flex-col items-center lg:items-start">
+        <a href="index.html" class="font-headline-md text-headline-md font-bold text-primary tracking-tighter mb-stack-lg">GAXTRON</a>
+        <h2 class="font-headline-md text-headline-md text-on-surface mb-stack-sm">Create merchant account</h2>
+        <p class="font-body-md text-body-md text-on-surface-variant">Set up your crypto payment gateway</p>
+      </header>
+
       <div id="alert" class="hidden"></div>
-      <form id="registerForm" novalidate>
-        <div class="auth-grid-2">
-          <div class="auth-field">
-            <label for="firstName">First name</label>
-            <input id="firstName" type="text" class="cp-input" autocomplete="given-name" />
-          </div>
-          <div class="auth-field">
-            <label for="lastName">Last name</label>
-            <input id="lastName" type="text" class="cp-input" autocomplete="family-name" />
-          </div>
-        </div>
-        <div class="auth-field">
-          <label for="businessName">Business name</label>
-          <input id="businessName" type="text" class="cp-input" placeholder="Acme Corp" />
-        </div>
-        <div class="auth-field">
-          <label for="email">Work email</label>
-          <input id="email" type="email" class="cp-input" autocomplete="email" />
-        </div>
-        <div class="auth-field">
-          <label for="password">Password</label>
-          <input id="password" type="password" class="cp-input" autocomplete="new-password" />
-        </div>
-        <div class="auth-field">
-          <label for="confirmPwd">Confirm password</label>
-          <input id="confirmPwd" type="password" class="cp-input" autocomplete="new-password" />
-        </div>
-        <label style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8125rem;color:var(--text-muted);margin-bottom:1rem;cursor:pointer">
-          <input type="checkbox" id="terms" style="margin-top:0.2rem" />
-          <span>I agree to the Terms of Service and Privacy Policy</span>
-        </label>
-        <button id="submitBtn" type="submit" class="btn btn-primary" style="width:100%">Create account</button>
-      </form>
-      <p class="auth-footer">Already registered? <a href="login.html">Sign in</a></p>
-    </div>
-  </div>
-</div>
 
-<script src="js/errors.js?v=1"></script>
-<script src="js/api.js?v=4"></script>
+      <form class="flex flex-col gap-stack-md" id="registerForm" novalidate>
+        <div class="grid grid-cols-2 gap-stack-md">
+          <div class="flex flex-col gap-stack-sm">
+            <label class="font-label-caps text-label-caps text-on-surface-variant" for="firstName">FIRST NAME</label>
+            <input class="bg-transparent border-0 border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-body-md py-stack-sm px-0" id="firstName" type="text" autocomplete="given-name"/>
+          </div>
+          <div class="flex flex-col gap-stack-sm">
+            <label class="font-label-caps text-label-caps text-on-surface-variant" for="lastName">LAST NAME</label>
+            <input class="bg-transparent border-0 border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-body-md py-stack-sm px-0" id="lastName" type="text" autocomplete="family-name"/>
+          </div>
+        </div>
+        <div class="flex flex-col gap-stack-sm">
+          <label class="font-label-caps text-label-caps text-on-surface-variant" for="businessName">BUSINESS NAME</label>
+          <input class="bg-transparent border-0 border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-body-md py-stack-sm px-0" id="businessName" placeholder="Acme Corp" type="text"/>
+        </div>
+        <div class="flex flex-col gap-stack-sm">
+          <label class="font-label-caps text-label-caps text-on-surface-variant" for="email">WORK EMAIL</label>
+          <input class="bg-transparent border-0 border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-body-md py-stack-sm px-0" id="email" type="email" autocomplete="email"/>
+        </div>
+        <div class="flex flex-col gap-stack-sm">
+          <label class="font-label-caps text-label-caps text-on-surface-variant" for="password">PASSWORD</label>
+          <input class="bg-transparent border-0 border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-body-md py-stack-sm px-0" id="password" type="password" autocomplete="new-password"/>
+          <span class="font-label-caps text-[10px] text-outline">MINIMUM 8 CHARACTERS</span>
+        </div>
+        <div class="flex flex-col gap-stack-sm">
+          <label class="font-label-caps text-label-caps text-on-surface-variant" for="confirmPwd">CONFIRM PASSWORD</label>
+          <input class="bg-transparent border-0 border-b border-outline-variant focus:ring-0 focus:border-primary text-on-surface font-body-md py-stack-sm px-0" id="confirmPwd" type="password" autocomplete="new-password"/>
+        </div>
+        <label class="flex items-start gap-stack-sm font-label-caps text-[11px] text-on-surface-variant cursor-pointer mt-stack-sm">
+          <input type="checkbox" id="terms" class="mt-0.5 rounded-none border-outline-variant bg-transparent text-primary focus:ring-0"/>
+          <span>I agree to the Merchant Framework Agreement (Terms of Service &amp; Privacy Policy)</span>
+        </label>
+        <button id="submitBtn" type="submit" class="mt-stack-sm w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 tracking-[0.2em] hover:bg-primary-container transition-colors">INITIALIZE ACCOUNT</button>
+      </form>
+
+      <p class="font-label-caps text-[11px] text-on-surface-variant text-center lg:text-left">Already registered? <a class="text-primary hover:underline underline-offset-4" href="login.html">Sign in</a></p>
+    </div>
+  </section>
+</main>
+
+<script src="js/theme.js?v=2"></script>
+<script src="js/errors.js?v=2"></script>
+<script src="js/api.js?v=7"></script>
 <script>
   if (getToken()) window.location.href = 'dashboard.html';
 
@@ -132,11 +141,9 @@
       window.location.href = 'dashboard.html';
     } catch (err) {
       showAlert(alertEl, err);
-      setLoading(submitBtn, false, 'Create account');
+      setLoading(submitBtn, false, 'INITIALIZE ACCOUNT');
     }
   });
-
-  lucide.createIcons();
 </script>
 </body>
 </html>

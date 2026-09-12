@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "merchants",
 ]
 
@@ -45,6 +46,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "config.context_processors.gaxtron",
             ],
         },
     },
@@ -76,11 +78,50 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/login/"
 
-FASTAPI_URL = os.getenv("FASTAPI_URL", "http://127.0.0.1:8002")
+FASTAPI_URL = os.getenv("FASTAPI_URL", "http://127.0.0.1:8001")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", FASTAPI_URL).rstrip("/")
+
+# --- Gaxtron payment engine (ported from GaX/app/config.py; same env var names) ---
+JWT_SECRET_KEY = os.getenv("SECRET_KEY", "change-me-min-32-chars-for-jwt-signing-abc123")
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "change-me-min-32-chars-for-webhook-hmac-abc")
+WALLET_ENCRYPTION_KEY = os.getenv("WALLET_ENCRYPTION_KEY", "change-me-32-byte-encryption-key-here!!")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
+
+BLOCKCHAIN_RPC_URL = os.getenv("BLOCKCHAIN_RPC_URL", "https://rpc.sepolia.org")
+BLOCKCHAIN_NETWORK = os.getenv("BLOCKCHAIN_NETWORK", "sepolia")
+ETH_REQUIRED_CONFIRMATIONS = int(os.getenv("ETH_REQUIRED_CONFIRMATIONS", "3"))
+USDT_CONTRACT_ADDRESS = os.getenv("USDT_CONTRACT_ADDRESS", "0x94a9D9AC8a22534D3cDfaD9d54e96e22d858e9b")
+BLOCKCHAIN_SCAN_BLOCKS = int(os.getenv("BLOCKCHAIN_SCAN_BLOCKS", "500"))
+ENABLED_CHAINS = os.getenv("ENABLED_CHAINS", "ETH")
+
+CRON_SECRET = os.getenv("CRON_SECRET", "")
+CHECKOUT_RECONCILE_ON_POLL = os.getenv("CHECKOUT_RECONCILE_ON_POLL", "True").lower() == "true"
+
+API_RATE_LIMIT = int(os.getenv("API_RATE_LIMIT", "100"))
+API_RATE_LIMIT_WINDOW = int(os.getenv("API_RATE_LIMIT_WINDOW", "60"))
+AUTH_RATE_LIMIT = int(os.getenv("AUTH_RATE_LIMIT", "20"))
+AUTH_RATE_LIMIT_WINDOW = int(os.getenv("AUTH_RATE_LIMIT_WINDOW", "300"))
+
+PAYMENT_EXPIRY_MINUTES = int(os.getenv("PAYMENT_EXPIRY_MINUTES", "60"))
+MAX_API_KEYS_PER_USER = int(os.getenv("MAX_API_KEYS_PER_USER", "10"))
+WEBHOOK_MAX_ATTEMPTS = int(os.getenv("WEBHOOK_MAX_ATTEMPTS", "5"))
+WEBHOOK_RETRY_BASE_SECONDS = int(os.getenv("WEBHOOK_RETRY_BASE_SECONDS", "30"))
+
+REQUIRE_HTTPS_CALLBACKS = os.getenv("REQUIRE_HTTPS_CALLBACKS", "False").lower() == "true"
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
+AUTH_USER_MODEL = "merchants.GaxtronUser"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "EXCEPTION_HANDLER": "merchants.api_exceptions.exception_handler",
+}
 
 # Production security (when DEBUG=False)
 if not DEBUG:

@@ -1,116 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gaxtron — Market Analytics</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="theme-color" content="#080c12" />
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="css/dashboard.css?v=5" />
-  <script src="js/theme.js?v=1"></script>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gaxtron | Markets</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<meta name="theme-color" content="#0B0B0A"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="css/base.css"/>
 </head>
-<body class="dash-page">
+<body class="bg-background text-on-surface selection:bg-primary selection:text-on-primary">
 
-<div class="dash-layout">
-  <aside class="dash-sidebar" id="dashSidebar">
-    <div class="dash-sidebar-inner">
-      <div class="dash-sidebar-head">
-        <div class="brand-mark">GX</div>
-        <div class="sidebar-label">
-          <div class="sidebar-brand-name">Gaxtron</div>
-          <div class="sidebar-brand-sub">Payment layer</div>
-        </div>
-      </div>
-      <nav>
-        <span class="nav-group-label sidebar-label">Core</span>
-        <a href="dashboard.html" class="sidebar-link"><i data-lucide="layout-dashboard"></i><span class="sidebar-label">Overview</span></a>
-        <a href="analytics.html" class="sidebar-link active"><i data-lucide="line-chart"></i><span class="sidebar-label">Markets</span></a>
-        <a href="dashboard.html#payments" class="sidebar-link"><i data-lucide="wallet"></i><span class="sidebar-label">Payments</span></a>
-        <a href="dashboard.html#transactions" class="sidebar-link"><i data-lucide="arrow-left-right"></i><span class="sidebar-label">Transactions</span></a>
-        <span class="nav-group-label sidebar-label">Account</span>
-        <a href="profile.html" class="sidebar-link"><i data-lucide="user"></i><span class="sidebar-label">Profile</span></a>
-      </nav>
-      <div class="network-badge">
-        <div class="network-dot"></div>
-        <span class="network-text">Live market data</span>
-      </div>
-      <div class="dash-sidebar-foot">
-        <button type="button" onclick="Auth.logout()" class="sidebar-link sidebar-link--danger">
-          <i data-lucide="log-out"></i><span class="sidebar-label">Sign out</span>
-        </button>
-      </div>
+<aside class="fixed left-0 top-0 h-full flex flex-col py-stack-lg w-64 border-r border-outline-variant bg-background z-50 custom-scrollbar overflow-y-auto">
+  <div class="px-6 mb-10">
+    <a href="dashboard.html" class="font-headline-md text-headline-md font-bold text-primary tracking-tighter">GAXTRON</a>
+    <p class="font-label-caps text-[10px] text-outline uppercase tracking-[0.2em] mt-1">Fintech Precision</p>
+  </div>
+  <nav class="flex-1 space-y-1">
+    <a href="dashboard.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">dashboard</span><span class="font-label-caps text-label-caps uppercase">Dashboard</span></a>
+    <a href="payments.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">payments</span><span class="font-label-caps text-label-caps uppercase">Payments</span></a>
+    <a href="transactions.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">receipt_long</span><span class="font-label-caps text-label-caps uppercase">Transactions</span></a>
+    <a href="api-keys.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">vpn_key</span><span class="font-label-caps text-label-caps uppercase">API Keys</span></a>
+    <a href="webhooks.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">webhook</span><span class="font-label-caps text-label-caps uppercase">Webhooks</span></a>
+    <a href="analytics.html" class="flex items-center px-6 py-3 text-primary font-bold border-r-2 border-primary bg-surface-container-low"><span class="material-symbols-outlined mr-3">storefront</span><span class="font-label-caps text-label-caps uppercase">Markets</span></a>
+    <a href="agent.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">smart_toy</span><span class="font-label-caps text-label-caps uppercase">Agent</span></a>
+  </nav>
+  <div class="px-6 mt-auto flex flex-col gap-1">
+    <a href="profile.html" class="flex items-center py-3 text-on-surface-variant font-medium hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">person</span><span class="font-label-caps text-label-caps uppercase">Profile</span></a>
+    <button type="button" onclick="Auth.logout()" class="flex items-center py-3 text-on-surface-variant font-medium hover:text-error transition-colors"><span class="material-symbols-outlined mr-3">logout</span><span class="font-label-caps text-label-caps uppercase">Sign out</span></button>
+  </div>
+</aside>
+
+<main class="ml-64 min-h-screen flex flex-col">
+  <header class="flex justify-between items-center w-full px-margin-desktop h-16 border-b border-outline-variant bg-background sticky top-0 z-40">
+    <div class="flex items-center gap-stack-lg">
+      <span class="font-label-caps text-label-caps text-on-surface-variant" id="marketLiveStatus">Connecting…</span>
     </div>
-  </aside>
+    <div class="flex items-center gap-6">
+      <button type="button" class="text-on-surface-variant hover:text-primary transition-colors" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="material-symbols-outlined" data-theme-icon>dark_mode</span>
+      </button>
+      <a href="profile.html" class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-surface-container-highest border border-outline-variant flex items-center justify-center font-label-caps text-[11px]" id="userAvatar">—</div>
+        <span class="font-label-caps text-[11px] text-on-surface-variant hidden md:inline" id="userEmail">—</span>
+      </a>
+    </div>
+  </header>
 
-  <main class="dash-main">
-    <header class="dash-topbar">
-      <div>
-        <h1>Market analytics</h1>
-        <p class="dash-topbar-sub">Real-time prices · 24h chart</p>
-      </div>
-      <div class="dash-topbar-actions">
-        <span class="market-live" id="marketLiveStatus">Connecting…</span>
-        <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-          <i data-theme-icon data-lucide="moon"></i>
-        </button>
-        <a href="profile.html" class="user-pill" id="userPill">
-          <div class="user-avatar" id="userAvatar">—</div>
-          <span class="user-email" id="userEmail">—</span>
-        </a>
-      </div>
-    </header>
+  <div class="flex-1 px-margin-desktop py-stack-lg max-w-[1400px] w-full">
+    <p class="font-label-caps text-label-caps text-primary uppercase mb-2">Market Intel</p>
+    <h2 class="font-display-lg text-display-lg text-on-surface italic mb-stack-lg">Global Asset Liquidity</h2>
 
-    <div class="dash-content market-content">
-      <div class="market-hero section-card">
-        <div class="section-body">
-          <div class="market-hero-top">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-start mb-stack-lg">
+      <div class="lg:col-span-2 flex flex-col gap-stack-md">
+        <div class="flat-border bg-surface-container-lowest p-6">
+          <div class="flex justify-between items-start flex-wrap gap-stack-md">
             <div>
-              <p class="market-symbol" id="marketCoinSymbol">ETH</p>
-              <h2 class="market-name" id="marketCoinName">Ethereum</h2>
+              <p class="font-label-caps text-label-caps text-on-surface-variant" id="marketCoinSymbol">ETH</p>
+              <h3 class="font-headline-md text-headline-md text-on-surface" id="marketCoinName">Ethereum</h3>
             </div>
-            <div class="market-select-wrap">
-              <label for="coinSelect" class="form-label">Select coin</label>
-              <select id="coinSelect" class="cp-input market-select"></select>
-            </div>
+            <select id="coinSelect" class="bg-transparent border border-outline-variant focus:ring-0 focus:border-primary font-label-caps text-label-caps text-on-surface py-2 px-3"></select>
           </div>
-          <p class="market-price" id="marketPrice">—</p>
-          <p class="market-change market-change--up" id="marketChange">—</p>
+          <p class="font-display-lg text-[40px] text-on-surface mt-stack-md" id="marketPrice">—</p>
+          <p class="font-mono-data text-mono-data text-primary" id="marketChange">—</p>
+        </div>
+
+        <div class="flat-border bg-surface-container-lowest p-6">
+          <p class="font-label-caps text-label-caps uppercase text-on-surface mb-stack-md">Price Movement · 24H · USD</p>
+          <div class="h-[280px]"><canvas id="marketChart" aria-label="Price chart"></canvas></div>
         </div>
       </div>
 
-      <div class="section-card market-chart-card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Price movement</div>
-            <div class="section-sub">Last 24 hours · USD</div>
-          </div>
+      <div class="flat-border bg-surface-container-lowest">
+        <div class="p-6 divider-b">
+          <h3 class="font-label-caps text-label-caps uppercase text-on-surface">All Markets</h3>
+          <p class="font-body-md text-on-surface-variant text-[13px] mt-1">Tap a coin to view its chart</p>
         </div>
-        <div class="market-chart-wrap">
-          <canvas id="marketChart" aria-label="Price chart"></canvas>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">All markets</div>
-            <div class="section-sub">Tap a coin to view its chart</div>
-          </div>
-        </div>
-        <div class="coin-list" id="coinList">
-          <p style="padding:1.5rem;color:var(--text-muted);text-align:center">Loading market data…</p>
+        <div id="coinList">
+          <p class="px-6 py-8 text-center text-on-surface-variant font-body-md">Loading market data…</p>
         </div>
       </div>
     </div>
-  </main>
-</div>
+  </div>
 
+  <footer class="mt-auto px-margin-desktop py-stack-lg border-t border-outline-variant opacity-50 flex justify-between items-center flex-wrap gap-2">
+    <p class="font-label-caps text-[10px] uppercase tracking-widest">© 2026 GAXTRON TECHNOLOGIES. ALL RIGHTS RESERVED.</p>
+    <span class="font-label-caps text-[10px] uppercase tracking-widest">DATA VIA COINGECKO</span>
+  </footer>
+</main>
+
+<script src="js/theme.js?v=2"></script>
 <script src="js/sidebar.js?v=2"></script>
-<script src="js/errors.js?v=1"></script>
-<script src="js/api.js?v=6"></script>
-<script src="js/markets.js?v=3"></script>
+<script src="js/errors.js?v=2"></script>
+<script src="js/api.js?v=7"></script>
+<script src="js/markets.js?v=4"></script>
 <script>
   if (!requireAuth()) throw new Error('auth');
   const user = getUser();
@@ -118,7 +105,6 @@
     document.getElementById('userEmail').textContent = user.email;
     document.getElementById('userAvatar').textContent = user.email.slice(0, 2).toUpperCase();
   }
-  lucide.createIcons();
 </script>
 </body>
 </html>

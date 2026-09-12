@@ -1,24 +1,20 @@
-from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import User
-
-from merchants.forms import MerchantRegistrationForm
-from merchants.utils import ensure_gaxtron_merchant
-from django.db.models import Count, Sum
+from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
+from merchants.forms import MerchantRegistrationForm
 from merchants.models import ApiKey, GaxtronUser, Payment, Transaction, WebhookLog
 
 
-def _get_merchant_user(request):
-    """Map Django auth user to Gaxtron merchant by email."""
-    return GaxtronUser.objects.filter(email=request.user.email, is_active=True).first()
+def landing_view(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    return render(request, "merchants/index.html")
 
 
 @require_http_methods(["GET", "POST"])
@@ -27,13 +23,8 @@ def register_view(request):
         form = MerchantRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            ensure_gaxtron_merchant(
-                email=form.cleaned_data["email"],
-                username=form.cleaned_data["username"],
-                password=form.cleaned_data["password1"],
-            )
             login(request, user)
-            messages.success(request, "Merchant account created. API keys: use FastAPI /api-keys or dashboard.")
+            messages.success(request, "Merchant account created.")
             return redirect("dashboard")
     else:
         form = MerchantRegistrationForm()
@@ -42,46 +33,60 @@ def register_view(request):
 
 @login_required
 def dashboard_view(request):
-    merchant = _get_merchant_user(request)
+    payments = Payment.objects.filter(user=request.user)
     stats = {
-        "total_payments": 0,
-        "successful": 0,
-        "failed": 0,
-        "pending": 0,
-        "revenue": Decimal("0"),
+        "total_payments": payments.count(),
+        "successful": payments.filter(status="confirmed").count(),
+        "failed": payments.filter(status="failed").count(),
+        "pending": payments.filter(status="pending").count(),
+        "revenue": payments.filter(status="confirmed").aggregate(total=Sum("amount"))["total"] or Decimal("0"),
     }
-    recent_payments = []
-
-    if merchant:
-        payments = Payment.objects.filter(user_id=merchant.id)
-        stats["total_payments"] = payments.count()
-        stats["successful"] = payments.filter(status="confirmed").count()
-        stats["failed"] = payments.filter(status="failed").count()
-        stats["pending"] = payments.filter(status="pending").count()
-        revenue = payments.filter(status="confirmed").aggregate(total=Sum("amount"))
-        stats["revenue"] = revenue["total"] or Decimal("0")
-        recent_payments = payments[:10]
-
     return render(
         request,
         "merchants/dashboard.html",
-        {"stats": stats, "recent_payments": recent_payments, "merchant": merchant},
+        {"stats": stats, "recent_payments": payments[:10]},
+    )
+
+
+@login_required
+def payments_view(request):
+    from merchants.payment_service import PaymentService
+
+    created = None
+    error = None
+    if request.method == "POST":
+        amount = request.POST.get("amount", "").strip()
+        callback_url = request.POST.get("callback_url", "").strip()
+        try:
+            created = PaymentService.create_payment(user_id=request.user.id, amount=amount, callback_url=callback_url)
+        except ValueError as e:
+            error = str(e)
+        except Exception:
+            error = "Failed to create payment. Check the amount and callback URL."
+
+    payments = Payment.objects.filter(user=request.user)
+    return render(
+        request,
+        "merchants/payments.html",
+        {
+            "payments": payments,
+            "created": created,
+            "created_url": PaymentService.build_payment_url(created) if created else None,
+            "error": error,
+        },
     )
 
 
 @login_required
 def transactions_view(request):
-    merchant = _get_merchant_user(request)
-    txs = []
     status_filter = request.GET.get("status", "")
     date_from = request.GET.get("from", "")
 
-    if merchant:
-        txs = Transaction.objects.filter(user_id=merchant.id)
-        if status_filter:
-            txs = txs.filter(status=status_filter)
-        if date_from:
-            txs = txs.filter(created_at__gte=date_from)
+    txs = Transaction.objects.filter(user=request.user)
+    if status_filter:
+        txs = txs.filter(status=status_filter)
+    if date_from:
+        txs = txs.filter(created_at__gte=date_from)
 
     return render(
         request,
@@ -92,22 +97,24 @@ def transactions_view(request):
 
 @login_required
 def api_keys_view(request):
-    merchant = _get_merchant_user(request)
-    keys = ApiKey.objects.filter(user_id=merchant.id) if merchant else []
-    return render(
-        request,
-        "merchants/api_keys.html",
-        {"api_keys": keys, "fastapi_url": "http://localhost:8000"},
-    )
+    keys = ApiKey.objects.filter(user=request.user)
+    return render(request, "merchants/api_keys.html", {"api_keys": keys})
+
+
+@login_required
+def markets_view(request):
+    return render(request, "merchants/markets.html")
+
+
+@login_required
+def profile_view(request):
+    return render(request, "merchants/profile.html")
 
 
 @login_required
 def webhooks_view(request):
-    merchant = _get_merchant_user(request)
-    logs = []
-    if merchant:
-        payment_ids = Payment.objects.filter(user_id=merchant.id).values_list("id", flat=True)
-        logs = WebhookLog.objects.filter(payment_id__in=payment_ids)[:50]
+    payment_ids = Payment.objects.filter(user=request.user).values_list("id", flat=True)
+    logs = WebhookLog.objects.filter(payment_id__in=payment_ids)[:50]
     return render(request, "merchants/webhooks.html", {"webhook_logs": logs})
 
 
@@ -128,12 +135,5 @@ def logout_view(request):
 
 
 def pay_view(request, payment_ref: str):
-    """Hosted checkout UI — polls FastAPI for status (backend stays authoritative)."""
-    return render(
-        request,
-        "merchants/pay.html",
-        {
-            "payment_ref": payment_ref,
-            "gaxtron_public_url": settings.PUBLIC_BASE_URL,
-        },
-    )
+    """Hosted checkout UI — polls this same Django app's /payment/{ref} for status."""
+    return render(request, "merchants/pay.html", {"payment_ref": payment_ref})

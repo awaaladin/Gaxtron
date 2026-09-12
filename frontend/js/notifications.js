@@ -94,8 +94,9 @@
     const toast = document.getElementById('notifToast');
     if (!toast) return;
     toast.className = `notif-toast notif-toast--${item.tone} notif-toast--show`;
+    const icon = item.tone === 'success' ? 'check_circle' : item.tone === 'error' ? 'cancel' : 'schedule';
     toast.innerHTML = `
-      <div class="notif-toast-icon"><i data-lucide="${item.tone === 'success' ? 'check-circle' : item.tone === 'error' ? 'x-circle' : 'clock'}"></i></div>
+      <div class="notif-toast-icon"><span class="material-symbols-outlined">${icon}</span></div>
       <div>
         <p class="notif-toast-title">${item.title}</p>
         <p class="notif-toast-msg">${item.message}</p>
@@ -105,7 +106,6 @@
     toast.querySelector('.notif-toast-close')?.addEventListener('click', () => {
       toast.classList.remove('notif-toast--show');
     });
-    if (global.lucide) lucide.createIcons();
     clearTimeout(toast._timer);
     toast._timer = setTimeout(() => toast.classList.remove('notif-toast--show'), 6000);
   }

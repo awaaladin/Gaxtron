@@ -1,28 +1,103 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="http://127.0.0.1:8000/favicon.svg" />
-  <meta name="theme-color" content="#0f172a">
-  <title>{% block title %}Gaxtron Dashboard{% endblock %}</title>
-  <link rel="stylesheet" href="/static/dashboard.css">
+  <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}" />
+  <meta name="theme-color" content="#0B0B0A">
+  <title>{% block title %}Gaxtron{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="{% static 'js/tailwind-config.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}"/>
 </head>
-<body>
-  <nav class="sidebar">
-    <div class="brand">Gaxtron</div>
-    {% if user.is_authenticated %}
-    <a href="{% url 'dashboard' %}">Dashboard</a>
-    <a href="{% url 'transactions' %}">Transactions</a>
-    <a href="{% url 'api_keys' %}">API Keys</a>
-    <a href="{% url 'webhooks' %}">Webhook Logs</a>
-    {% if user.is_superuser %}<a href="{% url 'admin_overview' %}">Admin</a>{% endif %}
-    <a href="{% url 'logout' %}">Logout</a>
+<body class="bg-background text-on-surface selection:bg-primary selection:text-on-primary">
+{% if user.is_authenticated %}
+<aside class="fixed left-0 top-0 h-full flex flex-col py-stack-lg w-64 border-r border-outline-variant bg-background z-50 custom-scrollbar overflow-y-auto">
+  <div class="px-6 mb-10">
+    <a href="{% url 'dashboard' %}" class="font-headline-md text-headline-md font-bold text-primary tracking-tighter">GAXTRON</a>
+    <p class="font-label-caps text-[10px] text-outline uppercase tracking-[0.2em] mt-1">Fintech Precision</p>
+  </div>
+  <nav class="flex-1 space-y-1">
+    {% url 'dashboard' as dashboard_url %}
+    {% url 'payments' as payments_url %}
+    {% url 'transactions' as transactions_url %}
+    {% url 'api_keys' as api_keys_url %}
+    {% url 'webhooks' as webhooks_url %}
+    {% url 'markets' as markets_url %}
+    <a href="{{ dashboard_url }}" class="flex items-center px-6 py-3 {% if request.path == dashboard_url %}text-primary font-bold border-r-2 border-primary bg-surface-container-low{% else %}text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors{% endif %}">
+      <span class="material-symbols-outlined mr-3">dashboard</span><span class="font-label-caps text-label-caps uppercase">Dashboard</span>
+    </a>
+    <a href="{{ payments_url }}" class="flex items-center px-6 py-3 {% if request.path == payments_url %}text-primary font-bold border-r-2 border-primary bg-surface-container-low{% else %}text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors{% endif %}">
+      <span class="material-symbols-outlined mr-3">payments</span><span class="font-label-caps text-label-caps uppercase">Payments</span>
+    </a>
+    <a href="{{ transactions_url }}" class="flex items-center px-6 py-3 {% if request.path == transactions_url %}text-primary font-bold border-r-2 border-primary bg-surface-container-low{% else %}text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors{% endif %}">
+      <span class="material-symbols-outlined mr-3">receipt_long</span><span class="font-label-caps text-label-caps uppercase">Transactions</span>
+    </a>
+    <a href="{{ api_keys_url }}" class="flex items-center px-6 py-3 {% if request.path == api_keys_url %}text-primary font-bold border-r-2 border-primary bg-surface-container-low{% else %}text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors{% endif %}">
+      <span class="material-symbols-outlined mr-3">vpn_key</span><span class="font-label-caps text-label-caps uppercase">API Keys</span>
+    </a>
+    <a href="{{ webhooks_url }}" class="flex items-center px-6 py-3 {% if request.path == webhooks_url %}text-primary font-bold border-r-2 border-primary bg-surface-container-low{% else %}text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors{% endif %}">
+      <span class="material-symbols-outlined mr-3">webhook</span><span class="font-label-caps text-label-caps uppercase">Webhooks</span>
+    </a>
+    <a href="{{ markets_url }}" class="flex items-center px-6 py-3 {% if request.path == markets_url %}text-primary font-bold border-r-2 border-primary bg-surface-container-low{% else %}text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors{% endif %}">
+      <span class="material-symbols-outlined mr-3">storefront</span><span class="font-label-caps text-label-caps uppercase">Markets</span>
+    </a>
+    {% if user.is_superuser %}
+    {% url 'admin_overview' as admin_url %}
+    <a href="{{ admin_url }}" class="flex items-center px-6 py-3 {% if request.path == admin_url %}text-primary font-bold border-r-2 border-primary bg-surface-container-low{% else %}text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors{% endif %}">
+      <span class="material-symbols-outlined mr-3">admin_panel_settings</span><span class="font-label-caps text-label-caps uppercase">Admin</span>
+    </a>
     {% endif %}
   </nav>
-  <main class="content">
-    {% for message in messages %}<div class="alert">{{ message }}</div>{% endfor %}
+  <div class="px-6 mt-auto flex flex-col gap-1">
+    {% if user.is_superuser %}
+    <div class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest mb-2">Admin access · {{ user.username }}</div>
+    {% endif %}
+    {% url 'profile' as profile_url %}
+    <a href="{{ profile_url }}" class="flex items-center py-3 {% if request.path == profile_url %}text-primary font-bold{% else %}text-on-surface-variant font-medium hover:text-on-surface{% endif %} transition-colors">
+      <span class="material-symbols-outlined mr-3">person</span><span class="font-label-caps text-label-caps uppercase">Profile</span>
+    </a>
+    <a href="{% url 'logout' %}" class="flex items-center py-3 text-on-surface-variant font-medium hover:text-error transition-colors">
+      <span class="material-symbols-outlined mr-3">logout</span><span class="font-label-caps text-label-caps uppercase">Sign out</span>
+    </a>
+  </div>
+</aside>
+
+<main class="ml-64 min-h-screen flex flex-col">
+  <header class="flex justify-between items-center w-full px-margin-desktop h-16 border-b border-outline-variant bg-background sticky top-0 z-40">
+    <div class="flex items-center gap-stack-lg">
+      <span class="font-label-caps text-label-caps text-on-surface-variant">Network: <span class="text-primary">Sepolia</span></span>
+      {% if user.is_superuser %}<span class="font-label-caps text-label-caps text-on-surface-variant">Mode: <span class="text-on-surface">Superuser</span></span>{% endif %}
+    </div>
+    <div class="flex items-center gap-6">
+      <span class="w-8 h-8 bg-surface-container-highest border border-outline-variant flex items-center justify-center font-label-caps text-[11px]">{{ user.username|slice:":2"|upper }}</span>
+    </div>
+  </header>
+
+  <div class="flex-1 px-margin-desktop py-stack-lg max-w-[1400px] w-full">
+    {% for message in messages %}
+    <div class="flat-border border-primary bg-surface-container-lowest p-4 mb-stack-md font-body-md text-on-surface">{{ message }}</div>
+    {% endfor %}
     {% block content %}{% endblock %}
-  </main>
+  </div>
+
+  <footer class="mt-auto px-margin-desktop py-stack-lg border-t border-outline-variant opacity-50">
+    <p class="font-label-caps text-[10px] uppercase tracking-widest">© 2026 GAXTRON TECHNOLOGIES. ALL RIGHTS RESERVED.</p>
+  </footer>
+</main>
+{% else %}
+<main class="min-h-screen flex items-center justify-center px-margin-mobile">
+  <div class="w-full max-w-md">
+    {% for message in messages %}
+    <div class="flat-border border-primary bg-surface-container-lowest p-4 mb-stack-md font-body-md text-on-surface">{{ message }}</div>
+    {% endfor %}
+    {% block auth_content %}{% endblock %}
+  </div>
+</main>
+{% endif %}
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>

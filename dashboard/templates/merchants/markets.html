@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Markets — Gaxtron{% endblock %}
+{% block content %}
+<p class="font-label-caps text-label-caps text-primary uppercase mb-2">Market Intel</p>
+<h2 class="font-display-lg text-display-lg text-on-surface italic mb-stack-lg">Global Asset Liquidity</h2>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-start">
+  <div class="lg:col-span-2 flex flex-col gap-stack-md">
+    <div class="flat-border bg-surface-container-lowest p-6">
+      <div class="flex justify-between items-start flex-wrap gap-stack-md">
+        <div>
+          <p class="font-label-caps text-label-caps text-on-surface-variant" id="marketCoinSymbol">ETH</p>
+          <h3 class="font-headline-md text-headline-md text-on-surface" id="marketCoinName">Ethereum</h3>
+        </div>
+        <select id="coinSelect" class="bg-transparent border border-outline-variant focus:ring-0 focus:border-primary font-label-caps text-label-caps text-on-surface py-2 px-3"></select>
+      </div>
+      <p class="font-display-lg text-[40px] text-on-surface mt-stack-md" id="marketPrice">—</p>
+      <p class="font-mono-data text-mono-data text-primary" id="marketChange">—</p>
+    </div>
+
+    <div class="flat-border bg-surface-container-lowest p-6">
+      <p class="font-label-caps text-label-caps uppercase text-on-surface mb-stack-md">Price Movement · 24H · USD</p>
+      <div class="h-[280px]"><canvas id="marketChart" aria-label="Price chart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="flat-border bg-surface-container-lowest">
+    <div class="p-6 divider-b">
+      <h3 class="font-label-caps text-label-caps uppercase text-on-surface">All Markets</h3>
+      <p class="font-body-md text-on-surface-variant text-[13px] mt-1">Tap a coin to view its chart</p>
+    </div>
+    <div id="coinList">
+      <p class="px-6 py-8 text-center text-on-surface-variant font-body-md">Loading market data…</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/markets.js' %}"></script>
+{% endblock %}

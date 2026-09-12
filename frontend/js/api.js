@@ -203,10 +203,10 @@ function showToast(message, type = 'success') {
     const t = GaxtronErrors.toastHtml(message);
     html = t.html.replace(`cp-toast--${t.error.tone}`, `cp-toast--${tone === 'error' ? t.error.tone : tone}`);
   } else {
-    const icons = { success: 'check-circle', error: 'circle-alert', warning: 'alert-triangle', info: 'info' };
+    const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
     html = `
       <div class="cp-toast cp-toast--${tone}">
-        <div class="cp-toast-icon"><i data-lucide="${icons[type] || icons.info}"></i></div>
+        <div class="cp-toast-icon"><span class="material-symbols-outlined">${icons[type] || icons.info}</span></div>
         <div class="cp-toast-body">
           <p class="cp-toast-title">${type === 'success' ? 'Success' : type === 'warning' ? 'Notice' : 'Info'}</p>
           <p class="cp-toast-message">${message}</p>
@@ -220,7 +220,6 @@ function showToast(message, type = 'success') {
   const toast = el.firstElementChild;
   toast.querySelector('.cp-toast-close')?.addEventListener('click', () => toast.remove());
   host.appendChild(toast);
-  if (window.lucide) lucide.createIcons();
   setTimeout(() => toast.remove(), 5200);
 }
 
@@ -290,21 +289,20 @@ function statusBadge(status) {
     failed: 'Failed',
     delivered: 'Delivered',
     expired: 'Expired',
+    retrying: 'Retrying',
   };
-  const cls = {
-    confirmed: 'status-badge--confirmed',
-    pending: 'status-badge--pending',
-    failed: 'status-badge--failed',
-    delivered: 'status-badge--delivered',
-    expired: 'status-badge--expired',
+  // Flat, bordered pill matching the Premium Editorial Fintech design system —
+  // confirmed/delivered use the accent color, pending/retrying are neutral, failed/expired are error.
+  const tones = {
+    confirmed: 'bg-primary/10 text-primary border-primary/20',
+    delivered: 'bg-primary/10 text-primary border-primary/20',
+    pending: 'bg-outline-variant/40 text-on-surface-variant border-outline-variant',
+    retrying: 'bg-outline-variant/40 text-on-surface-variant border-outline-variant',
+    failed: 'bg-error-container/20 text-error border-error/30',
+    expired: 'bg-error-container/20 text-error border-error/30',
   };
   const label = labels[status] || status;
-  const tone = cls[status] || cls.pending;
-  return `<span class="status-badge ${tone}">${label}</span>`;
+  const tone = tones[status] || tones.pending;
+  return `<span class="inline-block px-2 py-0.5 text-[10px] font-bold uppercase border ${tone}">${label}</span>`;
 }
 
-function initLucide() {
-  if (window.lucide) lucide.createIcons();
-}
-
-document.addEventListener('DOMContentLoaded', initLucide);

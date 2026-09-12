@@ -1,23 +1,57 @@
 {% extends "base.html" %}
 {% block title %}Admin — Gaxtron{% endblock %}
 {% block content %}
-<h1>Superadmin Overview</h1>
-<p>Total blockchain transactions: <strong>{{ total_transactions }}</strong></p>
-<h2>All Merchants</h2>
-<table>
-  <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Active</th><th>Superadmin</th><th>Joined</th></tr></thead>
-  <tbody>
-  {% for u in users %}
-  <tr>
-    <td>{{ u.id }}</td>
-    <td>{{ u.username }}</td>
-    <td>{{ u.email }}</td>
-    <td>{{ u.is_active }}</td>
-    <td>{{ u.is_superadmin }}</td>
-    <td>{{ u.created_at }}</td>
-  </tr>
-  {% endfor %}
-  </tbody>
-</table>
-<p>Use <a href="/admin/">Django Admin</a> to suspend accounts and monitor all transactions.</p>
+<div class="flex justify-between items-end mb-stack-lg flex-wrap gap-stack-md">
+  <div>
+    <p class="font-label-caps text-label-caps text-primary uppercase mb-2">Global Operations</p>
+    <h2 class="font-display-lg text-display-lg text-on-surface italic">Superadmin Overview</h2>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-0 mb-stack-lg flat-border">
+  <div class="p-8 divider-r">
+    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-4">Total Merchants</p>
+    <p class="font-headline-md text-headline-md text-on-surface">{{ users|length }}</p>
+  </div>
+  <div class="p-8">
+    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-4">Total Transactions</p>
+    <p class="font-headline-md text-headline-md text-primary">{{ total_transactions }}</p>
+  </div>
+</div>
+
+<div class="flat-border bg-surface-container-lowest">
+  <div class="p-6 divider-b">
+    <h3 class="font-label-caps text-label-caps uppercase text-on-surface">Global Merchant Ledger</h3>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="divider-b bg-surface-container">
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">ID</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Username</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Email</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Active</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Superadmin</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Joined</th>
+        </tr>
+      </thead>
+      <tbody class="font-mono-data text-on-surface divide-y divide-outline-variant">
+      {% for u in users %}
+        <tr class="hover:bg-surface-container-low transition-colors">
+          <td class="px-6 py-4">{{ u.id }}</td>
+          <td class="px-6 py-4 font-body-md">{{ u.username }}</td>
+          <td class="px-6 py-4">{{ u.email }}</td>
+          <td class="px-6 py-4">{{ u.is_active }}</td>
+          <td class="px-6 py-4">{{ u.is_superuser }}</td>
+          <td class="px-6 py-4">{{ u.created_at }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="p-6 divider-b border-t border-outline-variant">
+    <a href="/admin/" class="font-label-caps text-label-caps text-primary hover:underline underline-offset-4">USE DJANGO ADMIN →</a>
+    <span class="font-body-md text-on-surface-variant text-[13px] ml-2">to suspend accounts and monitor all transactions</span>
+  </div>
+</div>
 {% endblock %}

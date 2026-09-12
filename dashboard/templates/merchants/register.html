@@ -1,12 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Register — Gaxtron{% endblock %}
-{% block content %}
-<div class="auth-box">
-  <h1>Register</h1>
-  <form method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Register</button>
-  </form>
-  <p><a href="{% url 'login' %}">Already have an account?</a></p>
+{% block auth_content %}
+<header class="flex flex-col items-center mb-stack-lg">
+  <span class="font-headline-md text-headline-md font-bold text-primary tracking-tighter mb-stack-md">GAXTRON</span>
+  <h1 class="font-headline-md text-headline-md text-on-surface mb-2">Create merchant account</h1>
+  <p class="font-body-md text-on-surface-variant text-center">Set up your crypto payment gateway</p>
+</header>
+
+{% if form.errors %}
+<div class="flat-border border-error bg-surface-container-lowest p-4 mb-stack-md">
+  {% for field in form %}
+    {% for error in field.errors %}<p class="font-body-md text-error text-[13px]">{{ field.label }}: {{ error }}</p>{% endfor %}
+  {% endfor %}
+  {% for error in form.non_field_errors %}<p class="font-body-md text-error text-[13px]">{{ error }}</p>{% endfor %}
 </div>
+{% endif %}
+
+<form method="post" class="gx-form flex flex-col gap-stack-md">
+  {% csrf_token %}
+  <div class="flex flex-col gap-stack-sm">
+    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.username.id_for_label }}">USERNAME</label>
+    {{ form.username }}
+  </div>
+  <div class="flex flex-col gap-stack-sm">
+    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.email.id_for_label }}">EMAIL</label>
+    {{ form.email }}
+  </div>
+  <div class="flex flex-col gap-stack-sm">
+    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.password1.id_for_label }}">PASSWORD</label>
+    {{ form.password1 }}
+    <span class="font-label-caps text-[10px] text-outline">MINIMUM 8 CHARACTERS</span>
+  </div>
+  <div class="flex flex-col gap-stack-sm">
+    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.password2.id_for_label }}">CONFIRM PASSWORD</label>
+    {{ form.password2 }}
+  </div>
+  <button type="submit" class="mt-stack-sm w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 tracking-[0.2em] hover:bg-primary-container transition-colors">INITIALIZE ACCOUNT</button>
+</form>
+
+<p class="font-label-caps text-[11px] text-on-surface-variant text-center mt-stack-lg">Already registered? <a href="{% url 'login' %}" class="text-primary hover:underline underline-offset-4">Sign in</a></p>
 {% endblock %}

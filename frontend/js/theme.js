@@ -8,9 +8,8 @@
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = theme === 'dark' ? '#1a1630' : '#faf5ff';
     document.querySelectorAll('[data-theme-icon]').forEach((el) => {
-      el.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+      el.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
     });
-    if (global.lucide) lucide.createIcons();
   }
 
   function toggleTheme() {

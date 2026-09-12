@@ -1,20 +1,46 @@
 {% extends "base.html" %}
 {% block title %}API Keys — Gaxtron{% endblock %}
 {% block content %}
-<h1>API Key Management</h1>
-<p>Generate and regenerate keys via the FastAPI service (keys are never stored in plaintext).</p>
-<table>
-  <thead><tr><th>Prefix</th><th>Name</th><th>Active</th><th>Created</th><th>Last Used</th></tr></thead>
-  <tbody>
-  {% for key in api_keys %}
-  <tr>
-    <td class="mono">{{ key.key_prefix }}...</td>
-    <td>{{ key.name }}</td>
-    <td>{{ key.is_active }}</td>
-    <td>{{ key.created_at }}</td>
-    <td>{{ key.last_used_at|default:"—" }}</td>
-  </tr>
-  {% empty %}<tr><td colspan="5">No API keys. Use <code>POST {{ fastapi_url }}/api-keys</code></td></tr>{% endfor %}
-  </tbody>
-</table>
+<div class="flex justify-between items-end mb-stack-lg flex-wrap gap-stack-md">
+  <div>
+    <p class="font-label-caps text-label-caps text-primary uppercase mb-2">Developer Tools</p>
+    <h2 class="font-display-lg text-display-lg text-on-surface italic">API Key Management</h2>
+  </div>
+</div>
+
+<div class="flat-border bg-surface-container-lowest mb-stack-lg p-6">
+  <p class="font-body-md text-on-surface-variant text-[13px]">
+    Generate and manage keys via the REST API — <code class="font-mono-data text-primary">POST /api-keys</code>
+    with your session's Bearer token, or from the mobile app.
+  </p>
+</div>
+
+<div class="flat-border bg-surface-container-lowest">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="divider-b bg-surface-container">
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Prefix</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Name</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Active</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Created</th>
+          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Last Used</th>
+        </tr>
+      </thead>
+      <tbody class="font-mono-data text-on-surface divide-y divide-outline-variant">
+      {% for key in api_keys %}
+        <tr class="hover:bg-surface-container-low transition-colors">
+          <td class="px-6 py-4">{{ key.key_prefix }}...</td>
+          <td class="px-6 py-4 font-body-md">{{ key.name }}</td>
+          <td class="px-6 py-4">{% if key.is_active %}<span class="inline-block px-2 py-0.5 text-[10px] font-bold uppercase border bg-primary/10 text-primary border-primary/20">Active</span>{% else %}<span class="inline-block px-2 py-0.5 text-[10px] font-bold uppercase border bg-error-container/20 text-error border-error/30">Revoked</span>{% endif %}</td>
+          <td class="px-6 py-4">{{ key.created_at }}</td>
+          <td class="px-6 py-4">{{ key.last_used_at|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">No API keys yet. Create one via <code class="font-mono-data">POST /api-keys</code></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

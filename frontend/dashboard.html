@@ -1,337 +1,139 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gaxtron — Dashboard</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#0f0d1a" />
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="css/dashboard.css?v=6" />
-  <script src="js/theme.js?v=1"></script>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gaxtron | Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="manifest" href="/site.webmanifest"/>
+<meta name="theme-color" content="#0B0B0A"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="css/base.css"/>
 </head>
-<body class="dash-page">
+<body class="bg-background text-on-surface selection:bg-primary selection:text-on-primary">
 
-<div class="dash-layout">
-  <aside class="dash-sidebar" id="dashSidebar">
-    <div class="dash-sidebar-inner">
-      <div class="dash-sidebar-head">
-        <div class="brand-mark">GX</div>
-        <div class="sidebar-label">
-          <div class="sidebar-brand-name">Gaxtron</div>
-          <div class="sidebar-brand-sub">Payment layer</div>
-        </div>
-      </div>
+<aside class="fixed left-0 top-0 h-full flex flex-col py-stack-lg w-64 border-r border-outline-variant bg-background z-50 custom-scrollbar overflow-y-auto">
+  <div class="px-6 mb-10">
+    <a href="dashboard.html" class="font-headline-md text-headline-md font-bold text-primary tracking-tighter">GAXTRON</a>
+    <p class="font-label-caps text-[10px] text-outline uppercase tracking-[0.2em] mt-1">Fintech Precision</p>
+  </div>
+  <nav class="flex-1 space-y-1">
+    <a href="dashboard.html" class="flex items-center px-6 py-3 text-primary font-bold border-r-2 border-primary bg-surface-container-low"><span class="material-symbols-outlined mr-3">dashboard</span><span class="font-label-caps text-label-caps uppercase">Dashboard</span></a>
+    <a href="payments.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">payments</span><span class="font-label-caps text-label-caps uppercase">Payments</span></a>
+    <a href="transactions.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">receipt_long</span><span class="font-label-caps text-label-caps uppercase">Transactions</span></a>
+    <a href="api-keys.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">vpn_key</span><span class="font-label-caps text-label-caps uppercase">API Keys</span></a>
+    <a href="webhooks.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">webhook</span><span class="font-label-caps text-label-caps uppercase">Webhooks</span></a>
+    <a href="analytics.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">storefront</span><span class="font-label-caps text-label-caps uppercase">Markets</span></a>
+    <a href="agent.html" class="flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-highest hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">smart_toy</span><span class="font-label-caps text-label-caps uppercase">Agent</span></a>
+  </nav>
+  <div class="px-6 mt-auto flex flex-col gap-1">
+    <a href="profile.html" class="flex items-center py-3 text-on-surface-variant font-medium hover:text-on-surface transition-colors"><span class="material-symbols-outlined mr-3">person</span><span class="font-label-caps text-label-caps uppercase">Profile</span></a>
+    <button type="button" onclick="Auth.logout()" class="flex items-center py-3 text-on-surface-variant font-medium hover:text-error transition-colors"><span class="material-symbols-outlined mr-3">logout</span><span class="font-label-caps text-label-caps uppercase">Sign out</span></button>
+  </div>
+</aside>
 
-      <nav>
-        <span class="nav-group-label sidebar-label">Core</span>
-        <a href="dashboard.html" class="sidebar-link active" data-tab="overview">
-          <i data-lucide="layout-dashboard"></i>
-          <span class="sidebar-label">Overview</span>
-        </a>
-        <a href="#payments" class="sidebar-link" data-tab="payments" onclick="showTab('payments', this);return false">
-          <i data-lucide="wallet"></i>
-          <span class="sidebar-label">Payments</span>
-        </a>
-        <a href="#transactions" class="sidebar-link" data-tab="transactions" onclick="showTab('transactions', this);return false">
-          <i data-lucide="arrow-left-right"></i>
-          <span class="sidebar-label">Transactions</span>
-        </a>
-        <a href="analytics.html" class="sidebar-link">
-          <i data-lucide="line-chart"></i>
-          <span class="sidebar-label">Markets</span>
-        </a>
-
-        <span class="nav-group-label sidebar-label">Developer</span>
-        <a href="#apikeys" class="sidebar-link" data-tab="apikeys" onclick="showTab('apikeys', this);return false">
-          <i data-lucide="key-round"></i>
-          <span class="sidebar-label">API Keys</span>
-        </a>
-        <a href="#webhooks" class="sidebar-link" data-tab="webhooks" onclick="showTab('webhooks', this);return false">
-          <i data-lucide="webhook"></i>
-          <span class="sidebar-label">Webhooks</span>
-        </a>
-
-        <span class="nav-group-label sidebar-label">Agent</span>
-        <a href="#agent" class="sidebar-link" data-tab="agent" onclick="showTab('agent', this);return false">
-          <i data-lucide="bot"></i>
-          <span class="sidebar-label">Payment Agent</span>
-        </a>
-      </nav>
-
-      <div class="network-badge">
-        <div class="network-dot"></div>
-        <span class="network-text">Sepolia · ETH</span>
-      </div>
-
-      <div class="dash-sidebar-foot">
-        <button type="button" onclick="Auth.logout()" class="sidebar-link sidebar-link--danger">
-          <i data-lucide="log-out"></i>
-          <span class="sidebar-label">Sign out</span>
-        </button>
-      </div>
+<main class="ml-64 min-h-screen flex flex-col">
+  <header class="flex justify-between items-center w-full px-margin-desktop h-16 border-b border-outline-variant bg-background sticky top-0 z-40">
+    <div class="flex items-center gap-stack-lg">
+      <span class="font-label-caps text-label-caps text-on-surface-variant">Network: <span class="text-primary">Sepolia</span></span>
+      <span class="font-label-caps text-label-caps text-on-surface-variant">Merchant: <span class="text-on-surface">Active</span></span>
     </div>
-  </aside>
+    <div class="flex items-center gap-6">
+      <button type="button" class="relative text-on-surface-variant hover:text-primary transition-colors" id="notifBtn" aria-label="Notifications">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="hidden absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold w-4 h-4 flex items-center justify-center" id="notifBadge">0</span>
+      </button>
+      <button type="button" class="text-on-surface-variant hover:text-primary transition-colors" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="material-symbols-outlined" data-theme-icon>dark_mode</span>
+      </button>
+      <a href="profile.html" class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-surface-container-highest border border-outline-variant flex items-center justify-center font-label-caps text-[11px]" id="userAvatar">—</div>
+        <span class="font-label-caps text-[11px] text-on-surface-variant hidden md:inline" id="userEmail">—</span>
+      </a>
+    </div>
+  </header>
 
-  <main class="dash-main">
-    <header class="dash-topbar">
+  <div class="flex-1 px-margin-desktop py-stack-lg max-w-[1400px] w-full">
+    <div class="flex justify-between items-end mb-stack-lg flex-wrap gap-stack-md">
       <div>
-        <h1 id="pageTitle">Overview</h1>
-        <p class="dash-topbar-sub" id="pageSubtitle">Merchant dashboard · Sepolia testnet</p>
+        <h2 class="font-display-lg text-display-lg text-on-surface italic">Overview</h2>
+        <p class="font-body-md text-on-surface-variant mt-2 max-w-xl">Precision-engineered settlement data for the modern merchant. Real-time liquidity tracking across all integrated crypto-networks.</p>
       </div>
-      <div class="dash-topbar-actions">
-        <button type="button" class="notif-btn" id="notifBtn" aria-label="Notifications">
-          <i data-lucide="bell" style="width:16px;height:16px"></i>
-          <span class="notif-badge hidden" id="notifBadge">0</span>
-        </button>
-        <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-          <i data-theme-icon data-lucide="moon"></i>
-        </button>
-        <a href="profile.html" class="user-pill">
-          <div class="user-avatar" id="userAvatar">—</div>
-          <span class="user-email" id="userEmail">—</span>
-        </a>
-      </div>
-    </header>
-
-    <div class="dash-content">
-      <!-- API Key -->
-      <div class="api-card" id="apiKeyPanel">
-        <div class="api-card-inner">
-          <div class="api-header">
-            <div>
-              <div class="api-title">Merchant API</div>
-              <div class="api-hint">One secret key unlocks payments, status checks, and webhooks — like Stripe</div>
-            </div>
-            <button type="button" class="btn-ghost" onclick="regenerateKey()">
-              <i data-lucide="refresh-cw" style="width:13px;height:13px"></i>
-              Regenerate
-            </button>
-          </div>
-          <div class="key-display">
-            <div class="key-value" id="apiKeyDisplay">Loading…</div>
-            <div class="key-actions">
-              <button type="button" class="btn-icon" id="toggleApiKeyBtn" onclick="toggleApiKeyVisibility()" aria-label="Show API key">
-                <i data-lucide="eye" style="width:14px;height:14px"></i>
-              </button>
-              <button type="button" class="btn-primary" id="copyApiKeyBtn" onclick="copyApiKey()">Copy</button>
-            </div>
-          </div>
-          <p class="key-note" id="apiKeyHint">Stored in this browser only. Regenerate if you lose it.</p>
-        </div>
-      </div>
-
-      <!-- Overview -->
-      <section id="tab-overview">
-        <div class="stats-grid" id="statsGrid">
-          <div class="stat-card">
-            <p class="stat-label">Total payments</p>
-            <p class="stat-value stat-value--neutral skeleton stat-skeleton" id="statTotal"></p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">Confirmed</p>
-            <p class="stat-value stat-value--success skeleton stat-skeleton" id="statSuccess"></p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">Pending</p>
-            <p class="stat-value stat-value--warning skeleton stat-skeleton" id="statPending"></p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">Revenue (ETH)</p>
-            <p class="stat-value stat-value--accent skeleton stat-skeleton" id="statRevenue"></p>
-          </div>
-        </div>
-
-        <div class="section-card">
-          <div class="section-header">
-            <div>
-              <div class="section-title">Recent payments</div>
-              <div class="section-sub">Live from your merchant account</div>
-            </div>
-            <button type="button" class="btn-primary" onclick="openCreatePayment()">
-              <i data-lucide="plus" style="width:14px;height:14px"></i>
-              New payment
-            </button>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="cp-table">
-              <thead>
-                <tr>
-                  <th>Reference</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Checkout</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody id="recentPayments">
-                <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">Loading…</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- Payments -->
-      <section id="tab-payments" class="hidden">
-        <div class="section-card">
-          <div class="section-header">
-            <div>
-              <div class="section-title">Create payment</div>
-              <div class="section-sub">Hosted checkout with QR code and wallet address</div>
-            </div>
-          </div>
-          <div class="section-body">
-            <form id="createPaymentForm" class="form-grid">
-              <div>
-                <label class="form-label">Amount (ETH)</label>
-                <input name="amount" type="number" step="any" min="0" class="cp-input" placeholder="0.001" required />
-              </div>
-              <div style="grid-column:1/-1">
-                <label class="form-label">Webhook callback URL</label>
-                <input name="callback_url" type="url" class="cp-input" placeholder="https://your-server.com/webhooks/gaxtron" required />
-              </div>
-              <div>
-                <button type="submit" class="btn-primary btn-lime" id="createPayBtn">Create payment link</button>
-              </div>
-            </form>
-            <div id="createResult" class="hidden" style="margin-top:1.25rem"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Transactions -->
-      <section id="tab-transactions" class="hidden">
-        <div class="section-card">
-          <div class="section-header">
-            <div>
-              <div class="section-title">On-chain transactions</div>
-              <div class="section-sub">Sepolia testnet · ETH</div>
-            </div>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="cp-table">
-              <thead>
-                <tr><th>Hash</th><th>Amount</th><th>Status</th><th>Confirms</th><th>Date</th></tr>
-              </thead>
-              <tbody id="txTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- API Keys -->
-      <section id="tab-apikeys" class="hidden">
-        <div class="section-card">
-          <div class="section-header">
-            <div>
-              <div class="section-title">Integrate like Stripe</div>
-              <div class="section-sub">Server-side only · never expose your secret key in the browser</div>
-            </div>
-            <button type="button" class="btn-ghost" onclick="regenerateKey()">
-              <i data-lucide="refresh-cw" style="width:13px;height:13px"></i>
-              Regenerate key
-            </button>
-          </div>
-          <div class="section-body api-docs">
-            <p class="api-docs-lead">Copy your API key from the panel above. Once integrated on your server, you can create checkouts, verify payments, and list transactions programmatically.</p>
-
-            <div class="api-docs-grid">
-              <div class="api-docs-block">
-                <span class="api-docs-label">Authentication</span>
-                <code class="api-docs-code">X-API-Key: gax_your_secret_key</code>
-              </div>
-              <div class="api-docs-block">
-                <span class="api-docs-label">Base URL</span>
-                <code class="api-docs-code" id="apiBaseUrlDisplay">—</code>
-              </div>
-            </div>
-
-            <h3 class="api-docs-h3">Redirect customers (retail / e-commerce)</h3>
-            <p class="api-docs-lead" style="margin-bottom:0.75rem">
-              After <code>createPayment</code>, send the shopper to <code>payment_url</code> (hosted on Gaxtron). Same URL works in email, SMS, or QR codes.
-            </p>
-            <pre class="api-code-block" id="sdkRedirectSnippet">Loading…</pre>
-
-            <h3 class="api-docs-h3">Quick start (Node.js)</h3>
-            <pre class="api-code-block" id="sdkNodeSnippet">Loading…</pre>
-
-            <h3 class="api-docs-h3">Endpoints</h3>
-            <ul class="api-endpoint-list">
-              <li><code>POST /create-payment</code> — returns <code>payment_url</code> / <code>checkout_url</code></li>
-              <li><code>GET /pay/{token}</code> — hosted checkout (link or QR)</li>
-              <li><code>GET /checkout/{token}</code> — same page (redirect alias)</li>
-              <li><code>GET /verify-payment/{id}</code> — payment status</li>
-              <li><code>GET /payments</code> — list your payments</li>
-            </ul>
-
-            <p class="api-docs-note">Include <code>gaxtron.js</code> on your backend or call REST directly. Customers pay via <code>payment_url</code>; Gaxtron confirms on-chain and sends webhooks to your <code>callback_url</code>.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Webhooks -->
-      <section id="tab-webhooks" class="hidden">
-        <div class="section-card">
-          <div class="section-header">
-            <div>
-              <div class="section-title">Webhook delivery log</div>
-              <div class="section-sub">Event notifications to your endpoints</div>
-            </div>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="cp-table">
-              <thead>
-                <tr><th>Payment</th><th>Event</th><th>Status</th><th>HTTP</th><th>Attempts</th></tr>
-              </thead>
-              <tbody id="webhookTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- Payment Agent (Track 3) -->
-      <section id="tab-agent" class="hidden">
-        <div class="section-card">
-          <div class="section-header">
-            <div>
-              <div class="section-title">Payment Orchestrator Agent</div>
-              <div class="section-sub">Autonomous routing — health → fraud → fees → chain → execute → verify · Track 3</div>
-            </div>
-          </div>
-          <div class="section-body" style="display:flex;flex-direction:column;gap:1rem;max-width:640px">
-            <div>
-              <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.35rem">Goal (command)</label>
-              <textarea id="agentGoal" rows="2" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit">Process crypto payment with lowest fees and fastest confirmation</textarea>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
-              <div>
-                <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.35rem">Amount (ETH)</label>
-                <input id="agentAmount" type="text" placeholder="0.001" style="width:100%;padding:0.55rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)" />
-              </div>
-              <div>
-                <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.35rem">Currency</label>
-                <select id="agentCurrency" style="width:100%;padding:0.55rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
-                  <option value="ETH">ETH</option>
-                  <option value="USDT">USDT</option>
-                  <option value="SOL">SOL</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:0.35rem">Webhook callback URL</label>
-              <input id="agentCallback" type="url" placeholder="https://your-server.com/webhooks/gaxtron" style="width:100%;padding:0.55rem;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)" />
-            </div>
-            <button type="button" class="btn-primary" id="runPaymentAgentBtn" onclick="runPaymentAgent()">Run Payment Agent</button>
-            <p id="agentRunStatus" style="font-size:0.8125rem;color:var(--text-muted);margin:0"></p>
-            <pre id="agentRunOutput" class="hidden" style="white-space:pre-wrap;font-size:0.75rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;max-height:360px;overflow:auto;margin:0"></pre>
-          </div>
-        </div>
-      </section>
+      <a href="payments.html" class="bg-primary text-on-primary font-label-caps text-label-caps py-4 px-8 uppercase tracking-widest hover:bg-primary-container transition-colors">+ New Payment</a>
     </div>
-  </main>
-</div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-0 mb-stack-lg flat-border" id="statsGrid">
+      <div class="p-8 divider-r">
+        <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-4">Total Payments</p>
+        <p class="font-headline-md text-headline-md text-on-surface" id="statTotal">—</p>
+      </div>
+      <div class="p-8 divider-r">
+        <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-4">Confirmed</p>
+        <p class="font-headline-md text-headline-md text-on-surface" id="statSuccess">—</p>
+      </div>
+      <div class="p-8 divider-r">
+        <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-4">Pending</p>
+        <p class="font-headline-md text-headline-md text-on-surface" id="statPending">—</p>
+      </div>
+      <div class="p-8">
+        <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-4">Revenue (ETH)</p>
+        <p class="font-headline-md text-headline-md text-primary" id="statRevenue">—</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-start">
+      <div class="lg:col-span-2 flat-border bg-surface-container-lowest">
+        <div class="p-6 divider-b flex justify-between items-center">
+          <h3 class="font-label-caps text-label-caps uppercase text-on-surface">Recent Payments</h3>
+          <a class="font-label-caps text-[10px] text-primary underline underline-offset-4" href="payments.html">VIEW ALL LEDGER</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="divider-b bg-surface-container">
+                <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Reference</th>
+                <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Amount</th>
+                <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Status</th>
+                <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Created</th>
+              </tr>
+            </thead>
+            <tbody class="font-mono-data text-on-surface divide-y divide-outline-variant" id="recentPayments">
+              <tr><td colspan="4" class="px-6 py-8 text-center text-on-surface-variant">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flat-border bg-surface-container-lowest">
+        <div class="p-6 divider-b">
+          <h3 class="font-label-caps text-label-caps uppercase text-on-surface">Integration Integrity</h3>
+        </div>
+        <div class="p-6 flex flex-col gap-stack-lg">
+          <div>
+            <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-2">Live API Key</p>
+            <div class="font-mono-data p-4 bg-background border border-outline-variant flex justify-between items-center overflow-hidden" id="apiKeyDisplay">Loading…</div>
+            <div class="mt-2 flex gap-4">
+              <button type="button" class="font-label-caps text-[10px] text-on-surface-variant hover:text-primary uppercase" id="toggleApiKeyBtn" onclick="toggleApiKeyVisibility()">Show</button>
+              <button type="button" class="font-label-caps text-[10px] text-on-surface-variant hover:text-primary uppercase" id="copyApiKeyBtn" onclick="copyApiKey()">Copy Key</button>
+              <button type="button" class="font-label-caps text-[10px] text-on-surface-variant hover:text-error uppercase" onclick="regenerateKey()">Roll Key</button>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-outline-variant">
+            <p class="font-body-md text-on-surface-variant italic">"Security is not a feature, it is the fundamental architectural constraint of the Gax engine."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-auto px-margin-desktop py-stack-lg border-t border-outline-variant opacity-50 flex justify-between items-center flex-wrap gap-2">
+    <p class="font-label-caps text-[10px] uppercase tracking-widest">© 2026 GAXTRON TECHNOLOGIES. ALL RIGHTS RESERVED.</p>
+    <span class="font-label-caps text-[10px] uppercase tracking-widest">SEPOLIA TESTNET</span>
+  </footer>
+</main>
 
 <div class="notif-backdrop" id="notifBackdrop"></div>
 <aside class="notif-panel" id="notifPanel" aria-label="Notifications">
@@ -341,40 +143,40 @@
       <p class="notif-panel-sub">Live payment updates</p>
     </div>
     <button type="button" class="btn-icon" id="notifClose" aria-label="Close">
-      <i data-lucide="x" style="width:14px;height:14px"></i>
+      <span class="material-symbols-outlined text-[16px]">close</span>
     </button>
   </div>
   <div class="notif-list" id="notifList"></div>
 </aside>
 <div class="notif-toast" id="notifToast" aria-live="polite"></div>
 
+<script src="js/theme.js?v=2"></script>
 <script src="js/sidebar.js?v=2"></script>
-<script src="js/notifications.js?v=1"></script>
-<script src="js/errors.js?v=1"></script>
-<script src="js/api.js?v=5"></script>
+<script src="js/notifications.js?v=2"></script>
+<script src="js/errors.js?v=2"></script>
+<script src="js/api.js?v=7"></script>
 <script>
   if (!requireAuth()) throw new Error('auth');
 
   const user = getUser();
   if (user) {
     document.getElementById('userEmail').textContent = user.email;
-    const initials = user.email.slice(0, 2).toUpperCase();
-    document.getElementById('userAvatar').textContent = initials;
+    document.getElementById('userAvatar').textContent = user.email.slice(0, 2).toUpperCase();
   }
 
   let apiKeyVisible = false;
 
   function maskApiKey(key) {
-    if (!key) return 'No API key — click Regenerate';
+    if (!key) return 'No API key — click Roll Key';
     if (key.length <= 16) return '••••••••••••••••';
-    return `<span class="key-accent">${key.slice(0, 8)}</span>${'•'.repeat(16)}${key.slice(-4)}`;
+    return `<span class="text-primary">${key.slice(0, 8)}</span>${'•'.repeat(16)}${key.slice(-4)}`;
   }
 
   function renderApiKeyPanel() {
     const key = getApiKey();
     const el = document.getElementById('apiKeyDisplay');
     if (apiKeyVisible && key) {
-      el.innerHTML = `<span class="key-accent">${key.slice(0, 8)}</span>${key.slice(8, -4)}<span class="key-accent">${key.slice(-4)}</span>`;
+      el.innerHTML = `<span class="text-primary">${key.slice(0, 8)}</span>${key.slice(8, -4)}<span class="text-primary">${key.slice(-4)}</span>`;
     } else {
       el.innerHTML = maskApiKey(key);
     }
@@ -382,106 +184,30 @@
   }
 
   function toggleApiKeyVisibility() {
-    if (!getApiKey()) { showToast({ status: 403, message: 'Generate an API key first.' }, 'warning'); return; }
+    if (!getApiKey()) { showToast('Generate an API key first.', 'warning'); return; }
     apiKeyVisible = !apiKeyVisible;
     renderApiKeyPanel();
-    const icon = document.querySelector('#toggleApiKeyBtn i');
-    if (icon) icon.setAttribute('data-lucide', apiKeyVisible ? 'eye-off' : 'eye');
-    lucide.createIcons();
+    document.getElementById('toggleApiKeyBtn').textContent = apiKeyVisible ? 'Hide' : 'Show';
   }
 
   function copyApiKey() {
     const key = getApiKey();
-    if (!key) { showToast({ status: 403, message: 'No API key to copy.' }, 'warning'); return; }
+    if (!key) { showToast('No API key to copy.', 'warning'); return; }
     copyToClipboard(key, document.getElementById('copyApiKeyBtn'));
-  }
-
-  function qrUrl(data, size = 200) {
-    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=8&data=${encodeURIComponent(data)}`;
   }
 
   function checkoutUrlFor(p) {
     return p.payment_url || p.checkout_url || (API_BASE + '/pay/' + (p.payment_token || p.public_token || p.payment_id || p.id));
   }
 
-  function renderPaymentResult(p) {
-    const payUrl = checkoutUrlFor(p);
-    const token = p.payment_token || p.public_token || ('#' + (p.payment_id || p.id));
-    const wallet = p.wallet_address || '';
-    const el = document.getElementById('createResult');
-    el.classList.remove('hidden');
-    el.innerHTML = `
-      <div class="section-card">
-        <div class="section-body payment-result">
-          <div class="payment-qr-box">
-            <img src="${qrUrl(payUrl)}" alt="Checkout QR code" width="180" height="180" />
-            <p class="payment-qr-label">Scan to open checkout</p>
-          </div>
-          <div>
-            <p style="font-size:0.6875rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em">Hosted checkout link</p>
-            <p style="font-weight:600;margin:0.5rem 0 0.75rem;font-size:0.9375rem">Send customer to Gaxtron to pay</p>
-            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.75rem;line-height:1.5">
-              Retailers: redirect shoppers to the link below, or print/share the QR — both open this checkout page.
-            </p>
-            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.375rem">Payment reference</p>
-            <div class="payment-ref">${token}</div>
-            <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.875rem;word-break:break-all" class="mono">${payUrl}</p>
-            ${wallet ? `<p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.75rem">Deposit address</p>
-            <p class="mono" style="font-size:0.6875rem;color:var(--accent);word-break:break-all;margin-top:0.25rem">${wallet}</p>` : ''}
-            <div class="payment-actions">
-              <a href="${payUrl}" target="_blank" class="btn-primary btn-lime" style="text-decoration:none;width:100%;text-align:center;margin-bottom:0.5rem">Open checkout page</a>
-              <button type="button" class="btn-primary" onclick="copyToClipboard('${payUrl.replace(/'/g, "\\'")}', this)">Copy payment link</button>
-              <button type="button" class="btn-ghost" onclick="copyToClipboard('${token.replace(/'/g, "\\'")}', this)">Copy reference</button>
-              ${wallet ? `<button type="button" class="btn-ghost" onclick="copyToClipboard('${wallet.replace(/'/g, "\\'")}', this)">Copy address</button>` : ''}
-            </div>
-            <p style="font-size:0.6875rem;color:var(--text-muted);margin-top:0.875rem">${p.amount || ''} ETH · ${p.status || 'pending'}</p>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  const TAB_META = {
-    overview: ['Overview', 'Merchant dashboard · Sepolia testnet'],
-    payments: ['Payments', 'Create hosted checkout links'],
-    transactions: ['Transactions', 'On-chain activity · Sepolia'],
-    apikeys: ['API Keys', 'Credential management'],
-    webhooks: ['Webhooks', 'Delivery log'],
-    agent: ['Payment Agent', 'Autonomous crypto payment orchestrator · Track 3'],
-  };
-
-  function showTab(name, el) {
-    ['overview','payments','transactions','apikeys','webhooks','agent'].forEach(t => {
-      document.getElementById('tab-' + t)?.classList.add('hidden');
-    });
-    document.getElementById('tab-' + name)?.classList.remove('hidden');
-    const [title, sub] = TAB_META[name] || [name, ''];
-    document.getElementById('pageTitle').textContent = title;
-    document.getElementById('pageSubtitle').textContent = sub;
-    document.querySelectorAll('.sidebar-link[data-tab]').forEach(l => l.classList.remove('active'));
-    if (el) el.classList.add('active');
-    if (name === 'transactions') loadTransactions();
-    if (name === 'webhooks') loadWebhooks();
-  }
-
-  function openCreatePayment() {
-    const link = document.querySelector('[data-tab="payments"]');
-    showTab('payments', link);
-  }
-
   async function loadStats() {
     try {
       const s = await Dashboard.stats();
       if (!s) return;
-      const set = (id, val, cls) => {
-        const el = document.getElementById(id);
-        el.textContent = val ?? '0';
-        el.classList.remove('skeleton', 'stat-skeleton');
-        el.className = `stat-value ${cls || 'stat-value--neutral'}`;
-      };
-      set('statTotal', s.total_payments);
-      set('statSuccess', s.successful, 'stat-value--success');
-      set('statPending', s.pending, 'stat-value--warning');
-      set('statRevenue', s.revenue, 'stat-value--accent');
+      document.getElementById('statTotal').textContent = s.total_payments ?? '0';
+      document.getElementById('statSuccess').textContent = s.successful ?? '0';
+      document.getElementById('statPending').textContent = s.pending ?? '0';
+      document.getElementById('statRevenue').textContent = s.revenue ?? '0';
     } catch (e) { showToast(e.message || e, 'error'); }
   }
 
@@ -490,37 +216,19 @@
       const rows = await Dashboard.payments();
       const tbody = document.getElementById('recentPayments');
       if (!Array.isArray(rows) || !rows.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No payments yet — create your first one</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-on-surface-variant">No payments yet — create your first one</td></tr>';
         return;
       }
-      tbody.innerHTML = rows.map(p => {
+      tbody.innerHTML = rows.slice(0, 6).map(p => {
         const url = checkoutUrlFor(p);
         const ref = p.public_token || p.payment_token || ('#' + p.id);
-        return `<tr>
-          <td><a href="${url}" target="_blank" class="ref-link" title="Open Gaxtron checkout">${ref.slice(0, 20)}…</a></td>
-          <td><span class="amount-val">${formatCurrency(p.amount, '')}<span class="eth">ETH</span></span></td>
-          <td>${statusBadge(p.status)}</td>
-          <td><a href="${url}" target="_blank" class="checkout-link checkout-link--primary">Pay on Gaxtron →</a></td>
-          <td><span class="created-time">${formatDate(p.created_at)}</span></td>
+        return `<tr class="hover:bg-surface-container-low transition-colors">
+          <td class="px-6 py-4"><a href="${url}" target="_blank" class="hover:text-primary">${ref.slice(0, 16)}…</a></td>
+          <td class="px-6 py-4">${formatCurrency(p.amount, '')} ETH</td>
+          <td class="px-6 py-4">${statusBadge(p.status)}</td>
+          <td class="px-6 py-4">${formatDate(p.created_at)}</td>
         </tr>`;
       }).join('');
-    } catch (e) { showToast(e.message || e, 'error'); }
-  }
-
-  async function loadTransactions() {
-    try {
-      const rows = await Transactions.list();
-      if (!Array.isArray(rows) || !rows.length) {
-        document.getElementById('txTable').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No transactions yet</td></tr>';
-        return;
-      }
-      document.getElementById('txTable').innerHTML = rows.map(t => `<tr>
-        <td class="mono ref-link">${t.tx_hash?.slice(0,14)}…</td>
-        <td class="amount-val">${t.amount} ${t.currency}</td>
-        <td>${statusBadge(t.status)}</td>
-        <td class="mono">${t.confirmations}</td>
-        <td><span class="created-time">${formatDate(t.created_at)}</span></td>
-      </tr>`).join('');
     } catch (e) { showToast(e.message || e, 'error'); }
   }
 
@@ -538,117 +246,10 @@
       setApiKey(r.api_key);
       apiKeyVisible = true;
       renderApiKeyPanel();
+      document.getElementById('toggleApiKeyBtn').textContent = 'Hide';
       showToast('API key ready — copy it now', 'success');
-      lucide.createIcons();
     } catch (e) { showToast(e, 'error'); }
   }
-
-  async function loadWebhooks() {
-    try {
-      const rows = await Webhooks.logs();
-      if (!Array.isArray(rows) || !rows.length) {
-        document.getElementById('webhookTable').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No webhook deliveries yet</td></tr>';
-        return;
-      }
-      document.getElementById('webhookTable').innerHTML = rows.map(w => `<tr>
-        <td class="mono">#${w.payment_id}</td>
-        <td class="mono" style="font-size:0.75rem">${w.event_id?.slice(0,20)}…</td>
-        <td>${statusBadge(w.status)}</td>
-        <td class="mono">${w.response_code || '—'}</td>
-        <td>${w.attempts}</td>
-      </tr>`).join('');
-    } catch (e) { showToast(e.message || e, 'error'); }
-  }
-
-  document.getElementById('createPaymentForm').onsubmit = async (e) => {
-    e.preventDefault();
-    if (!getApiKey()) { showToast({ status: 403, message: 'Create an API key first.' }, 'warning'); return; }
-    const fd = new FormData(e.target);
-    const btn = document.getElementById('createPayBtn');
-    setLoading(btn, true, 'Creating');
-    try {
-      const p = await Payments.create({ amount: fd.get('amount'), callback_url: fd.get('callback_url') });
-      renderPaymentResult(p);
-      showToast('Payment link created', 'success');
-      loadPayments();
-      loadStats();
-    } catch (err) { showToast(err, 'error'); }
-    setLoading(btn, false, 'Create payment link');
-  };
-
-  async function runPaymentAgent() {
-    const goal = document.getElementById('agentGoal').value.trim();
-    const amount = document.getElementById('agentAmount').value.trim();
-    const callback_url = document.getElementById('agentCallback').value.trim();
-    const currency_preference = document.getElementById('agentCurrency').value;
-    const statusEl = document.getElementById('agentRunStatus');
-    const outEl = document.getElementById('agentRunOutput');
-    const btn = document.getElementById('runPaymentAgentBtn');
-    if (!getApiKey()) { showToast({ message: 'Generate an API key first (API Keys tab).' }, 'warning'); return; }
-    btn.disabled = true;
-    statusEl.textContent = 'Agent running payment pipeline…';
-    outEl.classList.add('hidden');
-    try {
-      const data = await apiFetch('/agents/payment/route', {
-        method: 'POST',
-        useApiKey: true,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ goal, amount, callback_url, currency_preference }),
-      });
-      outEl.textContent = JSON.stringify(data, null, 2);
-      outEl.classList.remove('hidden');
-      statusEl.textContent = `Done — ${data.status} · ${data.tasks_completed}/${data.tasks_total} stages`;
-      if (data.payment) renderPaymentResult(data.payment);
-    } catch (e) {
-      statusEl.textContent = e.message || 'Agent run failed';
-      showToast(e, 'error');
-    } finally {
-      btn.disabled = false;
-    }
-  }
-
-  lucide.createIcons();
-
-  function updateApiDocsSnippet() {
-    const base = typeof API_BASE !== 'undefined' ? API_BASE : window.location.origin;
-    const el = document.getElementById('apiBaseUrlDisplay');
-    if (el) el.textContent = base;
-    const snip = document.getElementById('sdkNodeSnippet');
-    if (snip) {
-      snip.textContent = `const { Gaxtron } = require('./gaxtron'); // or import in ESM
-
-const gaxtron = new Gaxtron(process.env.GAXTRON_API_KEY, {
-  baseUrl: '${base}',
-});
-
-// Create a checkout — send payment_url to your customer
-const payment = await gaxtron.createPayment({
-  amount: process.env.PAYMENT_AMOUNT,
-  callback_url: process.env.GAXTRON_WEBHOOK_URL,
-});
-
-// Redirect shopper to Gaxtron (link click or QR scan)
-res.redirect(302, payment.payment_url);
-// Or: window.location.href = payment.payment_url;
-
-console.log(payment.payment_url);
-
-// Later: check status
-const status = await gaxtron.verifyPayment(payment.payment_id);`;
-    }
-    const redir = document.getElementById('sdkRedirectSnippet');
-    if (redir) {
-      redir.textContent = `// Express — after createPayment
-app.get('/buy', async (req, res) => {
-  const payment = await gaxtron.createPayment({
-    amount: process.env.PAYMENT_AMOUNT,
-    callback_url: process.env.GAXTRON_WEBHOOK_URL,
-  });
-  res.redirect(302, payment.payment_url);
-});`;
-    }
-  }
-  updateApiDocsSnippet();
 
   (async () => {
     if (!getApiKey()) {
@@ -664,7 +265,6 @@ app.get('/buy', async (req, res) => {
     renderApiKeyPanel();
     await loadStats();
     await loadPayments();
-    lucide.createIcons();
   })();
 </script>
 </body>

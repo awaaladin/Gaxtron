@@ -5,8 +5,8 @@ from merchants.models import ApiKey, GaxtronUser, Payment, Transaction, WebhookL
 
 @admin.register(GaxtronUser)
 class GaxtronUserAdmin(admin.ModelAdmin):
-    list_display = ("id", "username", "email", "is_active", "is_superadmin", "created_at")
-    list_filter = ("is_active", "is_superadmin")
+    list_display = ("id", "username", "email", "is_active", "is_superuser", "created_at")
+    list_filter = ("is_active", "is_superuser")
     search_fields = ("username", "email")
     actions = ["suspend_accounts", "activate_accounts"]
 

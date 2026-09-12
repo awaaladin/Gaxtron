@@ -5,7 +5,7 @@
       title: 'Invalid request',
       message: 'The information sent couldn’t be processed. Check your inputs and try again.',
       hint: 'Review the highlighted fields below.',
-      icon: 'alert-circle',
+      icon: 'warning',
       tone: 'warning',
     },
     401: {
@@ -19,28 +19,28 @@
       title: 'Access denied',
       message: 'You don’t have permission to perform this action.',
       hint: 'Contact your account administrator if you believe this is a mistake.',
-      icon: 'shield-off',
+      icon: 'gpp_bad',
       tone: 'error',
     },
     404: {
       title: 'Not found',
       message: 'The resource you’re looking for doesn’t exist or was removed.',
       hint: 'Double-check the URL or payment ID.',
-      icon: 'search-x',
+      icon: 'search_off',
       tone: 'neutral',
     },
     409: {
       title: 'Already exists',
       message: 'An account or resource with these details already exists.',
       hint: 'Try signing in or use a different email address.',
-      icon: 'copy',
+      icon: 'content_copy',
       tone: 'warning',
     },
     422: {
       title: 'Validation failed',
       message: 'Some fields didn’t pass validation. Correct them and resubmit.',
       hint: 'Passwords must be at least 8 characters.',
-      icon: 'file-warning',
+      icon: 'error',
       tone: 'warning',
     },
     429: {
@@ -54,14 +54,14 @@
       title: 'Server error',
       message: 'Something went wrong on our end. The team has been notified.',
       hint: 'Try again in a few minutes.',
-      icon: 'server-crash',
+      icon: 'cloud_off',
       tone: 'error',
     },
     502: {
       title: 'Gateway error',
       message: 'The payment gateway is temporarily unreachable.',
       hint: 'Blockchain RPC may be syncing — retry shortly.',
-      icon: 'wifi-off',
+      icon: 'wifi_off',
       tone: 'error',
     },
     503: {
@@ -75,14 +75,14 @@
       title: 'Connection lost',
       message: 'Unable to reach the Gaxtron API. Check your network or server status.',
       hint: 'Locally: run .\\scripts\\start_gaxtron.ps1',
-      icon: 'unplug',
+      icon: 'power_off',
       tone: 'error',
     },
     default: {
       title: 'Something went wrong',
       message: 'An unexpected error occurred. Please try again.',
       hint: null,
-      icon: 'circle-alert',
+      icon: 'error',
       tone: 'error',
     },
   };
@@ -140,7 +140,7 @@
       : '';
     return `
       <div class="cp-alert ${toneClass}" role="alert">
-        <div class="cp-alert-icon"><i data-lucide="${e.icon}"></i></div>
+        <div class="cp-alert-icon"><span class="material-symbols-outlined">${e.icon}</span></div>
         <div class="cp-alert-body">
           <p class="cp-alert-title">${e.title}</p>
           <p class="cp-alert-message">${e.message}</p>
@@ -158,7 +158,6 @@
       container.classList.add('hidden');
       container.innerHTML = '';
     });
-    if (global.lucide) global.lucide.createIcons();
   }
 
   function toastHtml(err) {
@@ -166,7 +165,7 @@
     return {
       html: `
         <div class="cp-toast cp-toast--${e.tone}">
-          <div class="cp-toast-icon"><i data-lucide="${e.icon}"></i></div>
+          <div class="cp-toast-icon"><span class="material-symbols-outlined">${e.icon}</span></div>
           <div class="cp-toast-body">
             <p class="cp-toast-title">${e.title}</p>
             <p class="cp-toast-message">${e.message}</p>
