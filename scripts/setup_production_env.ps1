@@ -9,6 +9,7 @@ $jwt = New-Secret
 $webhook = New-Secret
 $wallet = New-Secret
 $django = New-Secret 64
+$cron = New-Secret
 
 @"
 
@@ -24,15 +25,15 @@ SECRET_KEY=$jwt
 WEBHOOK_SECRET=$webhook
 WALLET_ENCRYPTION_KEY=$wallet
 DJANGO_SECRET_KEY=$django
+CRON_SECRET=$cron
 
 BLOCKCHAIN_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
 BLOCKCHAIN_NETWORK=mainnet
-REQUIRED_CONFIRMATIONS=12
+ETH_REQUIRED_CONFIRMATIONS=12
 
-CORS_ORIGINS=https://your-domain.com
-API_ALLOWED_HOSTS=your-domain.com,api.your-domain.com
 ALLOWED_HOSTS=your-domain.com
-FASTAPI_URL=https://api.your-domain.com
+CSRF_TRUSTED_ORIGINS=https://your-domain.com
+PUBLIC_BASE_URL=https://your-domain.com
 
 "@ | Set-Content -Path $out -Encoding UTF8
 

@@ -1,7 +1,7 @@
 """REST API routes — paths match GaX/app/api/routers/{auth,api_keys,payments,checkout}.py exactly."""
 from django.urls import path
 
-from . import api_views, cron_views, markets_views, payment_views
+from . import api_views, cron_views, markets_views, payment_views, system_views
 
 urlpatterns = [
     path("auth/register", api_views.RegisterView.as_view(), name="api_register"),
@@ -27,4 +27,10 @@ urlpatterns = [
     path("markets/chart/<str:coin_id>", markets_views.MarketChartView.as_view(), name="market_chart"),
 
     path("api/cron/check-payments", cron_views.CronCheckPaymentsView.as_view(), name="cron_check_payments"),
+
+    path("health", system_views.HealthView.as_view(), name="health"),
+    path("health/ready", system_views.ReadyView.as_view(), name="health_ready"),
+    path("health/live", system_views.LiveView.as_view(), name="health_live"),
+    path("public/config", system_views.PublicConfigView.as_view(), name="public_config"),
+    path("public/readiness", system_views.ReadinessView.as_view(), name="public_readiness"),
 ]

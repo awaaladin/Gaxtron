@@ -1,4 +1,4 @@
-# Install Python deps + start PostgreSQL & Redis (Docker)
+# Install Django dependencies + start PostgreSQL & Redis (Docker, optional)
 $ErrorActionPreference = "Stop"
 . "$PSScriptRoot\_common.ps1"
 
@@ -15,18 +15,17 @@ if (-not (Test-Path $envFile) -and (Test-Path $example)) {
     Write-Host "Created .env from .env.example (edit BLOCKCHAIN_RPC_URL for on-chain tests)"
 }
 
-Write-Host "Installing Python packages..."
-pip install -q -r (Join-Path $Root "requirements.txt")
+Write-Host "Installing Django packages..."
 pip install -q -r (Join-Path $Root "dashboard\requirements.txt")
 
 if (-not (Test-DockerAvailable)) {
     Write-Host ""
     Write-Host "Docker is not running." -ForegroundColor Yellow
-    Write-Host "  Full production loop needs PostgreSQL + Redis."
+    Write-Host "  Full stack (Postgres + Redis + worker) needs Docker."
     Write-Host "  1. Start Docker Desktop"
     Write-Host "  2. Re-run: .\scripts\install_prerequisites.ps1"
     Write-Host ""
-    Write-Host "Without Docker you can still run API-only (SQLite) via .\scripts\start_gaxtron.ps1"
+    Write-Host "Without Docker you can still run the app on SQLite via .\scripts\start_gaxtron.ps1"
     exit 1
 }
 
@@ -53,9 +52,10 @@ for ($i = 0; $i -lt 30; $i++) {
 if (-not $redisOk) { Write-Host "Redis did not become ready in time" -ForegroundColor Red; exit 1 }
 Write-Host "  Redis ready" -ForegroundColor Green
 
-Set-GaxtronDevEnv -Root $Root
-Initialize-GaxtronDatabase -GaXDir (Join-Path $Root "GaX")
+Write-Host "Applying migrations (fake-initial against existing schema)..."
+docker compose run --rm migrate
 
 Write-Host ""
 Write-Host "Prerequisites installed. Next:" -ForegroundColor Green
-Write-Host "  .\scripts\start_full_stack.ps1"
+Write-Host "  docker compose up          (full stack: web + worker on Postgres/Redis)"
+Write-Host "  .\scripts\start_gaxtron.ps1 (lightweight: Django + SQLite, no Docker)"

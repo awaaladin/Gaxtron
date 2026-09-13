@@ -1,4 +1,4 @@
-# Shared helpers for Gaxtron scripts
+# Shared helpers for Gaxtron scripts (Django backend, port 8001)
 $ErrorActionPreference = "Stop"
 
 function Get-GaxtronRoot {
@@ -18,7 +18,8 @@ function Set-GaxtronDevEnv {
         }
     }
     if (-not $env:DATABASE_URL) {
-        $env:DATABASE_URL = "postgresql://gaxtron:gaxtron_secret@127.0.0.1:5433/gaxtron_db"
+        $dbPath = (Join-Path $Root "gaxtron_dev.db").Replace('\', '/')
+        $env:DATABASE_URL = "sqlite:///$dbPath"
     }
     if (-not $env:REDIS_URL) { $env:REDIS_URL = "redis://127.0.0.1:6379/0" }
     if (-not $env:SECRET_KEY) { $env:SECRET_KEY = "dev-jwt-secret-key-minimum-32-characters-long" }
@@ -27,10 +28,8 @@ function Set-GaxtronDevEnv {
     if (-not $env:DJANGO_SECRET_KEY) { $env:DJANGO_SECRET_KEY = "dev-django-secret-key-minimum-fifty-characters-long" }
     if (-not $env:ENV) { $env:ENV = "development" }
     if (-not $env:DEBUG) { $env:DEBUG = "True" }
-    if (-not $env:FASTAPI_URL) { $env:FASTAPI_URL = "http://127.0.0.1:8002" }
-    if (-not $env:CORS_ORIGINS) {
-        $env:CORS_ORIGINS = "http://127.0.0.1:8002,http://localhost:8002,http://127.0.0.1:8001,http://localhost:8001"
-    }
+    if (-not $env:ALLOWED_HOSTS) { $env:ALLOWED_HOSTS = "localhost,127.0.0.1" }
+    if (-not $env:PUBLIC_BASE_URL) { $env:PUBLIC_BASE_URL = "http://127.0.0.1:8001" }
 }
 
 function Wait-ForUrl {
@@ -71,20 +70,4 @@ function Stop-PortListeners {
         }
     }
     Start-Sleep -Seconds 1
-}
-
-function Initialize-GaxtronDatabase {
-    param([string]$GaXDir)
-    Push-Location $GaXDir
-    try {
-        python -c @"
-import app.db.models  # noqa: F401
-from app.db.base import Base
-from app.db.session import engine
-from app.db.migrate_schema import run_migrations
-Base.metadata.create_all(bind=engine)
-run_migrations()
-print('Database schema ready')
-"@
-    } finally { Pop-Location }
 }
