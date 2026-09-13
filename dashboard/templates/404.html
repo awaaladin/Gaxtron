@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>404 | Gaxtron</title>
+<link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}"/>
+<meta name="theme-color" content="#0B0B0A"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="{% static 'js/tailwind-config.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/base.css' %}"/>
+</head>
+<body class="bg-background text-on-surface font-body-md flex flex-col min-h-screen">
+<header class="px-margin-mobile md:px-margin-desktop h-16 flex items-center border-b border-outline-variant">
+  <a href="/" class="font-headline-md text-[16px] font-bold text-primary tracking-tighter">GAXTRON</a>
+  <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest ml-4">System Error</span>
+</header>
+<main class="flex-1 flex items-center justify-center px-margin-mobile text-center">
+  <div class="max-w-lg">
+    <p class="font-display-lg text-[140px] leading-none text-on-surface italic">404</p>
+    <h1 class="font-headline-md text-headline-md text-on-surface mt-stack-md">Page not found</h1>
+    <p class="font-body-md text-on-surface-variant mt-stack-sm">The page you're looking for doesn't exist or may have been moved.</p>
+    <div class="flex justify-center gap-stack-md mt-stack-lg">
+      <a href="/" class="bg-primary text-on-primary font-label-caps text-label-caps py-3 px-8 tracking-widest hover:bg-primary-container transition-colors flex items-center gap-2">RETURN HOME <span class="material-symbols-outlined text-[16px]">arrow_forward</span></a>
+      <a href="/dashboard/" class="border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 px-8 tracking-widest hover:bg-surface-container-low transition-colors">DASHBOARD</a>
+    </div>
+    <p class="font-label-caps text-[10px] text-outline uppercase tracking-widest mt-stack-lg">ERR_GAX_04_NULL_REF_GATEWAY · <span id="liveClock">—</span></p>
+  </div>
+</main>
+<script>
+  const clock = document.getElementById('liveClock');
+  function tick() { clock.textContent = new Date().toISOString(); }
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
