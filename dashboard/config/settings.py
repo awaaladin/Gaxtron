@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -69,9 +70,24 @@ DATABASES = {
         default=os.getenv(
             "DATABASE_URL",
             "postgresql://gaxtron:gaxtron_secret@127.0.0.1:5433/gaxtron_db",
-        )
+        ),
+        conn_max_age=0,
     )
 }
+# Supabase's pooled connection (port 6543) runs PgBouncer in transaction mode, which doesn't
+# support server-side cursors shared across statements in a transaction — Django's own docs
+# call out disabling them for exactly this setup.
+if str(DATABASES["default"].get("PORT")) == "6543":
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
+
+# `manage.py test` needs its own throwaway database — CREATE DATABASE isn't reliable (or fast)
+# over a PgBouncer transaction-pooling connection like Supabase's, so tests always run on
+# local SQLite regardless of what DATABASE_URL points at.
+if "test" in sys.argv:
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "test_db.sqlite3",
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
