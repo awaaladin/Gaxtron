@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="min-h-screen bg-background">
+  <aside class="custom-scrollbar fixed left-0 top-0 z-50 hidden h-full w-64 flex-col overflow-y-auto border-r border-border bg-background py-stack-lg lg:flex">
+    <div class="mb-10 px-6">
+      <a href="{% url 'dashboard' %}" class="font-display text-xl font-bold tracking-tight text-primary">GAXTRON</a>
+      <p class="label-caps mt-1 text-[9px] text-outline">Fintech precision</p>
+    </div>
+
+    <nav class="flex-1">
+      {% url 'dashboard' as dashboard_url %}
+      <a href="{{ dashboard_url }}" class="flex items-center gap-3 px-6 py-3 transition-colors {% if active_nav == 'Dashboard' %}border-r-2 border-primary bg-surface-lowest text-primary{% else %}text-muted-foreground hover:bg-surface-low hover:text-foreground{% endif %}">
+        <i data-lucide="layout-dashboard" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Dashboard</span>
+      </a>
+      {% url 'payments' as payments_url %}
+      <a href="{{ payments_url }}" class="flex items-center gap-3 px-6 py-3 transition-colors {% if active_nav == 'Payments' %}border-r-2 border-primary bg-surface-lowest text-primary{% else %}text-muted-foreground hover:bg-surface-low hover:text-foreground{% endif %}">
+        <i data-lucide="credit-card" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Payments</span>
+      </a>
+      {% url 'transactions' as transactions_url %}
+      <a href="{{ transactions_url }}" class="flex items-center gap-3 px-6 py-3 transition-colors {% if active_nav == 'Transactions' %}border-r-2 border-primary bg-surface-lowest text-primary{% else %}text-muted-foreground hover:bg-surface-low hover:text-foreground{% endif %}">
+        <i data-lucide="receipt-text" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Transactions</span>
+      </a>
+      {% url 'api_keys' as api_keys_url %}
+      <a href="{{ api_keys_url }}" class="flex items-center gap-3 px-6 py-3 transition-colors {% if active_nav == 'API keys' %}border-r-2 border-primary bg-surface-lowest text-primary{% else %}text-muted-foreground hover:bg-surface-low hover:text-foreground{% endif %}">
+        <i data-lucide="key-round" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">API keys</span>
+      </a>
+      {% url 'webhooks' as webhooks_url %}
+      <a href="{{ webhooks_url }}" class="flex items-center gap-3 px-6 py-3 transition-colors {% if active_nav == 'Webhooks' %}border-r-2 border-primary bg-surface-lowest text-primary{% else %}text-muted-foreground hover:bg-surface-low hover:text-foreground{% endif %}">
+        <i data-lucide="webhook" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Webhooks</span>
+      </a>
+      {% url 'markets' as markets_url %}
+      <a href="{{ markets_url }}" class="flex items-center gap-3 px-6 py-3 transition-colors {% if active_nav == 'Markets' %}border-r-2 border-primary bg-surface-lowest text-primary{% else %}text-muted-foreground hover:bg-surface-low hover:text-foreground{% endif %}">
+        <i data-lucide="store" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Markets</span>
+      </a>
+      {% url 'agent' as agent_url %}
+      <a href="{{ agent_url }}" class="flex items-center gap-3 px-6 py-3 transition-colors {% if active_nav == 'Agent' %}border-r-2 border-primary bg-surface-lowest text-primary{% else %}text-muted-foreground hover:bg-surface-low hover:text-foreground{% endif %}">
+        <i data-lucide="bot-message-square" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Agent</span>
+      </a>
+      {% if user.is_superuser %}
+      {% url 'admin_overview' as admin_url %}
+      <a href="{{ admin_url }}" class="flex items-center gap-3 px-6 py-3 transition-colors {% if active_nav == 'Admin' %}border-r-2 border-primary bg-surface-lowest text-primary{% else %}text-muted-foreground hover:bg-surface-low hover:text-foreground{% endif %}">
+        <i data-lucide="shield-check" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Admin</span>
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="mt-auto flex flex-col px-6">
+      {% url 'profile' as profile_url %}
+      <a href="{{ profile_url }}" class="flex items-center gap-3 py-3 transition-colors {% if active_nav == 'Profile' %}text-primary{% else %}text-muted-foreground hover:text-foreground{% endif %}">
+        <i data-lucide="user" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Profile</span>
+      </a>
+      <a href="{% url 'logout' %}" class="flex items-center gap-3 py-3 text-muted-foreground transition-colors hover:text-destructive">
+        <i data-lucide="log-out" class="size-4" style="stroke-width:1.5"></i><span class="label-caps">Log out</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="flex min-h-screen flex-col lg:pl-64">
+    <header class="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border px-margin-mobile md:px-margin-desktop">
+      <div class="flex items-center gap-stack-lg">
+        <a href="{% url 'dashboard' %}" class="font-display text-lg font-bold tracking-tight text-primary lg:hidden">GAXTRON</a>
+        <span class="label-caps hidden text-muted-foreground sm:inline">Network: <span class="text-primary">Sepolia</span></span>
+        <span class="label-caps hidden text-muted-foreground md:inline">Merchant: <span class="text-foreground">Active</span></span>
+      </div>
+      <div class="flex items-center gap-6">
+        <a href="{% url 'webhooks' %}" aria-label="Webhook deliveries" class="text-muted-foreground transition-colors hover:text-primary">
+          <i data-lucide="bell" class="size-4" style="stroke-width:1.5"></i>
+        </a>
+        <div class="flex items-center gap-2">
+          <span class="label-caps flex size-8 items-center justify-center border border-border bg-surface text-[10px] text-foreground">{{ user.username|slice:":2"|upper }}</span>
+          <span class="label-caps hidden text-[10px] text-muted-foreground md:inline">{{ user.email }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="w-full max-w-[1400px] flex-1 px-margin-mobile py-stack-lg md:px-margin-desktop">
+      {% for message in messages %}
+      <div class="mb-stack-md rounded-md border border-primary/40 bg-surface-lowest p-4 text-sm text-foreground">{{ message }}</div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="flex flex-wrap items-center justify-between gap-2 border-t border-border px-margin-mobile py-stack-lg md:px-margin-desktop">
+      <p class="label-caps text-[10px] text-outline">© 2026 Gaxtron Technologies. All rights reserved.</p>
+      <p class="label-caps text-[10px] text-outline">Sepolia testnet</p>
+    </footer>
+  </div>
+</div>
+{% endblock %}

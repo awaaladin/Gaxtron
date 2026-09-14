@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="grid min-h-screen lg:grid-cols-2">
+  <div class="hidden flex-col justify-between border-r border-border bg-surface-lowest p-margin-desktop lg:flex">
+    <a href="{% url 'landing' %}" class="font-display text-xl font-bold tracking-tight text-primary">GAXTRON</a>
+    <div>
+      <p class="max-w-md font-display text-3xl italic leading-tight text-foreground">&ldquo;Security is not a feature, it is the fundamental architectural constraint of the Gax engine.&rdquo;</p>
+      <p class="label-caps mt-stack-lg text-outline">Non-custodial by design</p>
+    </div>
+    <p class="label-caps text-[10px] text-outline">Sepolia testnet · ETH settlement</p>
+  </div>
+
+  <div class="flex flex-col justify-center px-margin-mobile py-16 md:px-margin-desktop">
+    <div class="w-full max-w-sm">
+      <a href="{% url 'landing' %}" class="font-display text-xl font-bold tracking-tight text-primary lg:hidden">GAXTRON</a>
+      <p class="label-caps mb-stack-sm mt-stack-lg text-primary lg:mt-0">{% block eyebrow %}{% endblock %}</p>
+      <h1 class="font-display text-4xl text-foreground">{% block auth_title %}{% endblock %}</h1>
+      <p class="mt-3 text-sm leading-6 text-muted-foreground">{% block subtitle %}{% endblock %}</p>
+
+      <div class="mt-stack-lg flex flex-col gap-stack-md">
+        {% for message in messages %}
+        <div class="rounded-md border border-destructive/40 bg-surface-lowest p-4 text-sm text-destructive">{{ message }}</div>
+        {% endfor %}
+        {% block auth_content %}{% endblock %}
+      </div>
+
+      <div class="label-caps mt-stack-lg text-[10px] text-muted-foreground">{% block auth_footer %}{% endblock %}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

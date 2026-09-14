@@ -1,160 +1,194 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html class="dark" lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Gaxtron | The New Standard for Crypto Payments</title>
-<link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}"/>
-<meta name="theme-color" content="#0B0B0A"/>
-<meta name="description" content="Ethereum payment gateway with hosted checkout, webhooks, and REST API."/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script src="{% static 'js/tailwind-config.js' %}"></script>
-<link rel="stylesheet" href="{% static 'css/base.css' %}"/>
-</head>
-<body class="bg-background text-on-surface font-body-md">
+{% block title %}Gaxtron — Ethereum Payment Gateway for Merchants{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-background">
+  <header class="fixed inset-x-0 top-0 z-50 h-16 border-b border-border bg-background/90 backdrop-blur-sm">
+    <div class="mx-auto flex h-full max-w-[1400px] items-center justify-between px-margin-mobile md:px-margin-desktop">
+      <a href="{% url 'landing' %}" class="font-display text-xl font-bold tracking-tight text-primary">GAXTRON</a>
+      <nav class="hidden items-center gap-stack-lg md:flex">
+        <a href="#how" class="label-caps text-muted-foreground transition-colors hover:text-foreground">How it works</a>
+        <a href="#features" class="label-caps text-muted-foreground transition-colors hover:text-foreground">Platform</a>
+        <a href="#pricing" class="label-caps text-muted-foreground transition-colors hover:text-foreground">Pricing</a>
+      </nav>
+      <div class="flex items-center gap-stack-md">
+        <a href="{% url 'login' %}" class="label-caps hidden text-muted-foreground transition-colors hover:text-foreground sm:inline">Log in</a>
+        <a href="{% url 'register' %}" class="btn-primary px-6 py-2.5">Get started</a>
+      </div>
+    </div>
+  </header>
 
-<header class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 border-b border-outline-variant bg-background/95 backdrop-blur-sm">
-  <a href="{% url 'landing' %}" class="font-headline-md text-headline-md font-bold text-primary tracking-tighter">GAXTRON</a>
-  <nav class="hidden md:flex items-center gap-stack-lg">
-    <a href="#how" class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors">HOW IT WORKS</a>
-    <a href="#features" class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors">PLATFORM</a>
-    <a href="#pricing" class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors">PRICING</a>
-  </nav>
-  <div class="flex items-center gap-stack-md">
-    <a href="{% url 'login' %}" class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface hidden sm:inline">LOG IN</a>
-    <a href="{% url 'register' %}" class="bg-primary text-on-primary font-label-caps text-label-caps py-3 px-6 tracking-widest hover:bg-primary-container transition-colors">GET STARTED</a>
-  </div>
-</header>
+  <main class="pt-16">
+    <section class="relative overflow-hidden">
+      <div class="aurora" aria-hidden="true"></div>
+      <div class="relative mx-auto max-w-[1400px] px-margin-mobile py-stack-lg md:px-margin-desktop md:py-24">
+        <div class="animate-fade-up mb-stack-lg inline-flex items-center gap-stack-sm rounded-full border border-border bg-surface-lowest/60 px-4 py-2">
+          <span class="animate-pulse-ring size-2 rounded-full bg-primary" aria-hidden="true"></span>
+          <span class="label-caps text-muted-foreground">Sepolia testnet · Non-custodial · ETH</span>
+        </div>
 
-<main class="pt-16">
+        <h1 class="animate-fade-up max-w-3xl font-display text-[44px] font-bold leading-[1.05] tracking-tight text-foreground md:text-[68px]">
+          The new standard for <span class="italic text-primary">crypto payments.</span>
+        </h1>
 
-  <section class="px-margin-mobile md:px-margin-desktop py-stack-lg md:py-24 max-w-[1400px] mx-auto">
-    <div class="inline-flex items-center gap-stack-sm border border-outline-variant px-4 py-2 mb-stack-lg">
-      <div class="w-2 h-2 bg-primary"></div>
-      <span class="font-label-caps text-label-caps text-on-surface-variant">SEPOLIA TESTNET · NON-CUSTODIAL · ETH</span>
-    </div>
-    <h1 class="font-display-lg text-display-lg md:text-[64px] md:leading-[68px] text-on-surface max-w-3xl">The New Standard for <span class="italic text-primary">Crypto Payments.</span></h1>
-    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mt-stack-md">Accept Ethereum with a Stripe-grade checkout. Unique deposit addresses, block confirmations, and signed webhooks through one REST API.</p>
-    <div class="flex flex-col sm:flex-row gap-stack-md mt-stack-lg">
-      <a href="{% url 'register' %}" class="bg-primary text-on-primary font-label-caps text-label-caps py-4 px-8 tracking-widest hover:bg-primary-container transition-colors text-center">START ACCEPTING ETH</a>
-      <a href="#how" class="border border-outline-variant text-on-surface font-label-caps text-label-caps py-4 px-8 tracking-widest hover:bg-surface-container-low transition-colors text-center">SEE HOW IT WORKS</a>
-    </div>
-  </section>
+        <p class="animate-fade-up mt-stack-md max-w-xl text-lg leading-8 text-muted-foreground">
+          Accept Ethereum with a Stripe-grade checkout. Unique deposit addresses, block
+          confirmations and signed webhooks through one REST API.
+        </p>
 
-  <section class="grid grid-cols-1 md:grid-cols-3 flat-border border-l-0 border-r-0 mx-margin-mobile md:mx-margin-desktop">
-    <div class="p-8 md:p-stack-lg divider-r divider-b md:divider-b-0">
-      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Settlement Speed</p>
-      <p class="font-headline-md text-headline-md text-primary">&lt; 12 SECONDS</p>
-    </div>
-    <div class="p-8 md:p-stack-lg divider-r divider-b md:divider-b-0">
-      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Global Reach</p>
-      <p class="font-headline-md text-headline-md text-on-surface">190+ COUNTRIES</p>
-    </div>
-    <div class="p-8 md:p-stack-lg">
-      <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Fee Structure</p>
-      <p class="font-headline-md text-headline-md text-on-surface">0.5% FLAT</p>
-    </div>
-  </section>
+        <div class="animate-fade-up mt-stack-lg flex flex-col gap-stack-md sm:flex-row sm:items-center">
+          <a href="{% url 'register' %}" class="btn-primary px-8 py-4">Start accepting ETH</a>
+          <a href="#how" class="btn-ghost px-8 py-4">See how it works</a>
+        </div>
+      </div>
+    </section>
 
-  <section id="how" class="px-margin-mobile md:px-margin-desktop py-stack-lg md:py-24 max-w-[1400px] mx-auto">
-    <p class="font-label-caps text-label-caps text-primary uppercase mb-stack-sm">Workflow</p>
-    <h2 class="font-headline-md text-headline-md text-on-surface mb-stack-lg">Three steps to live payments</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-0 flat-border mb-stack-lg">
-      <div class="p-8 divider-r divider-b md:divider-b-0">
-        <p class="font-mono-data text-mono-data text-outline mb-stack-sm">01</p>
-        <h3 class="font-headline-md text-[18px] text-on-surface mb-stack-sm">Create merchant account</h3>
-        <p class="font-body-md text-on-surface-variant">Sign up and receive your API key instantly. Configure webhook endpoints for payment events.</p>
+    <section class="overflow-hidden border-y border-border py-4">
+      <div class="animate-marquee flex w-max gap-stack-lg">
+        <div class="flex shrink-0 gap-stack-lg pr-stack-lg">
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>Unique deposit address per payment</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>HMAC-SHA256 signed webhooks</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>Reorg-safe confirmations</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>Hosted mobile checkout</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>Non-custodial settlement</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>One REST API</span>
+        </div>
+        <div class="flex shrink-0 gap-stack-lg pr-stack-lg" aria-hidden="true">
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>Unique deposit address per payment</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>HMAC-SHA256 signed webhooks</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>Reorg-safe confirmations</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>Hosted mobile checkout</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>Non-custodial settlement</span>
+          <span class="label-caps flex items-center gap-3 text-outline"><span class="size-1 rounded-full bg-primary" aria-hidden="true"></span>One REST API</span>
+        </div>
       </div>
-      <div class="p-8 divider-r divider-b md:divider-b-0">
-        <p class="font-mono-data text-mono-data text-outline mb-stack-sm">02</p>
-        <h3 class="font-headline-md text-[18px] text-on-surface mb-stack-sm">Generate checkout link</h3>
-        <p class="font-body-md text-on-surface-variant">POST to <code class="font-mono-data text-primary">/create-payment</code> with amount and callback URL.</p>
-      </div>
-      <div class="p-8">
-        <p class="font-mono-data text-mono-data text-outline mb-stack-sm">03</p>
-        <h3 class="font-headline-md text-[18px] text-on-surface mb-stack-sm">On-chain confirmation</h3>
-        <p class="font-body-md text-on-surface-variant">Customer sends ETH to a unique address. After confirmations, we fire your signed webhook.</p>
-      </div>
-    </div>
-    <div class="flat-border bg-surface-container-lowest">
-      <div class="px-6 py-3 divider-b font-label-caps text-[10px] text-outline uppercase">create-payment.sh</div>
-      <pre class="p-6 font-mono-data text-mono-data text-on-surface-variant overflow-x-auto"><span class="text-primary">curl</span> -X POST https://gaxtron.io/create-payment \
-  -H "X-API-Key: gax_..." \
-  -d '{"amount": "0.01", "callback_url": "https://your.app/webhook"}'</pre>
-    </div>
-  </section>
+    </section>
 
-  <section id="features" class="px-margin-mobile md:px-margin-desktop py-stack-lg md:py-24 max-w-[1400px] mx-auto">
-    <p class="font-label-caps text-label-caps text-primary uppercase mb-stack-sm">Infrastructure</p>
-    <h2 class="font-headline-md text-headline-md text-on-surface mb-stack-lg">Production-grade from day one</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 flat-border">
-      <div class="p-8 divider-r divider-b lg:divider-b-0">
-        <span class="material-symbols-outlined text-primary text-[28px] mb-stack-sm">view_module</span>
-        <h3 class="font-headline-md text-[16px] text-on-surface mb-2">Block confirmations</h3>
-        <p class="font-body-md text-on-surface-variant text-[14px]">Configurable depth with reorg-safe settlement logic.</p>
+    <section class="mx-auto grid max-w-[1400px] grid-cols-1 gap-stack-md px-margin-mobile py-stack-lg md:grid-cols-3 md:px-margin-desktop">
+      <div class="panel p-8">
+        <p class="label-caps mb-3 text-muted-foreground">Settlement speed</p>
+        <p class="font-display text-2xl text-primary">&lt; 12 seconds</p>
       </div>
-      <div class="p-8 divider-r divider-b lg:divider-b-0">
-        <span class="material-symbols-outlined text-primary text-[28px] mb-stack-sm">account_balance_wallet</span>
-        <h3 class="font-headline-md text-[16px] text-on-surface mb-2">Unique addresses</h3>
-        <p class="font-body-md text-on-surface-variant text-[14px]">Each payment gets a dedicated deposit address.</p>
+      <div class="panel p-8">
+        <p class="label-caps mb-3 text-muted-foreground">Global reach</p>
+        <p class="font-display text-2xl text-foreground">190+ countries</p>
       </div>
-      <div class="p-8 divider-r divider-b lg:divider-b-0">
-        <span class="material-symbols-outlined text-primary text-[28px] mb-stack-sm">webhook</span>
-        <h3 class="font-headline-md text-[16px] text-on-surface mb-2">Signed webhooks</h3>
-        <p class="font-body-md text-on-surface-variant text-[14px]">HMAC-SHA256 payloads with automatic retry and logs.</p>
+      <div class="panel p-8">
+        <p class="label-caps mb-3 text-muted-foreground">Fee structure</p>
+        <p class="font-display text-2xl text-foreground">0.5% flat</p>
       </div>
-      <div class="p-8">
-        <span class="material-symbols-outlined text-primary text-[28px] mb-stack-sm">qr_code_2</span>
-        <h3 class="font-headline-md text-[16px] text-on-surface mb-2">Hosted checkout</h3>
-        <p class="font-body-md text-on-surface-variant text-[14px]">Mobile-ready page with QR code and live status polling.</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="pricing" class="px-margin-mobile md:px-margin-desktop py-stack-lg md:py-24 max-w-[1400px] mx-auto">
-    <p class="font-label-caps text-label-caps text-primary uppercase mb-stack-sm">Pricing</p>
-    <h2 class="font-headline-md text-headline-md text-on-surface mb-stack-lg">Transparent, builder-friendly</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-0 flat-border">
-      <div class="p-8 divider-r divider-b md:divider-b-0">
-        <p class="font-label-caps text-label-caps text-on-surface-variant mb-stack-sm">STARTER</p>
-        <p class="font-display-lg text-[36px] text-on-surface mb-stack-md">Free</p>
-        <ul class="font-body-md text-on-surface-variant text-[14px] space-y-2 mb-stack-lg">
-          <li>Unlimited testnet payments</li>
-          <li>REST API + webhooks</li>
-          <li>Hosted checkout</li>
-        </ul>
-        <a href="{% url 'register' %}" class="block text-center border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 hover:bg-surface-container-low transition-colors">GET STARTED</a>
-      </div>
-      <div class="p-8 divider-r divider-b md:divider-b-0 bg-surface-container-lowest">
-        <p class="font-label-caps text-label-caps text-primary mb-stack-sm">PRO</p>
-        <p class="font-display-lg text-[36px] text-on-surface mb-stack-md">$49<span class="font-body-md text-[16px] text-on-surface-variant">/mo</span></p>
-        <ul class="font-body-md text-on-surface-variant text-[14px] space-y-2 mb-stack-lg">
-          <li>Mainnet support</li>
-          <li>Priority webhooks</li>
-          <li>Advanced analytics</li>
-        </ul>
-        <a href="{% url 'register' %}" class="block text-center bg-primary text-on-primary font-label-caps text-label-caps py-3 hover:bg-primary-container transition-colors">START TRIAL</a>
-      </div>
-      <div class="p-8">
-        <p class="font-label-caps text-label-caps text-on-surface-variant mb-stack-sm">ENTERPRISE</p>
-        <p class="font-display-lg text-[36px] text-on-surface mb-stack-md">Custom</p>
-        <ul class="font-body-md text-on-surface-variant text-[14px] space-y-2 mb-stack-lg">
-          <li>SLA &amp; dedicated support</li>
-          <li>Custom chain integration</li>
-          <li>White-label checkout</li>
-        </ul>
-        <a href="mailto:sales@gaxtron.io" class="block text-center border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 hover:bg-surface-container-low transition-colors">CONTACT SALES</a>
-      </div>
-    </div>
-  </section>
+    <section id="how" class="mx-auto max-w-[1400px] px-margin-mobile py-stack-lg md:px-margin-desktop md:py-24">
+      <p class="label-caps mb-stack-sm text-primary">Workflow</p>
+      <h2 class="mb-stack-lg font-display text-3xl text-foreground md:text-4xl">Three steps to live payments</h2>
 
-  <footer class="px-margin-mobile md:px-margin-desktop py-stack-lg border-t border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-stack-sm">
-    <p class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">© 2026 Gaxtron · Non-custodial crypto payment infrastructure</p>
-    <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">System status: operational</span>
-  </footer>
-</main>
-</body>
-</html>
+      <div class="mb-stack-lg grid grid-cols-1 gap-stack-md md:grid-cols-3">
+        <div class="panel p-8">
+          <p class="data-mono mb-stack-sm text-primary">01</p>
+          <h3 class="mb-stack-sm font-display text-lg text-foreground">Create merchant account</h3>
+          <p class="text-[15px] leading-6 text-muted-foreground">Sign up and receive your API key instantly. Configure webhook endpoints for payment events.</p>
+        </div>
+        <div class="panel p-8">
+          <p class="data-mono mb-stack-sm text-primary">02</p>
+          <h3 class="mb-stack-sm font-display text-lg text-foreground">Generate checkout link</h3>
+          <p class="text-[15px] leading-6 text-muted-foreground">POST to /create-payment with an amount and a callback URL. You get a hosted checkout back.</p>
+        </div>
+        <div class="panel p-8">
+          <p class="data-mono mb-stack-sm text-primary">03</p>
+          <h3 class="mb-stack-sm font-display text-lg text-foreground">On-chain confirmation</h3>
+          <p class="text-[15px] leading-6 text-muted-foreground">The customer sends ETH to a unique address. After confirmations we fire your signed webhook.</p>
+        </div>
+      </div>
+
+      <div class="overflow-hidden rounded-lg border border-border bg-surface-lowest">
+        <div class="label-caps border-b border-border px-6 py-3 text-[10px] text-outline">create-payment.sh</div>
+        <pre class="data-mono overflow-x-auto p-6 text-muted-foreground"><span class="text-primary">curl</span> -X POST {{ request.scheme }}://{{ request.get_host }}/create-payment \
+ -H "X-API-Key: gax_..." \
+ -d '{"amount": "0.01", "callback_url": "https://your.app/webhook"}'</pre>
+      </div>
+    </section>
+
+    <section id="features" class="mx-auto max-w-[1400px] px-margin-mobile py-stack-lg md:px-margin-desktop md:py-24">
+      <p class="label-caps mb-stack-sm text-primary">Infrastructure</p>
+      <h2 class="mb-stack-lg font-display text-3xl text-foreground md:text-4xl">Production-grade from day one</h2>
+
+      <div class="grid grid-cols-1 gap-stack-md sm:grid-cols-2 lg:grid-cols-4">
+        <div class="panel group p-8">
+          <span class="mb-stack-sm inline-flex size-11 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition-transform duration-300 group-hover:scale-110">
+            <i data-lucide="blocks" class="size-5 text-primary" style="stroke-width:1.5"></i>
+          </span>
+          <h3 class="mb-2 font-display text-base text-foreground">Block confirmations</h3>
+          <p class="text-sm leading-6 text-muted-foreground">Configurable depth with reorg-safe settlement logic.</p>
+        </div>
+        <div class="panel group p-8">
+          <span class="mb-stack-sm inline-flex size-11 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition-transform duration-300 group-hover:scale-110">
+            <i data-lucide="wallet" class="size-5 text-primary" style="stroke-width:1.5"></i>
+          </span>
+          <h3 class="mb-2 font-display text-base text-foreground">Unique addresses</h3>
+          <p class="text-sm leading-6 text-muted-foreground">Each payment gets a dedicated deposit address.</p>
+        </div>
+        <div class="panel group p-8">
+          <span class="mb-stack-sm inline-flex size-11 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition-transform duration-300 group-hover:scale-110">
+            <i data-lucide="webhook" class="size-5 text-primary" style="stroke-width:1.5"></i>
+          </span>
+          <h3 class="mb-2 font-display text-base text-foreground">Signed webhooks</h3>
+          <p class="text-sm leading-6 text-muted-foreground">HMAC-SHA256 payloads with automatic retry and logs.</p>
+        </div>
+        <div class="panel group p-8">
+          <span class="mb-stack-sm inline-flex size-11 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition-transform duration-300 group-hover:scale-110">
+            <i data-lucide="qr-code" class="size-5 text-primary" style="stroke-width:1.5"></i>
+          </span>
+          <h3 class="mb-2 font-display text-base text-foreground">Hosted checkout</h3>
+          <p class="text-sm leading-6 text-muted-foreground">Mobile-ready page with QR code and live status polling.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="mx-auto max-w-[1400px] px-margin-mobile py-stack-lg md:px-margin-desktop md:py-24">
+      <p class="label-caps mb-stack-sm text-primary">Pricing</p>
+      <h2 class="mb-stack-lg font-display text-3xl text-foreground md:text-4xl">Transparent, builder-friendly</h2>
+
+      <div class="grid grid-cols-1 items-stretch gap-stack-md md:grid-cols-3">
+        <div class="panel flex flex-col p-8">
+          <p class="label-caps mb-stack-sm text-muted-foreground">Starter</p>
+          <p class="mb-stack-md font-display text-4xl text-foreground">Free</p>
+          <ul class="mb-stack-lg space-y-2 text-sm text-muted-foreground">
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>Unlimited testnet payments</li>
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>REST API + webhooks</li>
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>Hosted checkout</li>
+          </ul>
+          <a href="{% url 'register' %}" class="btn-ghost mt-auto w-full">Get started</a>
+        </div>
+        <div class="panel flex flex-col p-8 border-primary/40 bg-surface-lowest shadow-[0_24px_60px_-30px_var(--primary)] md:-translate-y-2">
+          <p class="label-caps mb-stack-sm text-primary">Pro</p>
+          <p class="mb-stack-md font-display text-4xl text-foreground">$49<span class="text-base text-muted-foreground">/mo</span></p>
+          <ul class="mb-stack-lg space-y-2 text-sm text-muted-foreground">
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>Mainnet support</li>
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>Priority webhooks</li>
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>Advanced analytics</li>
+          </ul>
+          <a href="{% url 'register' %}" class="btn-primary mt-auto w-full">Start trial</a>
+        </div>
+        <div class="panel flex flex-col p-8">
+          <p class="label-caps mb-stack-sm text-muted-foreground">Enterprise</p>
+          <p class="mb-stack-md font-display text-4xl text-foreground">Custom</p>
+          <ul class="mb-stack-lg space-y-2 text-sm text-muted-foreground">
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>SLA &amp; dedicated support</li>
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>Custom chain integration</li>
+            <li class="flex gap-3"><span class="mt-2 size-1 shrink-0 bg-primary" aria-hidden="true"></span>White-label checkout</li>
+          </ul>
+          <a href="mailto:sales@gaxtron.io" class="btn-ghost mt-auto w-full">Contact sales</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-stack-sm border-t border-border px-margin-mobile py-stack-lg sm:flex-row md:px-margin-desktop">
+      <p class="label-caps text-[10px] text-muted-foreground">© 2026 Gaxtron · Non-custodial crypto payment infrastructure</p>
+      <p class="label-caps flex items-center gap-2 text-[10px] text-muted-foreground">
+        <span class="size-1.5 bg-primary" aria-hidden="true"></span>System status: operational
+      </p>
+    </footer>
+  </main>
+</div>
+{% endblock %}

@@ -1,76 +1,48 @@
 /**
- * Shared Tailwind CDN config — "Premium Editorial Fintech" design system.
- * Included on every page right after the Tailwind CDN <script> tag.
- * Neutrals match premium_editorial_fintech/DESIGN.md exactly; only the
- * primary/accent family is swapped from the design's gold to Gaxtron web's emerald.
+ * Shared Tailwind CDN config — ported from the "code-companion" Lovable design's
+ * Tailwind v4 @theme block (src/styles.css) into Tailwind v3 CDN syntax, since
+ * cdn.tailwindcss.com only runs v3. Colors reference the CSS custom properties
+ * defined in css/base.css so both files stay the single source of truth.
  */
 tailwind.config = {
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Accent family — emerald (web). The Android app keeps the original gold.
-        primary: '#34D399',
-        'primary-container': '#0F9D68',
-        'on-primary': '#06281B',
-        'on-primary-container': '#E7FBF2',
-        'primary-fixed': '#A7F3D0',
-        'primary-fixed-dim': '#34D399',
-        'on-primary-fixed': '#04231A',
-        'on-primary-fixed-variant': '#0B6B49',
-        'inverse-primary': '#0F9D68',
-        'surface-tint': '#34D399',
-
-        // Neutrals — unchanged from DESIGN.md
-        background: '#0B0B0A',
-        surface: '#131312',
-        'surface-dim': '#131312',
-        'surface-bright': '#3a3938',
-        'surface-container-lowest': '#0e0e0d',
-        'surface-container-low': '#1c1c1a',
-        'surface-container': '#20201e',
-        'surface-container-high': '#2a2a29',
-        'surface-container-highest': '#353533',
-        'surface-variant': '#353533',
-        'on-surface': '#e5e2df',
-        'on-surface-variant': '#d3c4b0',
-        'inverse-surface': '#e5e2df',
-        'inverse-on-surface': '#31302f',
-        'on-background': '#e5e2df',
-        outline: '#9c8f7c',
-        'outline-variant': '#3A3833',
-
-        secondary: '#c9c6c0',
-        'on-secondary': '#31312c',
-        'secondary-container': '#474742',
-        'on-secondary-container': '#b7b5af',
-        'secondary-fixed': '#e5e2db',
-        'secondary-fixed-dim': '#c9c6c0',
-        'on-secondary-fixed': '#1c1c18',
-        'on-secondary-fixed-variant': '#474742',
-
-        tertiary: '#a2c9ff',
-        'on-tertiary': '#00315c',
-        'tertiary-container': '#6ba1e5',
-        'on-tertiary-container': '#003764',
-        'tertiary-fixed': '#d3e4ff',
-        'tertiary-fixed-dim': '#a2c9ff',
-        'on-tertiary-fixed': '#001c38',
-        'on-tertiary-fixed-variant': '#004882',
-
-        error: '#ffb4ab',
-        'on-error': '#690005',
-        'error-container': '#93000a',
-        'on-error-container': '#ffdad6',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+        card: 'var(--card)',
+        'card-foreground': 'var(--foreground)',
+        popover: 'var(--card)',
+        'popover-foreground': 'var(--foreground)',
+        primary: 'var(--primary)',
+        'primary-foreground': 'var(--primary-foreground)',
+        'primary-deep': 'var(--primary-deep)',
+        'primary-soft': 'var(--primary-soft)',
+        secondary: 'var(--secondary)',
+        'secondary-foreground': 'var(--secondary-foreground)',
+        muted: 'var(--muted)',
+        'muted-foreground': 'var(--muted-foreground)',
+        accent: 'var(--accent)',
+        'accent-foreground': 'var(--accent-foreground)',
+        destructive: 'var(--destructive)',
+        'destructive-foreground': 'var(--destructive-foreground)',
+        border: 'var(--border)',
+        input: 'var(--border)',
+        ring: 'var(--primary)',
+        outline: 'var(--outline)',
+        surface: 'var(--surface)',
+        'surface-low': 'var(--surface-low)',
+        'surface-high': 'var(--surface-high)',
+        'surface-lowest': 'var(--surface-lowest)',
       },
-      borderRadius: {
-        DEFAULT: '0px',
-        lg: '0px',
-        xl: '0px',
-        full: '9999px',
+      fontFamily: {
+        display: ['Playfair Display', 'serif'],
+        body: ['Hanken Grotesk', 'sans-serif'],
+        sans: ['Hanken Grotesk', 'sans-serif'],
+        mono: ['Geist Mono', 'ui-monospace', 'monospace'],
       },
       spacing: {
-        unit: '4px',
         'margin-mobile': '20px',
         'margin-desktop': '64px',
         gutter: '24px',
@@ -78,21 +50,37 @@ tailwind.config = {
         'stack-md': '16px',
         'stack-lg': '32px',
       },
-      fontFamily: {
-        'label-caps': ['Geist'],
-        'display-lg': ['Playfair Display'],
-        'headline-md': ['Playfair Display'],
-        'body-lg': ['Hanken Grotesk'],
-        'body-md': ['Hanken Grotesk'],
-        'mono-data': ['Geist'],
+      borderRadius: {
+        sm: '8px',
+        md: '10px',
+        lg: '14px',
+        xl: '20px',
+        '2xl': '28px',
       },
-      fontSize: {
-        'label-caps': ['12px', { lineHeight: '16px', letterSpacing: '0.08em', fontWeight: '600' }],
-        'display-lg': ['48px', { lineHeight: '56px', letterSpacing: '-0.02em', fontWeight: '700' }],
-        'headline-md': ['24px', { lineHeight: '32px', fontWeight: '600' }],
-        'body-lg': ['18px', { lineHeight: '28px', fontWeight: '400' }],
-        'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
-        'mono-data': ['14px', { lineHeight: '20px', fontWeight: '400' }],
+      keyframes: {
+        'fade-up': {
+          from: { opacity: 0, transform: 'translateY(18px)' },
+          to: { opacity: 1, transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        'pulse-ring': {
+          '0%': { boxShadow: '0 0 0 0 color-mix(in oklab, var(--primary) 45%, transparent)' },
+          '70%': { boxShadow: '0 0 0 14px transparent' },
+          '100%': { boxShadow: '0 0 0 0 transparent' },
+        },
+      },
+      animation: {
+        'fade-up': 'fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both',
+        'fade-in': 'fade-in 0.6s ease-out both',
+        marquee: 'marquee 32s linear infinite',
+        'pulse-ring': 'pulse-ring 2.6s ease-out infinite',
       },
     },
   },

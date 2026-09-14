@@ -15,6 +15,7 @@ urlpatterns = [
     path("api-keys/", views.api_keys_view, name="api_keys"),
     path("webhooks/", views.webhooks_view, name="webhooks"),
     path("markets/", views.markets_view, name="markets"),
+    path("agent/", views.agent_view, name="agent"),
     path("profile/", views.profile_view, name="profile"),
     path("admin-overview/", views.admin_overview, name="admin_overview"),
 ]

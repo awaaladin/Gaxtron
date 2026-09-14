@@ -1,46 +1,58 @@
-{% extends "base.html" %}
-{% block title %}API Keys — Gaxtron{% endblock %}
+{% extends "console_base.html" %}
+{% block title %}API keys — Gaxtron Merchant Console{% endblock %}
 {% block content %}
-<div class="flex justify-between items-end mb-stack-lg flex-wrap gap-stack-md">
+<div class="mb-stack-lg flex flex-wrap items-end justify-between gap-stack-md">
   <div>
-    <p class="font-label-caps text-label-caps text-primary uppercase mb-2">Developer Tools</p>
-    <h2 class="font-display-lg text-display-lg text-on-surface italic">API Key Management</h2>
+    <h1 class="font-display text-4xl italic text-foreground">API keys</h1>
+    <p class="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Secret credentials your backend uses to create payments. Rotate them if one ever leaks.</p>
   </div>
+  <form method="post" class="animate-fade-in">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="create">
+    <button type="submit" class="btn-primary">
+      <i data-lucide="plus" class="size-4" style="stroke-width:1.5"></i>New key
+    </button>
+  </form>
 </div>
 
-<div class="flat-border bg-surface-container-lowest mb-stack-lg p-6">
-  <p class="font-body-md text-on-surface-variant text-[13px]">
-    Generate and manage keys via the REST API — <code class="font-mono-data text-primary">POST /api-keys</code>
-    with your session's Bearer token, or from the mobile app.
-  </p>
+{% if error %}
+<div class="mb-stack-md rounded-md border border-destructive/40 bg-surface-lowest p-4 text-sm text-destructive">{{ error }}</div>
+{% endif %}
+{% if created_key %}
+<div class="mb-stack-lg flex flex-col gap-stack-sm rounded-md border border-primary/40 bg-surface-lowest p-6">
+  <p class="label-caps text-[9px] text-primary">New key created — copy it now, it won't be shown again</p>
+  <p class="data-mono break-all text-sm text-foreground">{{ created_key }}</p>
 </div>
+{% endif %}
 
-<div class="flat-border bg-surface-container-lowest">
-  <div class="overflow-x-auto">
-    <table class="w-full text-left">
-      <thead>
-        <tr class="divider-b bg-surface-container">
-          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Prefix</th>
-          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Name</th>
-          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Active</th>
-          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Created</th>
-          <th class="px-6 py-3 font-label-caps text-[10px] text-outline uppercase">Last Used</th>
-        </tr>
-      </thead>
-      <tbody class="font-mono-data text-on-surface divide-y divide-outline-variant">
-      {% for key in api_keys %}
-        <tr class="hover:bg-surface-container-low transition-colors">
-          <td class="px-6 py-4">{{ key.key_prefix }}...</td>
-          <td class="px-6 py-4 font-body-md">{{ key.name }}</td>
-          <td class="px-6 py-4">{% if key.is_active %}<span class="inline-block px-2 py-0.5 text-[10px] font-bold uppercase border bg-primary/10 text-primary border-primary/20">Active</span>{% else %}<span class="inline-block px-2 py-0.5 text-[10px] font-bold uppercase border bg-error-container/20 text-error border-error/30">Revoked</span>{% endif %}</td>
-          <td class="px-6 py-4">{{ key.created_at }}</td>
-          <td class="px-6 py-4">{{ key.last_used_at|default:"—" }}</td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">No API keys yet. Create one via <code class="font-mono-data">POST /api-keys</code></td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
+<div class="animate-fade-up space-y-stack-md">
+  {% for key in api_keys %}
+  <div class="panel flex flex-wrap items-center justify-between gap-stack-md p-6">
+    <div>
+      <p class="label-caps text-primary">{{ key.name }}{% if not key.is_active %} · revoked{% endif %}</p>
+      <p class="data-mono mt-2 text-foreground">{{ key.key_prefix }}••••••••••••</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-stack-lg">
+      <div>
+        <p class="label-caps text-[9px] text-outline">Created</p>
+        <p class="data-mono text-muted-foreground">{{ key.created_at|date:"Y-m-d" }}</p>
+      </div>
+      <div>
+        <p class="label-caps text-[9px] text-outline">Last used</p>
+        <p class="data-mono text-muted-foreground">{{ key.last_used_at|default:"Never" }}</p>
+      </div>
+      {% if key.is_active %}
+      <form method="post" onsubmit="return confirm('Revoke this key? Anything using it will stop working immediately.');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="revoke">
+        <input type="hidden" name="key_id" value="{{ key.id }}">
+        <button type="submit" class="btn-ghost py-2.5">Revoke</button>
+      </form>
+      {% endif %}
+    </div>
   </div>
+  {% empty %}
+  <p class="px-2 py-8 text-center text-muted-foreground">No API keys yet — create one above.</p>
+  {% endfor %}
 </div>
 {% endblock %}

@@ -37,7 +37,7 @@
     const el = document.getElementById('marketLiveStatus');
     if (!el) return;
     el.textContent = text;
-    el.style.color = ok ? '#34D399' : '#D3C4B0';
+    el.style.color = ok ? '#44D5A0' : '#978A79';
   }
 
   async function parseApiError(res) {
@@ -72,24 +72,24 @@
       const up = change >= 0;
       const active = id === selectedId;
       return `
-        <button type="button" class="w-full flex items-center justify-between px-6 py-4 divider-b font-mono-data transition-colors hover:bg-surface-container-low ${active ? 'bg-surface-container-low' : ''}" data-coin="${id}">
+        <button type="button" class="w-full flex items-center justify-between px-6 py-4 border-b border-border data-mono transition-colors hover:bg-surface-low ${active ? 'bg-surface-low' : ''}" data-coin="${id}">
           <div class="text-left">
-            <span class="font-label-caps text-label-caps text-on-surface mr-2">${meta.symbol}</span>
-            <span class="text-on-surface-variant text-[13px]">${meta.name}</span>
+            <span class="label-caps text-foreground mr-2">${meta.symbol}</span>
+            <span class="text-muted-foreground text-[13px]">${meta.name}</span>
           </div>
           <div class="flex items-center gap-stack-md">
-            <span class="text-on-surface">${fmtUsd(p.usd)}</span>
-            <span class="${up ? 'text-primary' : 'text-error'}">${fmtPct(change)}</span>
+            <span class="text-foreground">${fmtUsd(p.usd)}</span>
+            <span class="${up ? 'text-primary' : 'text-destructive'}">${fmtPct(change)}</span>
           </div>
         </button>`;
     }).join('');
 
     if (!html) {
-      list.innerHTML = '<p class="px-6 py-8 text-center text-on-surface-variant font-body-md">No market data</p>';
+      list.innerHTML = '<p class="px-6 py-8 text-center text-muted-foreground font-body">No market data</p>';
       return;
     }
     list.innerHTML = html;
-    list.querySelectorAll('.coin-row').forEach((btn) => {
+    list.querySelectorAll('[data-coin]').forEach((btn) => {
       btn.addEventListener('click', () => selectCoin(btn.dataset.coin));
     });
     lastPrices = prices;
@@ -116,8 +116,8 @@
     const labels = points.map((pt) => new Date(pt.x).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     const data = points.map((pt) => pt.y);
     const up = data.length > 1 && data[data.length - 1] >= data[0];
-    const color = up ? '#34D399' : '#FFB4AB';
-    const bg = up ? 'rgba(52, 211, 153, 0.12)' : 'rgba(255, 180, 171, 0.12)';
+    const color = up ? '#44D5A0' : '#F2B1AC';
+    const bg = up ? 'rgba(68, 213, 160, 0.12)' : 'rgba(242, 177, 172, 0.12)';
 
     if (chart) {
       chart.data.labels = labels;
@@ -155,13 +155,13 @@
         },
         scales: {
           x: {
-            grid: { color: '#3A3833' },
-            ticks: { color: '#9C8F7C', maxTicksLimit: 8, font: { size: 10 } },
+            grid: { color: '#2D2B28' },
+            ticks: { color: '#978A79', maxTicksLimit: 8, font: { size: 10 } },
           },
           y: {
-            grid: { color: '#3A3833' },
+            grid: { color: '#2D2B28' },
             ticks: {
-              color: '#9C8F7C',
+              color: '#978A79',
               font: { size: 10 },
               callback: (v) => fmtUsd(v),
             },

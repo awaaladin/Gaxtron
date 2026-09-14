@@ -1,0 +1,27 @@
+{% extends "console_base.html" %}
+{% block title %}Agent — Gaxtron Merchant Console{% endblock %}
+{% block content %}
+<div class="mb-stack-lg flex flex-wrap items-end justify-between gap-stack-md">
+  <div>
+    <h1 class="font-display text-4xl italic text-foreground">Agent</h1>
+    <p class="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">A conversational view over your payment data. Ask about a transaction, a webhook or a payout.</p>
+  </div>
+</div>
+
+<div class="panel animate-fade-up flex min-h-[420px] flex-col">
+  <div class="flex flex-1 flex-col items-center justify-center gap-stack-md p-6 text-center">
+    <span class="inline-flex size-11 items-center justify-center rounded-full border border-primary/30 bg-primary/10">
+      <i data-lucide="bot-message-square" class="size-5 text-primary" style="stroke-width:1.5"></i>
+    </span>
+    <p class="label-caps text-[10px] text-outline">Coming soon</p>
+    <p class="max-w-sm text-sm leading-6 text-muted-foreground">The Gaxtron agent isn't connected to live data yet — this view will let you ask about payments, webhooks and settlements once the orchestrator ships.</p>
+  </div>
+
+  <form class="flex items-center gap-stack-md border-t border-border p-4" onsubmit="return false;">
+    <input disabled placeholder="Ask about a payment… (not yet available)" class="data-mono flex-1 rounded-md border border-border bg-surface-lowest/60 px-4 py-3 text-foreground opacity-60 outline-none placeholder:text-outline/60">
+    <button type="submit" disabled class="btn-primary opacity-60" aria-label="Send">
+      <i data-lucide="send-horizontal" class="size-4" style="stroke-width:1.5"></i>Send
+    </button>
+  </form>
+</div>
+{% endblock %}

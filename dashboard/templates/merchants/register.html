@@ -1,42 +1,26 @@
-{% extends "base.html" %}
-{% block title %}Register — Gaxtron{% endblock %}
+{% extends "auth_base.html" %}
+{% block title %}Create a merchant account — Gaxtron{% endblock %}
+{% block eyebrow %}Get started{% endblock %}
+{% block auth_title %}Create account{% endblock %}
+{% block subtitle %}Your API key is issued the moment the account is created.{% endblock %}
 {% block auth_content %}
-<header class="flex flex-col items-center mb-stack-lg">
-  <span class="font-headline-md text-headline-md font-bold text-primary tracking-tighter mb-stack-md">GAXTRON</span>
-  <h1 class="font-headline-md text-headline-md text-on-surface mb-2">Create merchant account</h1>
-  <p class="font-body-md text-on-surface-variant text-center">Set up your crypto payment gateway</p>
-</header>
-
 {% if form.errors %}
-<div class="flat-border border-error bg-surface-container-lowest p-4 mb-stack-md">
-  {% for field in form %}
-    {% for error in field.errors %}<p class="font-body-md text-error text-[13px]">{{ field.label }}: {{ error }}</p>{% endfor %}
-  {% endfor %}
-  {% for error in form.non_field_errors %}<p class="font-body-md text-error text-[13px]">{{ error }}</p>{% endfor %}
+<div class="rounded-md border border-destructive/40 bg-surface-lowest p-4 text-sm text-destructive">
+  {% for field in form %}{% for error in field.errors %}<p>{{ field.label }}: {{ error }}</p>{% endfor %}{% endfor %}
+  {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
 </div>
 {% endif %}
-
-<form method="post" class="gx-form flex flex-col gap-stack-md">
+<form method="post" class="gx-form flex flex-col gap-stack-lg">
   {% csrf_token %}
-  <div class="flex flex-col gap-stack-sm">
-    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.username.id_for_label }}">USERNAME</label>
-    {{ form.username }}
-  </div>
-  <div class="flex flex-col gap-stack-sm">
-    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.email.id_for_label }}">EMAIL</label>
-    {{ form.email }}
-  </div>
-  <div class="flex flex-col gap-stack-sm">
-    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.password1.id_for_label }}">PASSWORD</label>
+  <label class="block"><span class="label-caps text-outline">Business name</span>{{ form.username }}</label>
+  <label class="block"><span class="label-caps text-outline">Email</span>{{ form.email }}</label>
+  <label class="block">
+    <span class="label-caps text-outline">Password</span>
     {{ form.password1 }}
-    <span class="font-label-caps text-[10px] text-outline">MINIMUM 8 CHARACTERS</span>
-  </div>
-  <div class="flex flex-col gap-stack-sm">
-    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.password2.id_for_label }}">CONFIRM PASSWORD</label>
-    {{ form.password2 }}
-  </div>
-  <button type="submit" class="mt-stack-sm w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 tracking-[0.2em] hover:bg-primary-container transition-colors">INITIALIZE ACCOUNT</button>
+    <span class="label-caps mt-2 block text-[10px] text-outline">Minimum 8 characters</span>
+  </label>
+  <label class="block"><span class="label-caps text-outline">Confirm password</span>{{ form.password2 }}</label>
+  <button type="submit" class="btn-primary mt-stack-sm w-full py-4">Create account</button>
 </form>
-
-<p class="font-label-caps text-[11px] text-on-surface-variant text-center mt-stack-lg">Already registered? <a href="{% url 'login' %}" class="text-primary hover:underline underline-offset-4">Sign in</a></p>
 {% endblock %}
+{% block auth_footer %}Already a merchant? <a href="{% url 'login' %}" class="text-primary underline underline-offset-4">Log in</a>{% endblock %}

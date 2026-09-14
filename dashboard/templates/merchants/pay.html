@@ -1,159 +1,141 @@
 {% load static %}
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta name="description" content="Pay securely with Ethereum"/>
-<title>Complete your payment — Gaxtron</title>
-<link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}"/>
-<meta name="theme-color" content="#0B0B0A"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Pay securely with Ethereum">
+<title>Checkout — Pay with Ethereum | Gaxtron</title>
+<link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+<meta name="theme-color" content="#0A0A08">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Hanken+Grotesk:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="{% static 'js/tailwind-config.js' %}"></script>
-<link rel="stylesheet" href="{% static 'css/base.css' %}"/>
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-background text-on-surface font-body-md">
+<body class="bg-background text-foreground font-body antialiased">
 
-<div class="bg-surface-container-lowest border-b border-outline-variant text-center py-2 font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant" id="testBanner">
-  Test mode — Sepolia network only. Use test ETH, not real money.
+<div class="border-b border-border bg-surface-lowest py-2 text-center" id="testBanner">
+  <span class="label-caps text-[10px] text-muted-foreground">Test mode — Sepolia network only. Use test ETH, not real money.</span>
 </div>
 
-<div id="loadingView" class="flex flex-col items-center justify-center gap-stack-md min-h-[70vh]">
+<div id="loadingView" class="flex min-h-[70vh] flex-col items-center justify-center gap-stack-md">
   <div class="checkout-spinner"></div>
-  <p class="font-body-md text-on-surface-variant">Loading payment…</p>
+  <p class="text-sm text-muted-foreground">Loading payment…</p>
 </div>
 
-<div id="errorView" class="hidden flex flex-col items-center justify-center min-h-[70vh]">
-  <div class="max-w-sm mx-auto text-center p-8">
-    <span class="material-symbols-outlined text-error text-[40px] mb-stack-md">error</span>
-    <p class="font-headline-md text-[18px] text-on-surface mb-2" id="errorTitle">Payment unavailable</p>
-    <p class="font-body-md text-on-surface-variant" id="errorText">This payment link is invalid or has expired.</p>
+<div id="errorView" class="hidden flex min-h-[70vh] flex-col items-center justify-center px-margin-mobile">
+  <div class="mx-auto max-w-sm p-8 text-center">
+    <i data-lucide="circle-alert" class="mx-auto mb-stack-md size-10 text-destructive"></i>
+    <p class="mb-2 font-display text-lg text-foreground" id="errorTitle">Payment unavailable</p>
+    <p class="text-sm text-muted-foreground" id="errorText">This payment link is invalid or has expired.</p>
   </div>
 </div>
 
-<main id="checkoutView" class="hidden max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-0 md:min-h-screen" aria-label="Crypto checkout">
+<main id="checkoutView" class="hidden relative flex min-h-screen items-center justify-center overflow-hidden px-margin-mobile py-16">
+  <div class="aurora" aria-hidden="true"></div>
 
-  <aside class="border-r border-outline-variant p-margin-mobile md:p-margin-desktop flex flex-col bg-surface-container-lowest">
-    <div class="flex items-center gap-stack-sm mb-stack-lg">
-      <span class="font-headline-md text-[18px] font-bold text-primary tracking-tighter">GAXTRON</span>
+  <div class="panel relative w-full max-w-md p-8">
+    <a href="/" class="font-display text-lg font-bold tracking-tight text-primary">GAXTRON</a>
+
+    <p class="label-caps mt-stack-lg text-outline">Amount due</p>
+    <p class="font-display text-5xl text-foreground"><span id="summaryAmount">—</span> <span class="text-2xl text-muted-foreground">ETH</span></p>
+    <p class="data-mono mt-2 text-muted-foreground" id="summaryNetwork">Ethereum · Sepolia</p>
+
+    <div class="mt-stack-lg flex flex-col gap-stack-sm border-t border-border pt-stack-md">
+      <div class="data-mono flex justify-between"><span class="text-muted-foreground">Payment ID</span><span class="text-foreground" id="summaryPaymentId">—</span></div>
+      <div class="data-mono flex justify-between"><span class="text-muted-foreground">Status</span><span class="text-foreground" id="summaryStatus">Awaiting payment</span></div>
+      <div class="data-mono flex justify-between"><span class="text-muted-foreground">Total</span><span class="text-foreground" id="summaryTotal">—</span></div>
     </div>
-    <p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Total due</p>
-    <p class="font-display-lg text-[44px] text-on-surface" id="summaryAmount">—</p>
-    <p class="font-label-caps text-label-caps text-primary uppercase mt-1" id="summaryNetwork">Ethereum · Sepolia</p>
 
-    <div class="mt-stack-lg border-t border-outline-variant pt-stack-md flex flex-col gap-stack-sm">
-      <div class="flex justify-between font-mono-data text-mono-data">
-        <span class="text-on-surface-variant">Payment ID</span>
-        <span class="text-on-surface" id="summaryPaymentId">—</span>
-      </div>
-      <div class="flex justify-between font-mono-data text-mono-data">
-        <span class="text-on-surface-variant">Status</span>
-        <span class="text-on-surface" id="summaryStatus">Awaiting payment</span>
-      </div>
-      <div class="flex justify-between font-mono-data text-mono-data">
-        <span class="text-on-surface-variant">Total</span>
-        <span class="text-on-surface" id="summaryTotal">—</span>
-      </div>
-    </div>
-  </aside>
-
-  <section class="p-margin-mobile md:p-margin-desktop flex flex-col">
-    <h2 class="font-headline-md text-headline-md text-on-surface mb-2">Pay with crypto</h2>
-    <p class="font-body-md text-on-surface-variant mb-stack-lg">Scan the QR, copy the address, or connect MetaMask.</p>
-
-    <div class="grid grid-cols-3 gap-0 mb-stack-lg" aria-hidden="true">
+    <div class="mt-stack-lg grid grid-cols-3 gap-2" aria-hidden="true">
       <div class="checkout-step active" id="step1" data-step="pending">1. Send</div>
       <div class="checkout-step" id="step2" data-step="confirming">2. Confirm</div>
       <div class="checkout-step" id="step3" data-step="confirmed">3. Done</div>
     </div>
 
-    <div id="panelPending">
-      <div class="flex flex-col items-center gap-stack-sm mb-stack-lg">
-        <div class="relative bg-white p-3 border border-outline-variant">
+    <div id="panelPending" class="mt-stack-lg">
+      <div class="mb-stack-lg flex flex-col items-center gap-stack-sm">
+        <div class="relative flex items-center justify-center rounded-xl border border-border bg-white p-3">
           <canvas id="qrcode" width="200" height="200" aria-label="QR code to pay with Ethereum"></canvas>
-          <img id="qrCode" class="hidden" width="200" height="200" alt=""/>
+          <img id="qrCode" class="hidden" width="200" height="200" alt="">
         </div>
-        <p class="font-label-caps text-[10px] text-on-surface-variant uppercase">Scan with MetaMask, Trust Wallet, or any ETH wallet</p>
+        <p class="label-caps text-[10px] text-outline">Scan with MetaMask, Trust Wallet, or any ETH wallet</p>
       </div>
 
-      <div class="flat-border p-4 mb-stack-md">
-        <label for="walletAddress" class="font-label-caps text-[10px] text-on-surface-variant uppercase">Wallet address — send exactly the amount shown</label>
-        <code id="walletAddress" class="block font-mono-data text-[13px] text-on-surface mt-2 break-all">—</code>
+      <label class="mb-stack-md block">
+        <span class="label-caps text-outline">Wallet address — send exactly the amount shown</span>
+        <code id="walletAddress" class="data-mono mt-2 block break-all rounded-md border border-border bg-surface-lowest/60 p-3 text-foreground">—</code>
+      </label>
+
+      <div class="mb-stack-lg flex gap-stack-md">
+        <button type="button" class="btn-ghost flex-1 py-3" id="copyAddrBtn">Copy address</button>
+        <button type="button" class="btn-ghost flex-1 py-3" id="copyAmountBtn">Copy amount</button>
       </div>
 
-      <div class="flex gap-stack-md mb-stack-lg">
-        <button type="button" class="flex-1 border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 hover:bg-surface-container-low transition-colors" id="copyAddrBtn">Copy address</button>
-        <button type="button" class="flex-1 border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 hover:bg-surface-container-low transition-colors" id="copyAmountBtn">Copy amount</button>
+      <div class="mb-stack-md flex items-center gap-stack-md">
+        <div class="flex-1 border-t border-border"></div>
+        <span class="label-caps text-[10px] text-outline">or pay in browser</span>
+        <div class="flex-1 border-t border-border"></div>
       </div>
-
-      <div class="flex items-center gap-stack-md mb-stack-md">
-        <div class="flex-1 border-t border-outline-variant"></div>
-        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase">or pay in browser</span>
-        <div class="flex-1 border-t border-outline-variant"></div>
-      </div>
-      <button type="button" class="w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 tracking-widest hover:bg-primary-container transition-colors flex items-center justify-center gap-2" id="connectWalletBtn">
-        <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span> Connect MetaMask &amp; pay
+      <button type="button" class="btn-primary w-full py-4" id="connectWalletBtn">
+        <i data-lucide="wallet" class="size-4" style="stroke-width:1.5"></i>Connect MetaMask &amp; pay
       </button>
-      <p id="walletStatus" class="hidden font-label-caps text-[11px] mt-2" aria-live="polite"></p>
+      <p id="walletStatus" class="label-caps hidden mt-2 text-[11px]" aria-live="polite"></p>
 
-      <ol class="font-body-md text-on-surface-variant text-[13px] list-decimal list-inside space-y-1 mt-stack-lg">
-        <li>Open your wallet and switch to <strong class="text-on-surface">Sepolia</strong> test network</li>
-        <li>Send <strong id="instructionAmount" class="text-on-surface">—</strong> to the address above</li>
+      <ol class="mt-stack-lg list-inside list-decimal space-y-1 text-[13px] leading-6 text-muted-foreground">
+        <li>Open your wallet and switch to <strong class="text-foreground">Sepolia</strong> test network</li>
+        <li>Send <strong id="instructionAmount" class="text-foreground">—</strong> to the address above</li>
         <li>Keep this page open — we'll confirm automatically</li>
       </ol>
 
-      <button type="button" class="w-full border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 mt-stack-md hover:bg-surface-container-low transition-colors" id="openWalletBtn">
-        Open in wallet app
-      </button>
+      <button type="button" class="btn-ghost mt-stack-md w-full py-3" id="openWalletBtn">Open in wallet app</button>
 
-      <p class="font-label-caps text-[10px] text-on-surface-variant text-center mt-stack-md flex items-center justify-center gap-2">
-        <span class="w-2 h-2 bg-primary inline-block"></span> Checking for your payment every few seconds
+      <p class="label-caps mt-stack-md flex items-center justify-center gap-2 text-center text-[10px] text-muted-foreground">
+        <span class="animate-pulse-ring size-2 rounded-full bg-primary" aria-hidden="true"></span>Checking for your payment every few seconds
       </p>
     </div>
 
-    <div id="panelConfirming" class="hidden flex flex-col items-center text-center gap-stack-md py-stack-lg">
+    <div id="panelConfirming" class="hidden flex flex-col items-center gap-stack-md py-stack-lg text-center">
       <div class="checkout-spinner"></div>
-      <h3 class="font-headline-md text-[18px] text-on-surface">Payment received</h3>
-      <p class="font-body-md text-on-surface-variant text-[13px]">Waiting for blockchain confirmations…</p>
-      <div class="w-full bg-surface-container-highest h-1">
-        <div class="bg-primary h-1" id="confProgressBar" style="width:0%"></div>
-      </div>
-      <p class="font-mono-data text-mono-data"><strong id="confCount">0</strong> of <strong id="confRequired">3</strong> confirmations</p>
-      <p class="font-mono-data text-[11px] text-on-surface-variant break-all" id="txHashConfirming"></p>
+      <h3 class="font-display text-lg text-foreground">Payment received</h3>
+      <p class="text-[13px] text-muted-foreground">Waiting for blockchain confirmations…</p>
+      <div class="h-1 w-full bg-surface-high"><div class="h-1 bg-primary" id="confProgressBar" style="width:0%"></div></div>
+      <p class="data-mono"><strong id="confCount">0</strong> of <strong id="confRequired">3</strong> confirmations</p>
+      <p class="data-mono break-all text-[11px] text-muted-foreground" id="txHashConfirming"></p>
     </div>
 
-    <div id="panelConfirmed" class="hidden flex flex-col items-center text-center gap-stack-md py-stack-lg">
-      <span class="material-symbols-outlined text-primary text-[48px]">check_circle</span>
-      <h3 class="font-headline-md text-[20px] text-primary">Payment complete</h3>
-      <p class="font-body-md text-on-surface-variant text-[13px]">Thank you — your payment has been confirmed on chain.</p>
-      <p class="font-mono-data text-[11px] text-on-surface-variant break-all" id="txHashConfirmed"></p>
-      <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mt-stack-md">You can safely close this page</p>
+    <div id="panelConfirmed" class="hidden flex flex-col items-center gap-stack-md py-stack-lg text-center">
+      <i data-lucide="circle-check" class="size-12 text-primary"></i>
+      <h3 class="font-display text-xl text-primary">Payment complete</h3>
+      <p class="text-[13px] text-muted-foreground">Thank you — your payment has been confirmed on chain.</p>
+      <p class="data-mono break-all text-[11px] text-muted-foreground" id="txHashConfirmed"></p>
+      <p class="label-caps mt-stack-md text-[10px] text-outline">You can safely close this page</p>
     </div>
 
-    <div id="panelFailed" class="hidden flex flex-col items-center text-center gap-stack-md py-stack-lg">
-      <h3 class="font-headline-md text-[18px] text-error">Payment expired</h3>
-      <p class="font-body-md text-on-surface-variant text-[13px]">This link is no longer valid. Ask the merchant for a new payment link.</p>
+    <div id="panelFailed" class="hidden flex flex-col items-center gap-stack-md py-stack-lg text-center">
+      <h3 class="font-display text-lg text-destructive">Payment expired</h3>
+      <p class="text-[13px] text-muted-foreground">This link is no longer valid. Ask the merchant for a new payment link.</p>
     </div>
 
-    <footer class="mt-auto pt-stack-lg text-center font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">
-      Secured by Gaxtron · <span id="footerNetwork">Sepolia testnet</span>
+    <footer class="mt-stack-lg pt-stack-lg text-center">
+      <span class="label-caps text-[10px] text-outline">Secured by Gaxtron · <span id="footerNetwork">Sepolia testnet</span></span>
     </footer>
-  </section>
+  </div>
 </main>
 
 <div id="paymentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="checkout-modal-backdrop"></div>
-  <div class="relative bg-surface-container-lowest border-2 border-outline-variant p-8 max-w-sm w-full">
-    <h2 id="modalTitle" class="font-headline-md text-[20px] text-on-surface mb-2">Confirm payment</h2>
-    <p class="font-display-lg text-[28px] text-primary mb-stack-md" id="modalAmount">—</p>
-    <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-1">Send to</p>
-    <code class="block font-mono-data text-[12px] text-on-surface break-all mb-stack-md" id="modalAddress">—</code>
-    <p class="font-body-md text-on-surface-variant text-[12px] mb-stack-lg" id="paymentAmount">Review the amount in MetaMask before confirming.</p>
+  <div class="panel relative w-full max-w-sm bg-surface-lowest p-8">
+    <h2 id="modalTitle" class="mb-2 font-display text-xl text-foreground">Confirm payment</h2>
+    <p class="mb-stack-md font-display text-3xl text-primary" id="modalAmount">—</p>
+    <p class="label-caps mb-1 text-[10px] text-outline">Send to</p>
+    <code class="data-mono mb-stack-md block break-all text-[12px] text-foreground" id="modalAddress">—</code>
+    <p class="mb-stack-lg text-[12px] text-muted-foreground" id="paymentAmount">Review the amount in MetaMask before confirming.</p>
     <div class="flex flex-col gap-stack-sm">
-      <button type="button" class="bg-primary text-on-primary font-label-caps text-label-caps py-3 hover:bg-primary-container transition-colors" id="confirmPayBtn">Pay now</button>
-      <button type="button" class="border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 hover:bg-surface-container-low transition-colors" id="modalCancelBtn">Cancel</button>
+      <button type="button" class="btn-primary py-3" id="confirmPayBtn">Pay now</button>
+      <button type="button" class="btn-ghost py-3" id="modalCancelBtn">Cancel</button>
     </div>
   </div>
 </div>
@@ -165,5 +147,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="{% static 'js/wallet.js' %}"></script>
 <script src="{% static 'js/checkout-page.js' %}"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>if (window.lucide) { lucide.createIcons(); }</script>
 </body>
 </html>

@@ -41,10 +41,11 @@ def dashboard_view(request):
         "pending": payments.filter(status="pending").count(),
         "revenue": payments.filter(status="confirmed").aggregate(total=Sum("amount"))["total"] or Decimal("0"),
     }
+    latest_key = ApiKey.objects.filter(user=request.user, is_active=True).order_by("-created_at").first()
     return render(
         request,
         "merchants/dashboard.html",
-        {"stats": stats, "recent_payments": payments[:10]},
+        {"stats": stats, "recent_payments": payments[:6], "latest_key": latest_key, "active_nav": "Dashboard"},
     )
 
 
@@ -73,6 +74,7 @@ def payments_view(request):
             "created": created,
             "created_url": PaymentService.build_payment_url(created) if created else None,
             "error": error,
+            "active_nav": "Payments",
         },
     )
 
@@ -91,31 +93,63 @@ def transactions_view(request):
     return render(
         request,
         "merchants/transactions.html",
-        {"transactions": txs, "status_filter": status_filter, "date_from": date_from},
+        {"transactions": txs, "status_filter": status_filter, "date_from": date_from, "active_nav": "Transactions"},
     )
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def api_keys_view(request):
-    keys = ApiKey.objects.filter(user=request.user)
-    return render(request, "merchants/api_keys.html", {"api_keys": keys})
+    from django.conf import settings
+
+    from . import security
+
+    created_key = None
+    error = None
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "create":
+            active_count = ApiKey.objects.filter(user=request.user, is_active=True).count()
+            if active_count >= settings.MAX_API_KEYS_PER_USER:
+                error = f"Maximum {settings.MAX_API_KEYS_PER_USER} active API keys allowed."
+            else:
+                name = request.POST.get("name", "").strip() or "default"
+                raw_key = security.generate_api_key()
+                ApiKey.objects.create(
+                    user=request.user, key_hash=security.hash_api_key(raw_key), key_prefix=raw_key[:12], name=name
+                )
+                created_key = raw_key
+        elif action == "revoke":
+            ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).update(is_active=False)
+
+    keys = ApiKey.objects.filter(user=request.user).order_by("-created_at")
+    return render(
+        request,
+        "merchants/api_keys.html",
+        {"api_keys": keys, "created_key": created_key, "error": error, "active_nav": "API keys"},
+    )
 
 
 @login_required
 def markets_view(request):
-    return render(request, "merchants/markets.html")
+    return render(request, "merchants/markets.html", {"active_nav": "Markets"})
+
+
+@login_required
+def agent_view(request):
+    return render(request, "merchants/agent.html", {"active_nav": "Agent"})
 
 
 @login_required
 def profile_view(request):
-    return render(request, "merchants/profile.html")
+    return render(request, "merchants/profile.html", {"active_nav": "Profile"})
 
 
 @login_required
 def webhooks_view(request):
     payment_ids = Payment.objects.filter(user=request.user).values_list("id", flat=True)
     logs = WebhookLog.objects.filter(payment_id__in=payment_ids)[:50]
-    return render(request, "merchants/webhooks.html", {"webhook_logs": logs})
+    return render(request, "merchants/webhooks.html", {"webhook_logs": logs, "active_nav": "Webhooks"})
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -125,7 +159,7 @@ def admin_overview(request):
     return render(
         request,
         "merchants/admin_overview.html",
-        {"users": users, "total_transactions": total_tx},
+        {"users": users, "total_transactions": total_tx, "active_nav": "Admin"},
     )
 
 

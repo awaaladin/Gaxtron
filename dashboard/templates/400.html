@@ -1,33 +1,32 @@
 {% load static %}
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>400 | Gaxtron</title>
-<link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}"/>
-<meta name="theme-color" content="#0B0B0A"/>
+<link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+<meta name="theme-color" content="#0A0A08">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&family=Geist:wght@400;600&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Hanken+Grotesk:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="{% static 'js/tailwind-config.js' %}"></script>
-<link rel="stylesheet" href="{% static 'css/base.css' %}"/>
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
 </head>
-<body class="bg-background text-on-surface font-body-md flex flex-col min-h-screen">
-<header class="px-margin-mobile md:px-margin-desktop h-16 flex items-center border-b border-outline-variant">
-  <a href="/" class="font-headline-md text-[16px] font-bold text-primary tracking-tighter">GAXTRON</a>
-  <span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest ml-4">Error Report</span>
+<body class="flex min-h-screen flex-col bg-background font-body text-foreground antialiased">
+<header class="flex h-16 items-center border-b border-border px-margin-mobile md:px-margin-desktop">
+  <a href="/" class="font-display text-base font-bold tracking-tight text-primary">GAXTRON</a>
+  <span class="label-caps ml-4 text-[10px] text-muted-foreground">Error report</span>
 </header>
-<main class="flex-1 flex items-center justify-center px-margin-mobile text-center">
+<main class="flex flex-1 items-center justify-center px-margin-mobile text-center">
   <div class="max-w-lg">
-    <p class="font-display-lg text-[140px] leading-none text-on-surface italic">400</p>
-    <h1 class="font-headline-md text-headline-md text-on-surface mt-stack-md">Bad request</h1>
-    <p class="font-body-md text-on-surface-variant mt-stack-sm">The request couldn't be processed. Check your input and try again.</p>
-    <div class="flex justify-center gap-stack-md mt-stack-lg">
-      <button type="button" onclick="history.back()" class="bg-primary text-on-primary font-label-caps text-label-caps py-3 px-8 tracking-widest hover:bg-primary-container transition-colors">GO BACK</button>
-      <a href="/" class="border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 px-8 tracking-widest hover:bg-surface-container-low transition-colors">BACK HOME</a>
+    <p class="font-display text-[140px] italic leading-none text-foreground">400</p>
+    <h1 class="mt-stack-md font-display text-2xl text-foreground">Bad request</h1>
+    <p class="mt-stack-sm text-sm text-muted-foreground">The request couldn't be processed. Check your input and try again.</p>
+    <div class="mt-stack-lg flex justify-center gap-stack-md">
+      <button type="button" onclick="history.back()" class="btn-primary px-8 py-3">Go back</button>
+      <a href="/" class="btn-ghost px-8 py-3">Back home</a>
     </div>
-    <p class="font-label-caps text-[10px] text-outline uppercase tracking-widest mt-stack-lg">GX-400-BAD-REQUEST</p>
+    <p class="label-caps mt-stack-lg text-[10px] text-outline">GX-400-BAD-REQUEST</p>
   </div>
 </main>
 </body>

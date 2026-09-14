@@ -1,38 +1,40 @@
-{% extends "base.html" %}
-{% block title %}Profile — Gaxtron{% endblock %}
+{% extends "console_base.html" %}
+{% block title %}Profile — Gaxtron Merchant Console{% endblock %}
 {% block content %}
-<h2 class="font-display-lg text-display-lg text-on-surface italic mb-stack-lg">Account Identity</h2>
+<div class="mb-stack-lg">
+  <h1 class="font-display text-4xl italic text-foreground">Account identity</h1>
+</div>
 
-<div class="flat-border bg-surface-container-lowest mb-stack-lg max-w-[800px]">
-  <div class="p-8 flex items-center gap-stack-lg divider-b">
-    <div class="w-16 h-16 bg-surface-container-highest border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-primary">{{ user.username|slice:":2"|upper }}</div>
+<div class="panel mb-stack-lg max-w-[800px]">
+  <div class="flex items-center gap-stack-lg border-b border-border p-8">
+    <div class="flex size-16 items-center justify-center border border-border bg-surface-high font-display text-xl text-primary">{{ user.username|slice:":2"|upper }}</div>
     <div>
-      <p class="font-headline-md text-[20px] text-on-surface">{{ user.username }}</p>
-      <p class="font-mono-data text-mono-data text-on-surface-variant">{{ user.email }}</p>
+      <p class="font-display text-lg text-foreground">{{ user.username }}</p>
+      <p class="data-mono text-muted-foreground">{{ user.email }}</p>
     </div>
   </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-stack-lg p-8">
+  <div class="grid grid-cols-1 gap-stack-lg p-8 sm:grid-cols-2">
     <div>
-      <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-2">Merchant ID</p>
-      <p class="font-mono-data text-mono-data text-on-surface">#{{ user.id }}</p>
+      <p class="label-caps mb-2 text-[10px] text-outline">Merchant ID</p>
+      <p class="data-mono text-foreground">#{{ user.id }}</p>
     </div>
     <div>
-      <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-2">Network</p>
-      <p class="font-body-md text-on-surface">Sepolia testnet · ETH</p>
+      <p class="label-caps mb-2 text-[10px] text-outline">Network</p>
+      <p class="text-sm text-foreground">Sepolia testnet · ETH</p>
     </div>
     <div>
-      <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-2">Wallet Address</p>
-      <p class="font-mono-data text-[13px] text-on-surface break-all">{{ user.wallet_address|default:"Not linked" }}</p>
+      <p class="label-caps mb-2 text-[10px] text-outline">Wallet address</p>
+      <p class="data-mono break-all text-[13px] text-foreground">{{ user.wallet_address|default:"Not linked" }}</p>
     </div>
     <div>
-      <p class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-2">Account Status</p>
-      <p class="font-body-md text-primary">{% if user.is_active %}Active{% else %}Inactive{% endif %}</p>
+      <p class="label-caps mb-2 text-[10px] text-outline">Account status</p>
+      <p class="text-sm text-primary">{% if user.is_active %}Active{% else %}Inactive{% endif %}</p>
     </div>
   </div>
 </div>
 
-<div class="flex gap-stack-md flex-wrap max-w-[800px]">
-  <a href="{% url 'dashboard' %}" class="bg-primary text-on-primary font-label-caps text-label-caps py-3 px-8 tracking-widest hover:bg-primary-container transition-colors">BACK TO DASHBOARD</a>
-  <a href="{% url 'logout' %}" class="border border-outline-variant text-on-surface font-label-caps text-label-caps py-3 px-8 tracking-widest hover:bg-surface-container-low transition-colors">SIGN OUT</a>
+<div class="flex flex-wrap gap-stack-md">
+  <a href="{% url 'dashboard' %}" class="btn-primary">Back to dashboard</a>
+  <a href="{% url 'logout' %}" class="btn-ghost">Sign out</a>
 </div>
 {% endblock %}

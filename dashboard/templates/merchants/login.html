@@ -1,30 +1,17 @@
-{% extends "base.html" %}
-{% block title %}Login — Gaxtron{% endblock %}
+{% extends "auth_base.html" %}
+{% block title %}Log in — Gaxtron Merchant Console{% endblock %}
+{% block eyebrow %}Merchant access{% endblock %}
+{% block auth_title %}Log in{% endblock %}
+{% block subtitle %}Use the email and password tied to your merchant account.{% endblock %}
 {% block auth_content %}
-<header class="flex flex-col items-center mb-stack-lg">
-  <span class="font-headline-md text-headline-md font-bold text-primary tracking-tighter mb-stack-md">GAXTRON</span>
-  <h1 class="font-headline-md text-headline-md text-on-surface mb-2">Welcome back</h1>
-  <p class="font-body-md text-on-surface-variant text-center">Sign in to your merchant dashboard</p>
-</header>
-
 {% if form.errors %}
-<div class="flat-border border-error bg-surface-container-lowest p-4 mb-stack-md">
-  <p class="font-body-md text-error text-[13px]">Invalid username or password.</p>
-</div>
+<div class="rounded-md border border-destructive/40 bg-surface-lowest p-4 text-sm text-destructive">Invalid email or password.</div>
 {% endif %}
-
-<form method="post" class="gx-form flex flex-col gap-stack-md">
+<form method="post" class="gx-form flex flex-col gap-stack-lg">
   {% csrf_token %}
-  <div class="flex flex-col gap-stack-sm">
-    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.username.id_for_label }}">EMAIL</label>
-    {{ form.username }}
-  </div>
-  <div class="flex flex-col gap-stack-sm">
-    <label class="font-label-caps text-label-caps text-on-surface-variant" for="{{ form.password.id_for_label }}">PASSWORD</label>
-    {{ form.password }}
-  </div>
-  <button type="submit" class="mt-stack-sm w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 tracking-[0.2em] hover:bg-primary-container transition-colors">SIGN IN</button>
+  <label class="block"><span class="label-caps text-outline">Email</span>{{ form.username }}</label>
+  <label class="block"><span class="label-caps text-outline">Password</span>{{ form.password }}</label>
+  <button type="submit" class="btn-primary mt-stack-sm w-full py-4">Log in</button>
 </form>
-
-<p class="font-label-caps text-[11px] text-on-surface-variant text-center mt-stack-lg">No account? <a href="{% url 'register' %}" class="text-primary hover:underline underline-offset-4">Create one</a></p>
 {% endblock %}
+{% block auth_footer %}No account yet? <a href="{% url 'register' %}" class="text-primary underline underline-offset-4">Create one</a>{% endblock %}

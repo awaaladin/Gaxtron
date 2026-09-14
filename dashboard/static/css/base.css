@@ -1,203 +1,205 @@
-/* Shared base styles — Premium Editorial Fintech design system.
-   Everything expressible as a Tailwind utility class lives in markup instead;
-   this file only holds the handful of things Tailwind CDN utilities can't do. */
+/* Gaxtron — ported 1:1 from the "code-companion" Lovable design (Tailwind v4 tokens
+   translated to Tailwind v3 CDN + plain CSS, since cdn.tailwindcss.com only runs v3). */
+
+:root {
+  --background: oklch(0.145 0.004 106);
+  --foreground: oklch(0.911 0.004 89);
+  --surface-lowest: oklch(0.165 0.004 106);
+  --surface: oklch(0.198 0.004 106);
+  --surface-low: oklch(0.232 0.005 96);
+  --surface-high: oklch(0.312 0.005 96);
+  --card: oklch(0.165 0.004 106);
+  --primary: oklch(0.784 0.145 164.5);
+  --primary-deep: oklch(0.63 0.135 162);
+  --primary-soft: oklch(0.89 0.085 165);
+  --primary-foreground: oklch(0.21 0.045 162);
+  --secondary: oklch(0.232 0.005 96);
+  --secondary-foreground: oklch(0.911 0.004 89);
+  --muted: oklch(0.232 0.005 96);
+  --muted-foreground: oklch(0.82 0.024 78);
+  --accent: oklch(0.232 0.005 96);
+  --accent-foreground: oklch(0.911 0.004 89);
+  --destructive: oklch(0.82 0.077 24);
+  --destructive-foreground: oklch(0.21 0.06 24);
+  --border: oklch(0.29 0.006 78);
+  --outline: oklch(0.64 0.029 76);
+
+  /* Canvas (Chart.js) and other non-CSS contexts can't resolve the vars above —
+     hex fallbacks computed from the same OKLCH values. */
+  --primary-hex: #44D5A0;
+  --destructive-hex: #F2B1AC;
+  --border-hex: #2D2B28;
+  --outline-hex: #978A79;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
-  background-color: #0B0B0A;
-  color: #E5E2DF;
+  background-color: var(--background);
+  color: var(--foreground);
   -webkit-font-smoothing: antialiased;
 }
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  vertical-align: middle;
-  line-height: 1;
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
-.flat-border {
-  border: 1px solid #3A3833;
+.label-caps {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.divider-b {
-  border-bottom: 1px solid #3A3833;
+.data-mono {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
 }
 
-.divider-r {
-  border-right: 1px solid #3A3833;
+.hairline {
+  border: 1px solid var(--border);
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-high) transparent;
 }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--surface-high); }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #0B0B0A;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #3A3833;
-}
-
-/* Shared components emitted by js/api.js, js/errors.js, js/notifications.js —
-   kept as plain CSS (rather than rewriting those files to inline Tailwind classes)
-   so the JS layer stays untouched across the redesign. */
-
-.spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  margin-right: 8px;
-  border: 2px solid rgba(229, 226, 223, 0.25);
-  border-top-color: #34D399;
-  border-radius: 50%;
-  vertical-align: -2px;
-  animation: gx-spin 0.6s linear infinite;
-}
-@keyframes gx-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Toasts (js/api.js showToast, js/errors.js toastHtml) */
-#cp-toast-host {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
+.btn-primary {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  max-width: 360px;
-}
-.cp-toast {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  background: #131312;
-  border: 1px solid #3A3833;
-  color: #E5E2DF;
-  font-family: 'Hanken Grotesk', sans-serif;
-}
-.cp-toast-icon { flex-shrink: 0; margin-top: 1px; }
-.cp-toast--success .cp-toast-icon { color: #34D399; }
-.cp-toast--error .cp-toast-icon { color: #FFB4AB; }
-.cp-toast--warning .cp-toast-icon { color: #D3C4B0; }
-.cp-toast--neutral .cp-toast-icon { color: #9C8F7C; }
-.cp-toast-body { flex: 1; }
-.cp-toast-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 2px; color: #9C8F7C; }
-.cp-toast-message { font-size: 13px; margin: 0; }
-.cp-toast-close { background: none; border: none; color: #9C8F7C; cursor: pointer; font-size: 16px; line-height: 1; }
-.cp-toast-close:hover { color: #E5E2DF; }
-
-/* Inline alerts (js/errors.js alertHtml) */
-.cp-alert {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid #3A3833;
-  background: #131312;
-  margin-bottom: 16px;
-}
-.cp-alert-icon { flex-shrink: 0; margin-top: 1px; }
-.cp-alert--warning .cp-alert-icon { color: #D3C4B0; }
-.cp-alert--error .cp-alert-icon { color: #FFB4AB; }
-.cp-alert--neutral .cp-alert-icon { color: #9C8F7C; }
-.cp-alert-body { flex: 1; }
-.cp-alert-title { font-size: 13px; font-weight: 600; margin: 0 0 2px; color: #E5E2DF; }
-.cp-alert-message { font-size: 13px; margin: 0; color: #D3C4B0; }
-.cp-alert-hint { font-size: 12px; margin: 6px 0 0; color: #9C8F7C; }
-.cp-alert-dismiss { background: none; border: none; color: #9C8F7C; cursor: pointer; font-size: 16px; line-height: 1; }
-.cp-alert-dismiss:hover { color: #E5E2DF; }
-
-/* Notification bell panel (js/notifications.js) */
-.notif-backdrop {
-  position: fixed; inset: 0; background: rgba(11, 11, 10, 0.6);
-  z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
-}
-.notif-backdrop--open { opacity: 1; pointer-events: auto; }
-.notif-panel {
-  position: fixed; top: 0; right: 0; height: 100%; width: 340px; max-width: 90vw;
-  background: #131312; border-left: 1px solid #3A3833; z-index: 61;
-  transform: translateX(100%); transition: transform 0.25s ease;
-  display: flex; flex-direction: column;
-}
-.notif-panel--open { transform: translateX(0); }
-.notif-panel-head {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 20px; border-bottom: 1px solid #3A3833;
-}
-.notif-panel-head h2 { font-family: 'Playfair Display', serif; font-size: 20px; margin: 0; color: #E5E2DF; }
-.notif-panel-sub { font-size: 12px; color: #9C8F7C; margin: 4px 0 0; }
-.notif-list { flex: 1; overflow-y: auto; }
-.notif-empty { padding: 24px 20px; font-size: 13px; color: #9C8F7C; }
-.notif-item {
-  display: flex; gap: 10px; padding: 14px 20px; border-bottom: 1px solid #3A3833;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+  color: var(--primary-foreground);
+  padding: 14px 28px;
+  border: none;
   cursor: pointer;
+  box-shadow: 0 10px 30px -12px color-mix(in oklab, var(--primary) 60%, transparent);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, filter 0.25s ease;
 }
-.notif-item:hover { background: #1c1c1a; }
-.notif-item--read { opacity: 0.55; }
-.notif-item-dot { width: 8px; height: 8px; margin-top: 5px; flex-shrink: 0; background: #9C8F7C; }
-.notif-item--success .notif-item-dot { background: #34D399; }
-.notif-item--error .notif-item-dot { background: #FFB4AB; }
-.notif-item--warning .notif-item-dot { background: #D3C4B0; }
-.notif-item-title { font-size: 13px; font-weight: 600; margin: 0; color: #E5E2DF; }
-.notif-item-msg { font-size: 12px; margin: 2px 0; color: #D3C4B0; }
-.notif-item-time { font-size: 11px; margin: 0; color: #9C8F7C; }
+.btn-primary:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 18px 40px -14px color-mix(in oklab, var(--primary) 75%, transparent); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-.notif-toast {
-  position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-  display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
-  background: #131312; border: 1px solid #3A3833; max-width: 340px;
-  transform: translateY(12px); opacity: 0; pointer-events: none;
+.btn-ghost {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.btn-ghost:hover { transform: translateY(-2px); border-color: color-mix(in oklab, var(--primary) 55%, transparent); background-color: var(--surface-lowest); }
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--surface-lowest) 85%, transparent), transparent);
+  transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.panel:hover { border-color: color-mix(in oklab, var(--primary) 40%, transparent); transform: translateY(-3px); }
+
+.aurora {
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 520px;
+  pointer-events: none;
+  background:
+    radial-gradient(45% 50% at 20% 30%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 70%),
+    radial-gradient(40% 45% at 80% 10%, color-mix(in oklab, var(--primary-deep) 20%, transparent), transparent 70%);
+  filter: blur(20px);
+}
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 45%, transparent); }
+  70% { box-shadow: 0 0 0 14px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes gx-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* Bare Django-rendered form widgets ({{ form.field }}) — styled to match the
+   Field component from the source design (rounded-md, surface-lowest/60, focus ring). */
+.gx-form input, .gx-form select, .gx-form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface-lowest) 60%, transparent);
+  color: var(--foreground);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 14px;
+  padding: 12px 16px;
+  outline: none;
   transition: all 0.2s ease;
 }
-.notif-toast--show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-.notif-toast-icon { flex-shrink: 0; }
-.notif-toast--success .notif-toast-icon { color: #34D399; }
-.notif-toast--error .notif-toast-icon { color: #FFB4AB; }
-.notif-toast--warning .notif-toast-icon { color: #D3C4B0; }
-.notif-toast-title { font-size: 12px; font-weight: 600; margin: 0; color: #E5E2DF; }
-.notif-toast-msg { font-size: 12px; margin: 2px 0 0; color: #D3C4B0; }
-.notif-toast-close { background: none; border: none; color: #9C8F7C; cursor: pointer; font-size: 16px; margin-left: auto; }
+.gx-form input::placeholder, .gx-form select::placeholder, .gx-form textarea::placeholder { color: color-mix(in oklab, var(--outline) 60%, transparent); }
+.gx-form input:focus, .gx-form select:focus, .gx-form textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 25%, transparent);
+}
+.gx-form label > span.label-caps { display: block; color: var(--outline); }
 
-/* Checkout page (pay.html + js/checkout-page.js) */
+/* Checkout page (pay.html + js/checkout-page.js, js/wallet.js) — functional
+   classes referenced directly by those scripts; kept stable across redesigns. */
 .checkout-step {
   padding-bottom: 8px;
-  font-family: 'Geist', monospace;
+  font-family: 'Geist Mono', ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #9C8F7C;
-  border-bottom: 2px solid #3A3833;
+  color: var(--outline);
+  border-bottom: 2px solid var(--border);
+  text-align: center;
 }
-.checkout-step.active { color: #34D399; border-bottom-color: #34D399; }
-.checkout-step.done { color: #E5E2DF; border-bottom-color: #3A3833; }
-.checkout-wallet-status--ok { color: #34D399; }
-.checkout-wallet-status--err { color: #FFB4AB; }
+.checkout-step.active { color: var(--primary); border-bottom-color: var(--primary); }
+.checkout-step.done { color: var(--foreground); border-bottom-color: var(--border); }
+.checkout-wallet-status--ok { color: var(--primary); }
+.checkout-wallet-status--err { color: var(--destructive); }
 .checkout-modal-open { overflow: hidden; }
-.checkout-modal-backdrop {
-  position: fixed; inset: 0; background: rgba(11, 11, 10, 0.75);
-}
+.checkout-modal-backdrop { position: fixed; inset: 0; background: rgba(10, 10, 8, 0.75); }
 .checkout-spinner {
-  width: 28px; height: 28px; border: 3px solid rgba(229, 226, 223, 0.2);
-  border-top-color: #34D399; border-radius: 50%; animation: gx-spin 0.7s linear infinite;
+  width: 28px; height: 28px; border: 3px solid color-mix(in oklab, var(--foreground) 20%, transparent);
+  border-top-color: var(--primary); border-radius: 50%; animation: gx-spin 0.7s linear infinite;
   margin: 0 auto;
-}
-
-/* Plain-CSS fallback styling for bare Django-rendered form widgets ({{ form.field }})
-   that don't carry Tailwind classes — used on dashboard/ admin console pages. */
-.gx-form input, .gx-form select, .gx-form textarea {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #3A3833;
-  color: #E5E2DF;
-  font-family: 'Geist', monospace;
-  font-size: 14px;
-  padding: 8px 0;
-  width: 100%;
-}
-.gx-form input:focus, .gx-form select:focus, .gx-form textarea:focus {
-  outline: none;
-  border-bottom-color: #34D399;
 }
