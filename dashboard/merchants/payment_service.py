@@ -140,3 +140,14 @@ class PaymentService:
             payment.confirmations = confirmations
             payment.save(update_fields=["tx_hash", "confirmations"])
         return payment
+
+    @staticmethod
+    def update_last_scanned_block(payment: Payment, block_number: int | None) -> None:
+        """Persist how far the no-tx-found-yet scan reached, so the next reconcile tick
+        resumes from there instead of re-scanning the same block window from scratch."""
+        if block_number is None or payment.status != "pending":
+            return
+        if payment.last_scanned_block is not None and block_number <= payment.last_scanned_block:
+            return
+        payment.last_scanned_block = block_number
+        payment.save(update_fields=["last_scanned_block"])

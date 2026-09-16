@@ -1,3 +1,6 @@
+# Node (CSS build toolchain only — see package.json)
+node_modules/
+
 # Python
 __pycache__/
 *.py[cod]

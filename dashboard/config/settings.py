@@ -151,6 +151,13 @@ USDT_CONTRACT_ADDRESS = os.getenv("USDT_CONTRACT_ADDRESS", "0x94a9D9AC8a22534D3c
 BLOCKCHAIN_SCAN_BLOCKS = int(os.getenv("BLOCKCHAIN_SCAN_BLOCKS", "500"))
 ENABLED_CHAINS = os.getenv("ENABLED_CHAINS", "ETH")
 
+# Alchemy Address Activity webhook (push-based deposit detection) — optional. Unset, this
+# stays fully inert: run_listener's poll loop is still what detects and confirms payments,
+# this just short-circuits the "find the tx" half of it. See VERCEL.md section 7.
+ALCHEMY_WEBHOOK_SIGNING_KEY = os.getenv("ALCHEMY_WEBHOOK_SIGNING_KEY", "")
+ALCHEMY_AUTH_TOKEN = os.getenv("ALCHEMY_AUTH_TOKEN", "")
+ALCHEMY_WEBHOOK_ID = os.getenv("ALCHEMY_WEBHOOK_ID", "")
+
 CRON_SECRET = os.getenv("CRON_SECRET", "")
 CHECKOUT_RECONCILE_ON_POLL = os.getenv("CHECKOUT_RECONCILE_ON_POLL", "True").lower() == "true"
 

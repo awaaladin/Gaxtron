@@ -13,6 +13,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from . import alchemy_webhook_service
 from .authentication import ApiKeyAuthentication
 from .models import Payment
 from .payment_service import PaymentService
@@ -47,6 +48,12 @@ class CreatePaymentView(APIView):
         except Exception:
             logger.exception("create_payment failed for user %s", request.user.id)
             return Response({"detail": "Failed to create payment"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if alchemy_webhook_service.is_configured():
+            try:
+                alchemy_webhook_service.register_address(payment.wallet_address)
+            except Exception:
+                logger.exception("Alchemy address registration failed for payment %s", payment.id)
 
         try:
             get_reconciler().run_batch(payment_id=payment.id)

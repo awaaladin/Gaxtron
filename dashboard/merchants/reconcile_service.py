@@ -42,12 +42,15 @@ class PaymentReconciler:
                     self._finalize_payment(payment, result, chain)
                 return
 
-            result = self.processor.detect_payment(chain, payment.wallet_address, payment.amount, payment.currency)
+            result, scanned_to_block = self.processor.detect_payment(
+                chain, payment.wallet_address, payment.amount, payment.currency, payment.last_scanned_block
+            )
         except Exception:
             logger.exception("detect_payment failed payment=%s chain=%s", payment.id, chain)
             return
 
         if not result:
+            PaymentService.update_last_scanned_block(payment, scanned_to_block)
             return
 
         required = settings.ETH_REQUIRED_CONFIRMATIONS

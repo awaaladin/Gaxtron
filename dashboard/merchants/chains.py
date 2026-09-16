@@ -48,6 +48,17 @@ class IncomingPaymentResult:
     block_number: int | None = None
 
 
+@dataclass
+class ScanResult:
+    """Outcome of one incoming-tx scan: the match (if any) plus how far the scan reached,
+    so the caller can persist that as the starting point for next time instead of
+    re-scanning the same blocks on every poll tick."""
+    tx_hash: str | None
+    from_address: str
+    block_number: int | None
+    scanned_to_block: int
+
+
 class BaseChainService(ABC):
     chain_id: str
 
@@ -175,27 +186,36 @@ class EthereumService(BaseChainService):
             logger.exception("ETH confirmations failed for %s", tx_hash)
             return 0
 
-    def find_incoming_eth_tx(self, address: str, min_amount_wei: int) -> tuple[str | None, str, int | None]:
+    def _scan_from_block(self, latest: int, last_scanned_block: int | None) -> int:
+        """Where to resume scanning from: right after wherever we left off last tick, capped
+        to BLOCKCHAIN_SCAN_BLOCKS lookback as a safety net (e.g. worker was down a while).
+        A brand-new payment (last_scanned_block=None) has no history to look back over at
+        all — start at the current block, not settings.BLOCKCHAIN_SCAN_BLOCKS behind it."""
+        floor = max(0, latest - settings.BLOCKCHAIN_SCAN_BLOCKS)
+        if last_scanned_block is None:
+            return max(floor, latest)
+        return max(floor, last_scanned_block + 1)
+
+    def find_incoming_eth_tx(self, address: str, min_amount_wei: int, last_scanned_block: int | None = None) -> ScanResult:
         checksum = Web3.to_checksum_address(address)
         latest = self._with_retry(lambda: self.w3.eth.block_number)
-        scan_blocks = min(settings.BLOCKCHAIN_SCAN_BLOCKS, latest)
+        from_block = self._scan_from_block(latest, last_scanned_block)
 
-        for block_num in range(latest, max(0, latest - scan_blocks), -1):
+        for block_num in range(latest, from_block - 1, -1):
             block = self.w3.eth.get_block(block_num, full_transactions=True)
             for tx in block.transactions:
                 to_addr = tx.get("to")
                 if to_addr and to_addr.lower() == checksum.lower():
                     if tx.get("value", 0) >= min_amount_wei:
                         tx_hash = tx["hash"].hex() if hasattr(tx["hash"], "hex") else tx["hash"]
-                        return tx_hash, tx.get("from", "unknown"), block_num
-        return None, "unknown", None
+                        return ScanResult(tx_hash, tx.get("from", "unknown"), block_num, latest)
+        return ScanResult(None, "unknown", None, latest)
 
-    def find_incoming_usdt_tx(self, address: str, min_amount: Decimal) -> tuple[str | None, str, int | None]:
+    def find_incoming_usdt_tx(self, address: str, min_amount: Decimal, last_scanned_block: int | None = None) -> ScanResult:
         checksum = Web3.to_checksum_address(address)
         min_units = int(min_amount * Decimal(10**USDT_DECIMALS))
         latest = self._with_retry(lambda: self.w3.eth.block_number)
-        scan_blocks = min(settings.BLOCKCHAIN_SCAN_BLOCKS, latest)
-        from_block = max(0, latest - scan_blocks)
+        from_block = self._scan_from_block(latest, last_scanned_block)
 
         try:
             logs = self._with_retry(
@@ -207,38 +227,44 @@ class EthereumService(BaseChainService):
             )
         except Exception:
             logger.exception("USDT log scan failed for %s", address)
-            return None, "unknown", None
+            return ScanResult(None, "unknown", None, latest)
 
         for log in reversed(logs):
             value = log["args"]["value"]
             if value >= min_units:
                 tx_hash = log["transactionHash"].hex()
                 block_number = log.get("blockNumber")
-                return tx_hash, log["args"]["from"], block_number
-        return None, "unknown", None
+                return ScanResult(tx_hash, log["args"]["from"], block_number, latest)
+        return ScanResult(None, "unknown", None, latest)
 
-    def detect_incoming(self, address: str, amount: Decimal, currency: str) -> IncomingPaymentResult | None:
+    def detect_incoming(
+        self, address: str, amount: Decimal, currency: str, last_scanned_block: int | None = None
+    ) -> tuple[IncomingPaymentResult | None, int | None]:
+        """Returns (match_or_None, scanned_to_block). scanned_to_block is returned even on
+        a miss so the caller can persist it and avoid re-scanning the same blocks next tick."""
         currency = currency.upper()
         min_amount = amount * Decimal("0.99")
 
         if currency == "ETH":
             min_wei = Web3.to_wei(float(min_amount), "ether")
-            tx_hash, from_addr, block_num = self.find_incoming_eth_tx(address, int(min_wei))
+            scan = self.find_incoming_eth_tx(address, int(min_wei), last_scanned_block)
         elif currency == "USDT":
-            tx_hash, from_addr, block_num = self.find_incoming_usdt_tx(address, min_amount)
+            scan = self.find_incoming_usdt_tx(address, min_amount, last_scanned_block)
         else:
-            return None
+            return None, None
 
-        if not tx_hash:
-            return None
+        if not scan.tx_hash:
+            return None, scan.scanned_to_block
 
-        confirmations = self.get_confirmations(tx_hash)
-        return IncomingPaymentResult(
-            tx_hash=tx_hash, from_address=from_addr, confirmations=confirmations, block_number=block_num
+        confirmations = self.get_confirmations(scan.tx_hash)
+        result = IncomingPaymentResult(
+            tx_hash=scan.tx_hash, from_address=scan.from_address, confirmations=confirmations,
+            block_number=scan.block_number,
         )
+        return result, scan.scanned_to_block
 
     def check_payment(self, address: str, amount: Decimal, currency: str) -> IncomingPaymentResult | None:
-        detected = self.detect_incoming(address, amount, currency)
+        detected, _ = self.detect_incoming(address, amount, currency)
         if not detected:
             return None
         if detected.confirmations < self.required_confirmations():

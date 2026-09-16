@@ -45,12 +45,15 @@ class PaymentProcessor:
             raise ValueError(f"{service.chain_id} does not support {currency}")
         return service.create_wallet(currency)
 
-    def detect_payment(self, chain: str, address: str, amount: Decimal, currency: str) -> IncomingPaymentResult | None:
+    def detect_payment(
+        self, chain: str, address: str, amount: Decimal, currency: str, last_scanned_block: int | None = None
+    ) -> tuple[IncomingPaymentResult | None, int | None]:
+        """Returns (match_or_None, scanned_to_block) — see EthereumService.detect_incoming."""
         self.validate_chain_currency(chain, currency)
         service = self.get_service(chain)
         if hasattr(service, "detect_incoming"):
-            return service.detect_incoming(address, amount, currency)
-        return service.check_payment(address, amount, currency)
+            return service.detect_incoming(address, amount, currency, last_scanned_block)
+        return service.check_payment(address, amount, currency), None
 
     def check_payment(self, chain: str, address: str, amount: Decimal, currency: str) -> IncomingPaymentResult | None:
         self.validate_chain_currency(chain, currency)

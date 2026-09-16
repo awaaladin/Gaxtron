@@ -148,6 +148,44 @@ payment's status flip to `confirmed` in the dashboard purely from the worker's o
 (Render's free tier "Background Worker" plan has no always-on guarantee — pick at
 least the **Starter** plan for something you'd trust with real payment confirmations.)
 
+**Scaling note:** `run_listener` used to re-scan the full `BLOCKCHAIN_SCAN_BLOCKS` window
+on every 5s tick for every pending payment that hadn't found its tx yet — fine for one
+payment, O(pending × 500 RPC calls) at real volume. It now tracks `last_scanned_block`
+per payment and only scans forward from there (a fresh payment starts at its creation
+block, no lookback at all), so cost no longer grows with how many payments are waiting.
+Once a tx is found, confirmation checks were always cheap (2 RPC calls) and still are.
+
+## 7. Alchemy Address Activity webhook (optional — instant detection)
+
+Even with the scan fix above, detection is still poll-based: a deposit isn't *noticed*
+until the next 5s tick. Alchemy's Address Activity webhook pushes a notification the
+moment a matching tx is mined, so this app can react immediately instead of waiting for
+the next poll. It's optional and inert until configured — without it, `run_listener`'s
+poll loop (now cheap, see above) is the only detection path, same as before.
+
+1. **Create the webhook**: Alchemy dashboard → **Notify** → **Create Webhook** →
+   **Address Activity** → network **Sepolia** → webhook URL
+   `https://your-app.vercel.app/webhooks/alchemy/address-activity` → no addresses need
+   adding upfront, the app registers each deposit address itself as payments are created.
+2. Copy that webhook's **Signing Key** and **Webhook ID** from its settings page.
+3. Get an **Auth Token** (not the signing key) from Alchemy dashboard → account/team
+   settings → **Auth Tokens** — this is what lets the app call Alchemy's API to add each
+   new deposit address to the webhook's watch list.
+4. Set on **both** Vercel and Render (same values on each, like the other shared secrets):
+   ```
+   ALCHEMY_WEBHOOK_SIGNING_KEY   from step 2
+   ALCHEMY_WEBHOOK_ID            from step 2
+   ALCHEMY_AUTH_TOKEN            from step 3
+   ```
+5. Redeploy both. Create a test payment and check the Render worker logs — you should
+   see the payment flip to `confirmed` within a couple seconds of the tx confirming,
+   instead of on the next 5s tick.
+
+If any of the three env vars is missing, `alchemy_webhook_service.is_configured()`
+returns `False` and nothing about payment creation or detection changes — the endpoint
+itself just 401s anything sent to it, since signature verification has no key to check
+against.
+
 ## Local dev (no cron)
 
 ```powershell

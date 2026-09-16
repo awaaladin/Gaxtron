@@ -97,6 +97,7 @@ class Payment(models.Model):
     idempotency_key = models.CharField(max_length=64, unique=True, null=True, blank=True)
     tx_hash = models.CharField(max_length=128, null=True, blank=True, db_index=True)
     confirmations = models.IntegerField(default=0)
+    last_scanned_block = models.IntegerField(null=True, blank=True)
     public_token = models.CharField(max_length=72, unique=True, null=True, blank=True, db_index=True)
     event_id = models.CharField(max_length=64, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

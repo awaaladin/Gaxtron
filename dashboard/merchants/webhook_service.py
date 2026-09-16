@@ -16,7 +16,7 @@ from .url_validation import validate_callback_url
 
 logger = logging.getLogger(__name__)
 
-WEBHOOK_TIMEOUT = httpx.Timeout(30.0, connect=10.0)
+WEBHOOK_TIMEOUT = httpx.Timeout(10.0, connect=5.0)
 
 
 class WebhookService:
