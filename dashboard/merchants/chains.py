@@ -5,10 +5,12 @@ in the original codebase need third-party packages (tronpy, bitcoinlib, solders)
 never actually installed there either — this app has only ever run ETH-only in practice.
 """
 import logging
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from decimal import Decimal
 
+import requests
 from django.conf import settings
 from eth_account import Account
 from web3 import Web3
@@ -17,6 +19,10 @@ from web3.exceptions import Web3Exception
 from .security import encrypt_private_key
 
 logger = logging.getLogger(__name__)
+
+RPC_MAX_ATTEMPTS = 3
+RPC_BACKOFF_BASE_SECONDS = 0.5
+RPC_RETRYABLE_EXCEPTIONS = (Web3Exception, requests.exceptions.RequestException, OSError, ValueError)
 
 CHAIN_CURRENCIES = {
     "ETH": ("ETH", "USDT"),
@@ -96,7 +102,25 @@ class EthereumService(BaseChainService):
     def __init__(self):
         self.w3 = Web3(Web3.HTTPProvider(settings.BLOCKCHAIN_RPC_URL, request_kwargs={"timeout": 30}))
         self._usdt_contract = None
+        self.last_error: str | None = None
         Account.enable_unaudited_hdwallet_features()
+
+    def _with_retry(self, fn, *, attempts: int = RPC_MAX_ATTEMPTS, base_delay: float = RPC_BACKOFF_BASE_SECONDS):
+        """Retry an RPC call with exponential backoff. Sets self.last_error on final
+        failure instead of letting callers silently treat an outage as 'no result'."""
+        last_exc: Exception | None = None
+        for attempt in range(attempts):
+            try:
+                result = fn()
+                self.last_error = None
+                return result
+            except RPC_RETRYABLE_EXCEPTIONS as exc:
+                last_exc = exc
+                if attempt < attempts - 1:
+                    time.sleep(base_delay * (2**attempt))
+        self.last_error = f"{type(last_exc).__name__}: {last_exc}"
+        logger.warning("ETH RPC call failed after %s attempts: %s", attempts, self.last_error)
+        raise last_exc
 
     @property
     def usdt_contract(self):
@@ -108,9 +132,13 @@ class EthereumService(BaseChainService):
         return self._usdt_contract
 
     def is_connected(self) -> bool:
+        # w3.is_connected() swallows the underlying exception and returns a bare bool,
+        # which is exactly the "silent failure" we don't want — call a real RPC method
+        # instead so a network/timeout error surfaces through _with_retry into last_error.
         try:
-            return self.w3.is_connected()
-        except Web3Exception:
+            self._with_retry(lambda: self.w3.eth.chain_id)
+            return True
+        except RPC_RETRYABLE_EXCEPTIONS:
             return False
 
     def required_confirmations(self) -> int:
@@ -135,18 +163,21 @@ class EthereumService(BaseChainService):
 
     def get_confirmations(self, tx_hash: str) -> int:
         try:
-            receipt = self.w3.eth.get_transaction_receipt(tx_hash)
+            receipt = self._with_retry(lambda: self.w3.eth.get_transaction_receipt(tx_hash))
             if not receipt or receipt.get("blockNumber") is None:
                 return 0
-            latest = self.w3.eth.block_number
+            latest = self._with_retry(lambda: self.w3.eth.block_number)
             return max(0, latest - receipt["blockNumber"] + 1)
+        except RPC_RETRYABLE_EXCEPTIONS:
+            logger.warning("ETH confirmations failed for %s: %s", tx_hash, self.last_error)
+            return 0
         except Exception:
             logger.exception("ETH confirmations failed for %s", tx_hash)
             return 0
 
     def find_incoming_eth_tx(self, address: str, min_amount_wei: int) -> tuple[str | None, str, int | None]:
         checksum = Web3.to_checksum_address(address)
-        latest = self.w3.eth.block_number
+        latest = self._with_retry(lambda: self.w3.eth.block_number)
         scan_blocks = min(settings.BLOCKCHAIN_SCAN_BLOCKS, latest)
 
         for block_num in range(latest, max(0, latest - scan_blocks), -1):
@@ -162,15 +193,17 @@ class EthereumService(BaseChainService):
     def find_incoming_usdt_tx(self, address: str, min_amount: Decimal) -> tuple[str | None, str, int | None]:
         checksum = Web3.to_checksum_address(address)
         min_units = int(min_amount * Decimal(10**USDT_DECIMALS))
-        latest = self.w3.eth.block_number
+        latest = self._with_retry(lambda: self.w3.eth.block_number)
         scan_blocks = min(settings.BLOCKCHAIN_SCAN_BLOCKS, latest)
         from_block = max(0, latest - scan_blocks)
 
         try:
-            logs = self.usdt_contract.events.Transfer.get_logs(
-                from_block=from_block,
-                to_block=latest,
-                argument_filters={"to": checksum},
+            logs = self._with_retry(
+                lambda: self.usdt_contract.events.Transfer.get_logs(
+                    from_block=from_block,
+                    to_block=latest,
+                    argument_filters={"to": checksum},
+                )
             )
         except Exception:
             logger.exception("USDT log scan failed for %s", address)

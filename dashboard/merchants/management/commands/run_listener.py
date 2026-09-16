@@ -26,7 +26,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         reconciler = get_reconciler()
         health = reconciler.processor.chain_health()
-        self.stdout.write(self.style.SUCCESS(f"Gaxtron listener started: {health}"))
+        if all(health.values()):
+            self.stdout.write(self.style.SUCCESS(f"Gaxtron listener started: {health}"))
+        else:
+            errors = reconciler.processor.chain_errors()
+            self.stdout.write(self.style.WARNING(
+                f"Gaxtron listener started but some chains are unreachable: {health} errors={errors}. "
+                "Will keep retrying on each poll tick."
+            ))
 
         while True:
             try:

@@ -62,6 +62,11 @@ class PaymentProcessor:
     def chain_health(self) -> dict[str, bool]:
         return {chain: svc.is_connected() for chain, svc in self.services.items()}
 
+    def chain_errors(self) -> dict[str, str | None]:
+        """Populated by chain_health()'s is_connected() calls — call that first for
+        fresh values, since this only reads each service's last recorded error."""
+        return {chain: getattr(svc, "last_error", None) for chain, svc in self.services.items()}
+
 
 @lru_cache
 def get_payment_processor() -> PaymentProcessor:

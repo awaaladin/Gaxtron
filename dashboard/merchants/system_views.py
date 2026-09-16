@@ -8,12 +8,13 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .health_service import check_all_chains, check_blockchain, check_database, check_redis
+from .health_service import check_all_chains, check_blockchain, check_blockchain_errors, check_database, check_redis
 
 _INSECURE_SECRETS = {
     "change-me-min-32-chars-for-jwt-signing-abc123",
     "change-me-min-32-chars-for-webhook-hmac-abc",
     "change-me-32-byte-encryption-key-here!!",
+    "django-insecure-change-me",
 }
 _RPC_PLACEHOLDERS = ("your_key", "your_api_key", "your-alchemy", "replace-me")
 
@@ -23,11 +24,12 @@ class HealthView(APIView):
         db_ok = check_database()
         redis_ok = check_redis()
         chains = check_all_chains()
+        chain_errors = {c: e for c, e in check_blockchain_errors().items() if e}
         return Response({
             "status": "ok" if db_ok else "degraded",
             "service": "gaxtron-api",
             "env": os.getenv("ENV", "development"),
-            "checks": {"database": db_ok, "redis": redis_ok, "chains": chains},
+            "checks": {"database": db_ok, "redis": redis_ok, "chains": chains, "chain_errors": chain_errors},
         })
 
 
@@ -69,7 +71,9 @@ class ReadinessView(APIView):
         if not rpc_url or any(p in rpc_url for p in _RPC_PLACEHOLDERS):
             issues.append("BLOCKCHAIN_RPC_URL is missing or still a placeholder — use an Alchemy/Infura Sepolia HTTPS URL.")
         elif not check_blockchain():
-            issues.append("Blockchain RPC unreachable — check BLOCKCHAIN_RPC_URL and API key.")
+            errors = check_blockchain_errors()
+            detail = "; ".join(f"{c}: {e}" for c, e in errors.items() if e) or "no reachable chain RPC"
+            issues.append(f"Blockchain RPC unreachable — check BLOCKCHAIN_RPC_URL and API key. ({detail})")
 
         if settings.JWT_SECRET_KEY in _INSECURE_SECRETS:
             issues.append("SECRET_KEY is still the default — generate a 32+ char secret.")
@@ -77,6 +81,8 @@ class ReadinessView(APIView):
             issues.append("WEBHOOK_SECRET is still the default — generate a 32+ char secret.")
         if settings.WALLET_ENCRYPTION_KEY in _INSECURE_SECRETS:
             issues.append("WALLET_ENCRYPTION_KEY is still the default — required to store deposit wallets.")
+        if settings.SECRET_KEY in _INSECURE_SECRETS:
+            issues.append("DJANGO_SECRET_KEY is still the default — generate a 32+ char secret (used for sessions/CSRF).")
 
         cron_ok = bool((settings.CRON_SECRET or os.getenv("CRON_SECRET") or "").strip())
         if not cron_ok and os.getenv("VERCEL"):

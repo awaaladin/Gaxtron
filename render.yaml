@@ -1,0 +1,54 @@
+# Render Blueprint for the Gaxtron background listener.
+# Deploy: Render dashboard -> New -> Blueprint -> point at this repo.
+# This defines a "worker" service (no public port, auto-restarts on crash) that runs
+# the same `python manage.py run_listener` command as the `worker` service in
+# docker-compose.yml, built from the same Dockerfile.dashboard — so behavior matches
+# local dev exactly. It shares the same Supabase DATABASE_URL and secrets as the
+# Vercel-hosted web app; Vercel Cron (see vercel.json) stays as a daily fallback scan
+# in case this worker is ever down.
+services:
+  - type: worker
+    name: gaxtron-listener
+    runtime: docker
+    dockerfilePath: ./Dockerfile.dashboard
+    dockerContext: .
+    dockerCommand: python manage.py run_listener
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: DJANGO_SECRET_KEY
+        sync: false
+      - key: WEBHOOK_SECRET
+        sync: false
+      - key: WALLET_ENCRYPTION_KEY
+        sync: false
+      - key: BLOCKCHAIN_RPC_URL
+        sync: false
+      - key: BLOCKCHAIN_NETWORK
+        value: sepolia
+      - key: ENABLED_CHAINS
+        value: ETH
+      - key: ETH_REQUIRED_CONFIRMATIONS
+        value: "3"
+      - key: USDT_CONTRACT_ADDRESS
+        value: "0x94a9D9AC8a22534D3cDfaD9d54e96e22d858e9b"
+      - key: BLOCKCHAIN_SCAN_BLOCKS
+        value: "500"
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: CHECKOUT_RECONCILE_ON_POLL
+        value: "True"
+      - key: WEBHOOK_MAX_ATTEMPTS
+        value: "5"
+      - key: WEBHOOK_RETRY_BASE_SECONDS
+        value: "30"

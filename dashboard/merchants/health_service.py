@@ -42,3 +42,15 @@ def check_all_chains() -> dict[str, bool]:
         return get_payment_processor().chain_health()
     except Exception:
         return {}
+
+
+def check_blockchain_errors() -> dict[str, str | None]:
+    """Call after check_blockchain()/check_all_chains() so each chain's is_connected()
+    has run and recorded a fresh error — gives a specific reason instead of a bare bool."""
+    try:
+        processor = get_payment_processor()
+        processor.chain_health()
+        return processor.chain_errors()
+    except Exception as exc:
+        logger.exception("Blockchain error lookup failed")
+        return {"_error": str(exc)}

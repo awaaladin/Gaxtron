@@ -9,7 +9,7 @@
 </div>
 
 <div class="grid grid-cols-1 items-start gap-gutter lg:grid-cols-3">
-  <section class="border border-border bg-surface-lowest">
+  <section class="panel overflow-hidden">
     <div class="border-b border-border p-6">
       <h2 class="label-caps text-foreground">New payment</h2>
     </div>
@@ -39,7 +39,7 @@
     </div>
   </section>
 
-  <section class="border border-border bg-surface-lowest lg:col-span-2">
+  <section class="panel overflow-hidden lg:col-span-2">
     <div class="flex items-center justify-between border-b border-border p-6">
       <h2 class="label-caps text-foreground">Ledger</h2>
       <span class="label-caps text-[10px] text-outline">{{ payments|length }} records</span>

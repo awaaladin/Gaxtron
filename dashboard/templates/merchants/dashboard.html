@@ -6,30 +6,30 @@
     <h1 class="font-display text-4xl italic text-foreground">Overview</h1>
     <p class="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">Precision-engineered settlement data for the modern merchant. Real-time liquidity tracking across all integrated crypto-networks.</p>
   </div>
-  <a href="{% url 'payments' %}" class="label-caps bg-primary px-8 py-4 text-primary-foreground transition-colors hover:bg-primary-deep">+ New payment</a>
+  <a href="{% url 'payments' %}" class="btn-primary px-8 py-4">+ New payment</a>
 </div>
 
-<div class="mb-stack-lg grid grid-cols-1 border border-border sm:grid-cols-2 lg:grid-cols-4">
-  <div class="border-b border-border p-8 sm:border-r lg:border-b-0">
+<div class="mb-stack-lg grid grid-cols-1 gap-stack-md sm:grid-cols-2 lg:grid-cols-4">
+  <div class="panel p-8">
     <p class="label-caps mb-4 text-muted-foreground">Total payments</p>
     <p class="font-display text-3xl text-foreground">{{ stats.total_payments }}</p>
   </div>
-  <div class="border-b border-border p-8 lg:border-b-0 lg:border-r">
+  <div class="panel p-8">
     <p class="label-caps mb-4 text-muted-foreground">Confirmed</p>
     <p class="font-display text-3xl text-primary">{{ stats.successful }}</p>
   </div>
-  <div class="border-b border-border p-8 sm:border-r lg:border-b-0">
+  <div class="panel p-8">
     <p class="label-caps mb-4 text-muted-foreground">Pending</p>
     <p class="font-display text-3xl text-foreground">{{ stats.pending }}</p>
   </div>
-  <div class="p-8">
+  <div class="panel p-8">
     <p class="label-caps mb-4 text-muted-foreground">Revenue (ETH)</p>
     <p class="font-display text-3xl text-primary">{{ stats.revenue }}</p>
   </div>
 </div>
 
 <div class="grid grid-cols-1 items-start gap-gutter lg:grid-cols-3">
-  <section class="border border-border bg-surface-lowest lg:col-span-2">
+  <section class="panel overflow-hidden lg:col-span-2">
     <div class="flex items-center justify-between border-b border-border p-6">
       <h2 class="label-caps text-foreground">Recent payments</h2>
       <a href="{% url 'payments' %}" class="label-caps text-[10px] text-primary underline underline-offset-4">View all ledger</a>
@@ -60,7 +60,7 @@
     </div>
   </section>
 
-  <section class="border border-border bg-surface-lowest">
+  <section class="panel overflow-hidden">
     <div class="border-b border-border p-6">
       <h2 class="label-caps text-foreground">Integration integrity</h2>
     </div>
@@ -68,7 +68,7 @@
       <div>
         <p class="label-caps mb-2 text-[10px] text-muted-foreground">Live API key</p>
         {% if latest_key %}
-        <div class="data-mono flex items-center justify-between overflow-hidden border border-border bg-background p-4">
+        <div class="data-mono flex items-center justify-between overflow-hidden rounded-md border border-border bg-background p-4">
           <span class="text-primary">{{ latest_key.key_prefix }}</span>
           <span class="text-outline">••••••••</span>
         </div>

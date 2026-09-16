@@ -10,6 +10,11 @@ ENV/
 # Environment variables
 .env
 
+# Local test wallets (private keys — never commit)
+scripts/sepolia_test_wallet.json
+scripts/test_api_key.txt
+scripts/sepolia_test_payment.json
+
 # IDE
 .vscode/
 .idea/

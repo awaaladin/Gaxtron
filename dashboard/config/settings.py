@@ -48,6 +48,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
+# CsrfViewMiddleware renders this directly on failure, bypassing handler403/403.html.
+CSRF_FAILURE_VIEW = "merchants.views.csrf_failure"
 
 TEMPLATES = [
     {
@@ -124,6 +126,26 @@ JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
 
 BLOCKCHAIN_RPC_URL = os.getenv("BLOCKCHAIN_RPC_URL", "https://rpc.sepolia.org")
 BLOCKCHAIN_NETWORK = os.getenv("BLOCKCHAIN_NETWORK", "sepolia")
+
+# Mainnet safeguard: switching off testnet must be a deliberate, explicit act — not a
+# typo'd env var on a hosting dashboard. Real ETH/USDT move on mainnet; a silent switch
+# has no undo. Setting BLOCKCHAIN_NETWORK to anything other than a known testnet name
+# requires ALSO setting CONFIRM_MAINNET_DEPLOY to the exact confirmation string below,
+# ideally as a separate deploy step from flipping BLOCKCHAIN_NETWORK itself.
+_TESTNET_NETWORKS = {"sepolia", "testnet", "goerli", "holesky"}
+_MAINNET_CONFIRM_TOKEN = "yes-switch-to-mainnet"
+if BLOCKCHAIN_NETWORK.lower() not in _TESTNET_NETWORKS:
+    if os.getenv("CONFIRM_MAINNET_DEPLOY", "").strip() != _MAINNET_CONFIRM_TOKEN:
+        from django.core.exceptions import ImproperlyConfigured
+
+        raise ImproperlyConfigured(
+            f"BLOCKCHAIN_NETWORK={BLOCKCHAIN_NETWORK!r} is not a recognized testnet "
+            f"({sorted(_TESTNET_NETWORKS)}) — refusing to start against what looks like "
+            f"mainnet. This moves real funds. If that's intentional, also set "
+            f"CONFIRM_MAINNET_DEPLOY={_MAINNET_CONFIRM_TOKEN!r} (as its own deliberate "
+            f"deploy step, not bundled with the network change)."
+        )
+
 ETH_REQUIRED_CONFIRMATIONS = int(os.getenv("ETH_REQUIRED_CONFIRMATIONS", "3"))
 USDT_CONTRACT_ADDRESS = os.getenv("USDT_CONTRACT_ADDRESS", "0x94a9D9AC8a22534D3cDfaD9d54e96e22d858e9b")
 BLOCKCHAIN_SCAN_BLOCKS = int(os.getenv("BLOCKCHAIN_SCAN_BLOCKS", "500"))

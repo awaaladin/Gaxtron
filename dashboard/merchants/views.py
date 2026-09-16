@@ -17,6 +17,14 @@ def landing_view(request):
     return render(request, "merchants/index.html")
 
 
+def csrf_failure(request, reason=""):
+    """CSRF_FAILURE_VIEW target. CsrfViewMiddleware bypasses the normal handler403/403.html
+    lookup and calls settings.CSRF_FAILURE_VIEW directly (default: Django's own generic
+    csrf_403.html) — without wiring this up, CSRF failures render an unbranded page even
+    though a branded 403.html already exists for ordinary PermissionDenied errors."""
+    return render(request, "403.html", status=403)
+
+
 @require_http_methods(["GET", "POST"])
 def register_view(request):
     if request.method == "POST":
