@@ -127,7 +127,14 @@ class PaymentReconciler:
             WebhookService.deliver_webhook(log)
             if log.status == "delivered":
                 delivered += 1
-        return {"webhooks_attempted": attempted, "webhooks_delivered": delivered}
+        stats = {"webhooks_attempted": attempted, "webhooks_delivered": delivered}
+        try:
+            from ledger import events as ledger_events
+
+            stats.update(ledger_events.deliver_pending(limit))
+        except Exception:
+            logger.exception("ledger webhook delivery failed")
+        return stats
 
     def run_cron_cycle(self, payment_id: int | None = None) -> dict:
         payments = self.run_batch(payment_id=payment_id)

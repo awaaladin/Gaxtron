@@ -32,7 +32,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "drf_spectacular",
     "merchants",
+    "ledger",
 ]
 
 MIDDLEWARE = [
@@ -158,6 +160,45 @@ ALCHEMY_WEBHOOK_SIGNING_KEY = os.getenv("ALCHEMY_WEBHOOK_SIGNING_KEY", "")
 ALCHEMY_AUTH_TOKEN = os.getenv("ALCHEMY_AUTH_TOKEN", "")
 ALCHEMY_WEBHOOK_ID = os.getenv("ALCHEMY_WEBHOOK_ID", "")
 
+# --- TRON (TRC-20 USDT): the network the custodial ledger settles on ---
+from decimal import Decimal  # noqa: E402
+from django.core.exceptions import ImproperlyConfigured  # noqa: E402
+
+TRON_NETWORK = os.getenv("TRON_NETWORK", "nile").strip().lower()
+_TRON_HOSTS = {
+    "mainnet": "https://api.trongrid.io",
+    "shasta": "https://api.shasta.trongrid.io",
+    "nile": "https://nile.trongrid.io",
+}
+if TRON_NETWORK not in _TRON_HOSTS:
+    raise ImproperlyConfigured(f"TRON_NETWORK must be one of {sorted(_TRON_HOSTS)}, got {TRON_NETWORK!r}")
+if TRON_NETWORK == "mainnet" and os.getenv("CONFIRM_MAINNET_DEPLOY", "").strip() != _MAINNET_CONFIRM_TOKEN:
+    raise ImproperlyConfigured(
+        f"TRON_NETWORK='mainnet' moves real funds — also set CONFIRM_MAINNET_DEPLOY={_MAINNET_CONFIRM_TOKEN!r} "
+        "as its own deliberate deploy step."
+    )
+TRON_API_URL = os.getenv("TRON_API_URL", _TRON_HOSTS[TRON_NETWORK]).rstrip("/")
+# Only ever sent to trongrid.io hosts (see ledger/tron.py) — never to an overridden TRON_API_URL elsewhere.
+TRONGRID_API_KEY = os.getenv("TRONGRID_API_KEY") or os.getenv("TRONGRID_API", "")
+USDT_TRC20_CONTRACT = os.getenv(
+    "USDT_TRC20_CONTRACT", "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t" if TRON_NETWORK == "mainnet" else ""
+)
+
+# --- Custodial ledger / escrow / withdrawals (see ledger/). Conservative, fail-closed defaults. ---
+ESCROW_FEE_BPS = int(os.getenv("ESCROW_FEE_BPS", "0"))
+WITHDRAWAL_FEE = Decimal(os.getenv("WITHDRAWAL_FEE", "0"))
+WITHDRAWAL_MIN = Decimal(os.getenv("WITHDRAWAL_MIN", "1"))
+WITHDRAWAL_USER_DAILY_LIMIT = Decimal(os.getenv("WITHDRAWAL_USER_DAILY_LIMIT", "1000"))
+WITHDRAWAL_PLATFORM_DAILY_LIMIT = Decimal(os.getenv("WITHDRAWAL_PLATFORM_DAILY_LIMIT", "5000"))
+# 0 = every withdrawal needs a human approval in the admin. Raise deliberately, never by default.
+WITHDRAWAL_AUTO_APPROVE_MAX = Decimal(os.getenv("WITHDRAWAL_AUTO_APPROVE_MAX", "0"))
+# Fake-money sandbox funding: off unless explicitly enabled AND both chains are testnets.
+ENABLE_SANDBOX_CREDIT = (
+    os.getenv("ENABLE_SANDBOX_CREDIT", "False").lower() == "true"
+    and BLOCKCHAIN_NETWORK.lower() in _TESTNET_NETWORKS
+    and TRON_NETWORK != "mainnet"
+)
+
 CRON_SECRET = os.getenv("CRON_SECRET", "")
 CHECKOUT_RECONCILE_ON_POLL = os.getenv("CHECKOUT_RECONCILE_ON_POLL", "True").lower() == "true"
 
@@ -181,6 +222,20 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "EXCEPTION_HANDLER": "merchants.api_exceptions.exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Gaxtron API",
+    "DESCRIPTION": (
+        "Custodial USDT (TRC-20) wallets, escrow and withdrawals for platforms. "
+        "Authenticate every request with your API key in the `X-API-Key` header. "
+        "Full guides: see the `docs/` folder of the repository."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "PREPROCESSING_HOOKS": ["ledger.schema.only_v1"],
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # Production security (when DEBUG=False)
