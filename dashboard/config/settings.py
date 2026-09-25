@@ -190,6 +190,10 @@ TRON_TREASURY_PRIVATE_KEY = os.getenv("TRON_TREASURY_PRIVATE_KEY", "")
 TRON_TREASURY_ADDRESS = os.getenv("TRON_TREASURY_ADDRESS", "")  # optional; must match the key if set
 TRON_FEE_LIMIT_SUN = int(os.getenv("TRON_FEE_LIMIT_SUN", "100000000"))  # 100 TRX ceiling per transfer
 TRON_DEPOSIT_MIN = Decimal(os.getenv("TRON_DEPOSIT_MIN", "1"))  # smaller deposits are ignored (dust/spam)
+# Sweeping deposit addresses into the treasury burns TRX per transfer, so only sweep worthwhile balances.
+SWEEP_MIN_USDT = Decimal(os.getenv("SWEEP_MIN_USDT", "20"))
+SWEEP_TRX_TARGET_SUN = int(os.getenv("SWEEP_TRX_TARGET_SUN", "40000000"))  # TRX a deposit address is topped up to
+SWEEP_FEE_LIMIT_SUN = int(os.getenv("SWEEP_FEE_LIMIT_SUN", "40000000"))  # max TRX one sweep transfer may burn
 
 # --- Custodial ledger / escrow / withdrawals (see ledger/). Conservative, fail-closed defaults. ---
 ESCROW_FEE_BPS = int(os.getenv("ESCROW_FEE_BPS", "0"))

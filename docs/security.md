@@ -37,9 +37,13 @@ remains your responsibility, and the checklist before switching from the test ne
 - **Keys.** The treasury key is read from `TRON_TREASURY_PRIVATE_KEY` (environment / secret store) and never
   stored or logged; the sender is disabled if it is unset. Per-user deposit keys are stored Fernet-encrypted.
   The TronGrid API key is only sent to `*.trongrid.io` hosts.
-- **Operational note — sweeping.** Deposits arrive at per-user addresses, while withdrawals are paid from the
-  treasury. Until automated sweeping exists, an operator must move deposited USDT to the treasury and keep it
-  funded with TRX for network fees; monitor that treasury USDT ≥ what users may withdraw.
+- **Sweeping.** Deposits arrive at per-user addresses; the sweeper moves them into the treasury so withdrawals
+  can be paid. It only ever sends to the treasury address (derived from the treasury key, never from the
+  database or the API), only moves USDT the ledger has already credited (uncredited or mistaken transfers stay
+  put for an operator), verifies every transaction it signs (including the TRX top-ups that pay fees), and
+  moves no user balance — a failed sweep changes nothing and is simply retried. At most one sweep can be active
+  per address (a database constraint). Keep the treasury funded with TRX and monitor that its USDT covers what
+  users may withdraw. See the [mainnet runbook](mainnet-runbook.md).
 
 ## Your responsibilities as an integrator
 

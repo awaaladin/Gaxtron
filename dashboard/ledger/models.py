@@ -114,10 +114,43 @@ class DepositAddress(models.Model):
     last_scanned_ms = models.BigIntegerField(default=0)
     next_scan_at = models.DateTimeField(default=timezone.now, db_index=True)
     hot_until = models.DateTimeField(default=timezone.now)
+    # USDT base units (6 decimals). Only credited-and-not-yet-swept funds are ever swept, so uncredited
+    # dust or mistaken transfers stay put for an operator to decide on.
+    credited_units = models.BigIntegerField(default=0)
+    swept_units = models.BigIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.address
+
+
+class Sweep(models.Model):
+    """Moves credited USDT from a deposit address into the treasury. It changes no user balance — only where
+    custody sits — so a failed sweep is harmless and simply retried."""
+
+    class Status(models.TextChoices):
+        FUNDING = "funding"  # treasury is sending TRX so the address can pay the transfer fee
+        SWEEPING = "sweeping"  # USDT transfer to the treasury
+        COMPLETED = "completed"
+        FAILED = "failed"
+
+    deposit = models.ForeignKey(DepositAddress, on_delete=models.PROTECT, related_name="sweeps")
+    units = models.BigIntegerField()
+    status = models.CharField(max_length=12, choices=Status.choices, db_index=True)
+    fund_tx_id = models.CharField(max_length=64, blank=True, default="")
+    fund_expiration_ms = models.BigIntegerField(null=True, blank=True)
+    sweep_tx_id = models.CharField(max_length=64, blank=True, default="")
+    sweep_expiration_ms = models.BigIntegerField(null=True, blank=True)
+    failure_reason = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["deposit"], condition=Q(status__in=["funding", "sweeping"]), name="one_active_sweep_per_address"
+            ),
+        ]
 
 
 class Account(models.Model):

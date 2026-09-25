@@ -1,9 +1,9 @@
-"""Verification and signing of TRC-20 transfers.
+"""Verification and signing of TRON transfers.
 
 TronGrid builds the unsigned transaction for us, but a compromised or malicious API could return one that
-pays someone else. So we never sign what we were handed: verify_trc20_transfer() decodes the protobuf that
-will actually be hashed and signed and requires it to be *exactly* one TriggerSmartContract call of
-transfer(recipient, amount) on our USDT contract from our treasury, with no extra fields.
+pays someone else. So we never sign what we were handed: the verify_* functions decode the protobuf that will
+actually be hashed and signed and require it to be *exactly* the single transfer we asked for, with no extra
+fields.
 """
 import hashlib
 
@@ -12,7 +12,8 @@ from eth_keys import keys
 from . import tron
 
 TRANSFER_SELECTOR = bytes.fromhex("a9059cbb")  # transfer(address,uint256)
-TRIGGER_SMART_CONTRACT = 31
+TRANSFER_CONTRACT = 1  # native TRX transfer
+TRIGGER_SMART_CONTRACT = 31  # contract call (TRC-20 transfer)
 
 
 class TxVerificationError(Exception):
@@ -61,8 +62,8 @@ def transfer_parameter_hex(recipient: str, units: int) -> str:
     return transfer_call_data(recipient, units)[4:].hex()
 
 
-def verify_trc20_transfer(raw_data_hex, tx_id, *, owner, contract, recipient, units, fee_limit_max, now_ms) -> int:
-    """Returns the transaction's expiration (ms) or raises TxVerificationError."""
+def _parse_transaction(raw_data_hex, tx_id):
+    """Returns (contract_type, contract_value_bytes, expiration_ms, fee_limit) for a single-contract tx."""
     try:
         raw = bytes.fromhex(raw_data_hex)
     except (ValueError, TypeError):
@@ -93,33 +94,64 @@ def verify_trc20_transfer(raw_data_hex, tx_id, *, owner, contract, recipient, un
             parameter = value
         else:
             raise TxVerificationError("unexpected contract field")
-    if contract_type != TRIGGER_SMART_CONTRACT or parameter is None:
-        raise TxVerificationError("not a smart-contract call")
+    if contract_type is None or parameter is None:
+        raise TxVerificationError("malformed contract")
 
-    trigger = None
+    inner = None
     for field, wire, value in _fields(parameter):
         if field == 2 and wire == 2:
-            trigger = value
+            inner = value
         elif not (field == 1 and wire == 2):  # field 1 is the type_url
             raise TxVerificationError("unexpected parameter field")
-    if trigger is None:
+    if inner is None:
         raise TxVerificationError("missing contract parameter")
+    return contract_type, inner, expiration, fee_limit
 
+
+def _unique_fields(buf: bytes, allowed: tuple) -> dict:
     seen = {}
-    for field, wire, value in _fields(trigger):
-        if field in seen or field not in (1, 2, 3, 4):
+    for field, wire, value in _fields(buf):
+        if field in seen or field not in allowed:
             raise TxVerificationError(f"unexpected or duplicate call field {field}")
         seen[field] = value
+    return seen
+
+
+def verify_trc20_transfer(raw_data_hex, tx_id, *, owner, contract, recipient, units, fee_limit_max, now_ms) -> int:
+    """Requires exactly transfer(recipient, units) on `contract` from `owner`. Returns the expiration (ms)."""
+    contract_type, inner, expiration, fee_limit = _parse_transaction(raw_data_hex, tx_id)
+    if contract_type != TRIGGER_SMART_CONTRACT:
+        raise TxVerificationError("not a smart-contract call")
+    seen = _unique_fields(inner, (1, 2, 3, 4))
     if seen.get(1) != tron.address_to_bytes(owner):
-        raise TxVerificationError("owner is not the treasury")
+        raise TxVerificationError("owner is not the expected sender")
     if seen.get(2) != tron.address_to_bytes(contract):
         raise TxVerificationError("wrong token contract")
     if seen.get(3, 0) != 0:
         raise TxVerificationError("call_value must be zero")
     if seen.get(4) != transfer_call_data(recipient, units):
-        raise TxVerificationError("recipient or amount does not match the withdrawal")
+        raise TxVerificationError("recipient or amount does not match the request")
     if not 0 < fee_limit <= fee_limit_max:
         raise TxVerificationError("fee_limit missing or above the configured ceiling")
+    if expiration is None or expiration <= now_ms:
+        raise TxVerificationError("transaction already expired")
+    return expiration
+
+
+def verify_trx_transfer(raw_data_hex, tx_id, *, owner, recipient, sun, now_ms) -> int:
+    """Requires exactly a native TRX transfer of `sun` from `owner` to `recipient`. Returns the expiration (ms)."""
+    contract_type, inner, expiration, fee_limit = _parse_transaction(raw_data_hex, tx_id)
+    if contract_type != TRANSFER_CONTRACT:
+        raise TxVerificationError("not a TRX transfer")
+    seen = _unique_fields(inner, (1, 2, 3))
+    if seen.get(1) != tron.address_to_bytes(owner):
+        raise TxVerificationError("owner is not the expected sender")
+    if seen.get(2) != tron.address_to_bytes(recipient):
+        raise TxVerificationError("recipient does not match the request")
+    if seen.get(3) != sun or sun <= 0:
+        raise TxVerificationError("amount does not match the request")
+    if fee_limit:
+        raise TxVerificationError("a TRX transfer must not carry a fee_limit")
     if expiration is None or expiration <= now_ms:
         raise TxVerificationError("transaction already expired")
     return expiration

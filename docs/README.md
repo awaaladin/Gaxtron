@@ -12,6 +12,7 @@ the blockchain when someone deposits or withdraws.
 | [Webhooks](webhooks.md) | Event list, signature verification, retries |
 | [Errors & idempotency](errors-and-idempotency.md) | Error codes, safe retries, rate limits |
 | [Security & going live](security.md) | Key handling, guarantees, the mainnet checklist |
+| [Mainnet runbook](mainnet-runbook.md) | Step-by-step: from the test network to real USDT |
 
 Interactive reference (try requests in the browser): **`/v1/docs`** · machine-readable schema: **`/v1/openapi.json`**.
 

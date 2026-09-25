@@ -2,7 +2,9 @@
 from django.contrib import admin, messages
 
 from . import services
-from .models import Account, EndUser, Entry, Escrow, LedgerTransaction, PlatformConfig, WebhookEvent, Withdrawal
+from .models import (
+    Account, DepositAddress, EndUser, Entry, Escrow, LedgerTransaction, PlatformConfig, Sweep, WebhookEvent, Withdrawal,
+)
 
 
 class ReadOnlyAdmin(admin.ModelAdmin):
@@ -44,6 +46,18 @@ class LedgerTransactionAdmin(ReadOnlyAdmin):
 @admin.register(Escrow)
 class EscrowAdmin(ReadOnlyAdmin):
     list_display = ("public_id", "platform", "reference", "buyer", "seller", "amount", "status", "created_at")
+    list_filter = ("status",)
+
+
+@admin.register(DepositAddress)
+class DepositAddressAdmin(ReadOnlyAdmin):
+    list_display = ("address", "end_user", "credited_units", "swept_units", "created_at")
+    exclude = ("private_key_encrypted",)
+
+
+@admin.register(Sweep)
+class SweepAdmin(ReadOnlyAdmin):
+    list_display = ("id", "deposit", "units", "status", "failure_reason", "created_at")
     list_filter = ("status",)
 
 

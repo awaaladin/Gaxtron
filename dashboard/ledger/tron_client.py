@@ -73,6 +73,33 @@ class TronClient:
             raise TronAPIError("TronGrid refused to build the transfer")
         return response["transaction"]
 
+    def build_trx_transfer(self, owner: str, recipient: str, sun: int) -> dict:
+        response = self._post("/wallet/createtransaction", {
+            "owner_address": tron.address_to_bytes(owner).hex(),
+            "to_address": tron.address_to_bytes(recipient).hex(),
+            "amount": sun, "visible": False,
+        })
+        if "txID" not in response or "raw_data_hex" not in response:
+            raise TronAPIError("TronGrid refused to build the TRX transfer")
+        return response
+
+    def trx_balance(self, address: str) -> int:
+        """Balance in sun; 0 for an address that has never been activated."""
+        account = self._post("/wallet/getaccount", {"address": tron.address_to_bytes(address).hex(), "visible": False})
+        return int(account.get("balance", 0))
+
+    def trc20_balance(self, address: str, contract: str) -> int:
+        response = self._post("/wallet/triggerconstantcontract", {
+            "owner_address": tron.address_to_bytes(address).hex(),
+            "contract_address": tron.address_to_bytes(contract).hex(),
+            "function_selector": "balanceOf(address)",
+            "parameter": (b"\x00" * 12 + tron.address_to_bytes(address)[1:]).hex(), "visible": False,
+        })
+        result = response.get("constant_result") or []
+        if not result:
+            raise TronAPIError("balanceOf returned no result")
+        return int(result[0], 16)
+
     def broadcast(self, signed_transaction: dict) -> dict:
         return self._post("/wallet/broadcasttransaction", signed_transaction)
 
