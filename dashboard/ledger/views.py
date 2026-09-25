@@ -12,10 +12,10 @@ from merchants.authentication import ApiKeyAuthentication
 from merchants.rate_limit import check_rate_limit
 from merchants.url_validation import CallbackUrlError, validate_callback_url
 
-from . import services
+from . import chain, services
 from .models import Entry, Escrow, PlatformConfig, WebhookEvent, Withdrawal
 from .serializers import (
-    BalanceSerializer, ErrorSerializer, EscrowCreateSerializer, EscrowDisputeSerializer, EscrowSerializer,
+    BalanceSerializer, DepositAddressSerializer, ErrorSerializer, EscrowCreateSerializer, EscrowDisputeSerializer, EscrowSerializer,
     EntrySerializer, SandboxCreditSerializer, TransferCreateSerializer, TransferSerializer, UserCreateSerializer,
     UserSerializer, WebhookConfigInSerializer, WebhookConfigSerializer, WebhookEventSerializer,
     WithdrawalCreateSerializer, WithdrawalSerializer,
@@ -132,6 +132,31 @@ class UserTransactionsView(PlatformAPIView):
         qs = Entry.objects.filter(account__platform=self.platform, account__end_user=end_user).select_related("transaction")
         items, more = _page(request, qs, lambda v: int(v) if v.isdigit() else None)
         return _listing(EntrySerializer, items, more)
+
+
+def _deposit_payload(deposit):
+    return DepositAddressSerializer({
+        "address": deposit.address, "network": f"tron-{settings.TRON_NETWORK}", "currency": "USDT",
+        "token_contract": settings.USDT_TRC20_CONTRACT, "min_deposit": settings.TRON_DEPOSIT_MIN,
+    }).data
+
+
+class UserDepositAddressView(PlatformAPIView):
+    @extend_schema(tags=["Users"], summary="Get a user's deposit address", responses={200: DepositAddressSerializer, 404: ErrorSerializer})
+    def get(self, request, external_id):
+        end_user = services.get_end_user(self.platform, external_id)
+        deposit = chain.get_deposit_address(end_user)
+        if deposit is None:
+            raise services.NotFound("This user has no deposit address yet")
+        return Response(_deposit_payload(deposit))
+
+    @extend_schema(tags=["Users"], summary="Create (or fetch) a user's USDT deposit address", request=None,
+                   responses={200: DepositAddressSerializer, 503: ErrorSerializer})
+    def post(self, request, external_id):
+        if not settings.USDT_TRC20_CONTRACT:
+            raise services.Unavailable("Deposits are not configured on this deployment")
+        end_user, _ = services.get_or_create_end_user(self.platform, external_id)
+        return Response(_deposit_payload(chain.get_deposit_address(end_user, create=True)))
 
 
 # ------------------------------------------------------------------ transfers & sandbox

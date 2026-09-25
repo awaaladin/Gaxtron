@@ -184,6 +184,13 @@ USDT_TRC20_CONTRACT = os.getenv(
     "USDT_TRC20_CONTRACT", "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t" if TRON_NETWORK == "mainnet" else ""
 )
 
+# Treasury hot wallet that pays withdrawals. The key must come from the environment / a secret store,
+# never from git or the database. Unset = the sender stays disabled (withdrawals just wait).
+TRON_TREASURY_PRIVATE_KEY = os.getenv("TRON_TREASURY_PRIVATE_KEY", "")
+TRON_TREASURY_ADDRESS = os.getenv("TRON_TREASURY_ADDRESS", "")  # optional; must match the key if set
+TRON_FEE_LIMIT_SUN = int(os.getenv("TRON_FEE_LIMIT_SUN", "100000000"))  # 100 TRX ceiling per transfer
+TRON_DEPOSIT_MIN = Decimal(os.getenv("TRON_DEPOSIT_MIN", "1"))  # smaller deposits are ignored (dust/spam)
+
 # --- Custodial ledger / escrow / withdrawals (see ledger/). Conservative, fail-closed defaults. ---
 ESCROW_FEE_BPS = int(os.getenv("ESCROW_FEE_BPS", "0"))
 WITHDRAWAL_FEE = Decimal(os.getenv("WITHDRAWAL_FEE", "0"))

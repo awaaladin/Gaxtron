@@ -8,6 +8,7 @@ urlpatterns = [
     path("users/<str:external_id>", views.UserDetailView.as_view()),
     path("users/<str:external_id>/balance", views.UserBalanceView.as_view()),
     path("users/<str:external_id>/transactions", views.UserTransactionsView.as_view()),
+    path("users/<str:external_id>/deposit-address", views.UserDepositAddressView.as_view()),
     path("transfers", views.TransfersView.as_view()),
     path("sandbox/credit", views.SandboxCreditView.as_view()),
     path("escrows", views.EscrowsView.as_view()),

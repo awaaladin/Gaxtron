@@ -60,6 +60,11 @@ class Conflict(LedgerError):
     http_status = 409
 
 
+class Unavailable(LedgerError):
+    code = "unavailable"
+    http_status = 503
+
+
 class LimitExceeded(LedgerError):
     code = "limit_exceeded"
     http_status = 422
@@ -451,7 +456,7 @@ def approve_withdrawal(withdrawal_id, approver: str):
 
 
 @transaction.atomic
-def mark_withdrawal_broadcast(withdrawal_id, tx_hash: str):
+def mark_withdrawal_broadcast(withdrawal_id, tx_hash: str, expiration_ms=None):
     """Sender records the signed transaction id BEFORE broadcasting it (so a crash can be reconciled)."""
     withdrawal = _lock_withdrawal(withdrawal_id)
     if withdrawal.status == Withdrawal.Status.BROADCAST and withdrawal.tx_hash == tx_hash:
@@ -460,7 +465,8 @@ def mark_withdrawal_broadcast(withdrawal_id, tx_hash: str):
         raise InvalidState(f"A {withdrawal.status} withdrawal cannot be broadcast")
     withdrawal.status = Withdrawal.Status.BROADCAST
     withdrawal.tx_hash = tx_hash
-    withdrawal.save(update_fields=["status", "tx_hash", "updated_at"])
+    withdrawal.tx_expiration_ms = expiration_ms
+    withdrawal.save(update_fields=["status", "tx_hash", "tx_expiration_ms", "updated_at"])
     return withdrawal
 
 

@@ -25,8 +25,19 @@ lists ledger entries (newest first, signed amounts: positive = credit, negative 
 
 - **Sandbox:** `POST /v1/sandbox/credit` with `{"user": "alice", "amount": "100"}` mints fake test USDT.
   This endpoint only exists on test-network deployments and returns `404` everywhere else.
-- **Production:** users deposit real USDT (TRC-20) on-chain and Gaxtron credits their balance once the
-  transfer is irreversible. *Per-user deposit addresses are being finished and are not yet in this API.*
+- **Real deposits:** `POST /v1/users/{external_id}/deposit-address` returns the user's personal TRON address
+  (created on first call, the same address every time after; `GET` reads it without creating).
+
+  ```json
+  { "address": "TQ…", "network": "tron-mainnet", "currency": "USDT",
+    "token_contract": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", "min_deposit": "1.000000" }
+  ```
+
+  Show it to the user with a clear warning: **only USDT on the TRON network (TRC-20)**. Gaxtron credits the
+  balance after the transfer is irreversible (roughly a minute) and fires `deposit.credited`. Only transfers
+  of the exact token contract above count — look-alike tokens are ignored — and deposits below `min_deposit`
+  are not credited. Call the endpoint when the user opens their deposit screen: Gaxtron watches recently
+  requested addresses more closely.
 
 ## Transfers
 

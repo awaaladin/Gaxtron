@@ -104,6 +104,22 @@ class EndUser(models.Model):
         return f"{self.platform_id}:{self.external_id}"
 
 
+class DepositAddress(models.Model):
+    """One TRON address per user. The private key is Fernet-encrypted; it is only needed to sweep
+    deposits into the treasury, never to credit them."""
+
+    end_user = models.OneToOneField(EndUser, on_delete=models.CASCADE, related_name="deposit_address")
+    address = models.CharField(max_length=40, unique=True)
+    private_key_encrypted = models.TextField()
+    last_scanned_ms = models.BigIntegerField(default=0)
+    next_scan_at = models.DateTimeField(default=timezone.now, db_index=True)
+    hot_until = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.address
+
+
 class Account(models.Model):
     class Kind(models.TextChoices):
         USER = "user"
@@ -217,6 +233,7 @@ class Withdrawal(models.Model):
     destination = models.CharField(max_length=64)
     status = models.CharField(max_length=20, choices=Status.choices, db_index=True)
     tx_hash = models.CharField(max_length=128, blank=True, default="")
+    tx_expiration_ms = models.BigIntegerField(null=True, blank=True)
     approved_by = models.CharField(max_length=100, blank=True, default="")
     approved_at = models.DateTimeField(null=True, blank=True)
     failure_reason = models.CharField(max_length=255, blank=True, default="")

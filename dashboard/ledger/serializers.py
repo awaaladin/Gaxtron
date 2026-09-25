@@ -44,6 +44,14 @@ class UserSerializer(serializers.Serializer):
     balance = BalanceSerializer(required=False)
 
 
+class DepositAddressSerializer(serializers.Serializer):
+    address = serializers.CharField(help_text="Send USDT (TRC-20) here. Other tokens sent to it are not credited.")
+    network = serializers.CharField()
+    currency = serializers.CharField()
+    token_contract = serializers.CharField()
+    min_deposit = serializers.DecimalField(**AMOUNT_OUT, help_text="Smaller deposits are ignored.")
+
+
 class EntrySerializer(serializers.Serializer):
     id = serializers.IntegerField()
     type = serializers.CharField(source="transaction.kind")

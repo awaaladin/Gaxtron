@@ -11,8 +11,10 @@ Run with: python manage.py run_listener
 import logging
 import time
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from ledger import chain
 from merchants.reconcile_service import get_reconciler
 
 logger = logging.getLogger(__name__)
@@ -42,4 +44,6 @@ class Command(BaseCommand):
                     logger.info("Reconcile tick: %s", stats)
             except Exception:
                 logger.exception("Listener loop error")
+            if settings.USDT_TRC20_CONTRACT:
+                chain.tick()  # TRON deposits/withdrawals; handles its own errors
             time.sleep(POLL_INTERVAL_SECONDS)

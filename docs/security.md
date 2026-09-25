@@ -23,6 +23,24 @@ remains your responsibility, and the checklist before switching from the test ne
 - **Sandbox funding is fail-closed.** `POST /v1/sandbox/credit` exists only when explicitly enabled *and* both
   networks are test networks.
 
+## How the blockchain side is protected
+
+- **Deposits** are credited only from *solidified* (irreversible) transfers of exactly the configured USDT
+  contract, so re-orgs, look-alike tokens and dust spam cannot mint balance.
+- **Withdrawals never sign what a third party built.** TronGrid assembles the transaction; before signing,
+  Gaxtron decodes the exact bytes and requires a single `transfer(recipient, amount)` call on the USDT contract
+  from the treasury with no extra fields, a bounded fee limit and a future expiry. Anything else is refused and
+  logged as `SECURITY:`. (Checked against real mainnet and Nile transactions.)
+- **Crash-safe sending.** The transaction id is stored *before* broadcast. A withdrawal is completed only on
+  an irreversible success receipt, and refunded only on an irreversible failure receipt — or when the
+  transaction has expired and the network has no record of it. It is never refunded on a guess.
+- **Keys.** The treasury key is read from `TRON_TREASURY_PRIVATE_KEY` (environment / secret store) and never
+  stored or logged; the sender is disabled if it is unset. Per-user deposit keys are stored Fernet-encrypted.
+  The TronGrid API key is only sent to `*.trongrid.io` hosts.
+- **Operational note — sweeping.** Deposits arrive at per-user addresses, while withdrawals are paid from the
+  treasury. Until automated sweeping exists, an operator must move deposited USDT to the treasury and keep it
+  funded with TRX for network fees; monitor that treasury USDT ≥ what users may withdraw.
+
 ## Your responsibilities as an integrator
 
 - Keep the API key on your server. Rotate it if it may have leaked; anyone holding it can move your users'
