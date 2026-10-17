@@ -22,7 +22,7 @@ from eth_account import Account as EthAccount
 from merchants import security
 
 from . import services, tron, tron_tx
-from .models import DepositAddress, Sweep, Withdrawal
+from .models import DepositAddress, Payment, Sweep, Withdrawal
 from .tron_client import TronAPIError, TronClient
 
 logger = logging.getLogger(__name__)
@@ -43,25 +43,40 @@ def _now_ms() -> int:
 # ---------------------------------------------------------------- deposit addresses & watcher
 
 
+def _new_address():
+    account = EthAccount.create()
+    return tron.address_from_evm_hex(account.address), security.encrypt_private_key(account.key.hex())
+
+
 def get_deposit_address(end_user, *, create=False):
-    deposit = DepositAddress.objects.filter(end_user=end_user).first()
+    """A user's standing wallet address (one per user, reused across deposits)."""
+    deposit = DepositAddress.objects.filter(end_user=end_user, payment__isnull=True).first()
     if deposit is None:
         if not create:
             return None
-        account = EthAccount.create()
+        address, encrypted_key = _new_address()
         try:
             with transaction.atomic():
-                deposit = DepositAddress.objects.create(
-                    end_user=end_user,
-                    address=tron.address_from_evm_hex(account.address),
-                    private_key_encrypted=security.encrypt_private_key(account.key.hex()),
-                )
+                deposit = DepositAddress.objects.create(end_user=end_user, address=address, private_key_encrypted=encrypted_key)
         except IntegrityError:
-            deposit = DepositAddress.objects.get(end_user=end_user)
+            deposit = DepositAddress.objects.get(end_user=end_user, payment__isnull=True)
     if create:
         now = timezone.now()
         DepositAddress.objects.filter(pk=deposit.pk).update(hot_until=now + HOT_WINDOW, next_scan_at=now)
     return deposit
+
+
+def open_payment(payment: Payment) -> DepositAddress:
+    """A one-time address dedicated to a single Payment (pay-from-any-wallet checkout)."""
+    existing = DepositAddress.objects.filter(payment=payment).first()
+    if existing:
+        return existing
+    address, encrypted_key = _new_address()
+    now = timezone.now()
+    return DepositAddress.objects.create(
+        end_user=payment.buyer, payment=payment, address=address, private_key_encrypted=encrypted_key,
+        hot_until=now + HOT_WINDOW, next_scan_at=now,
+    )
 
 
 def scan_deposit(client, deposit) -> int:
@@ -353,4 +368,8 @@ def tick(client=None) -> dict:
             stats.update(step(client))
         except Exception:
             logger.exception("Chain worker step %s failed", step.__name__)
+    try:
+        stats["payments_settled"] = services.settle_pending_payments()
+    except Exception:
+        logger.exception("Settling pending payments failed")
     return stats

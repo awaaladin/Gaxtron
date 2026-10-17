@@ -3,7 +3,8 @@ from django.contrib import admin, messages
 
 from . import services
 from .models import (
-    Account, DepositAddress, EndUser, Entry, Escrow, LedgerTransaction, PlatformConfig, Sweep, WebhookEvent, Withdrawal,
+    Account, DepositAddress, EndUser, Entry, Escrow, LedgerTransaction, Payment, PlatformConfig, Sweep, WebhookEvent,
+    Withdrawal,
 )
 
 
@@ -45,6 +46,12 @@ class LedgerTransactionAdmin(ReadOnlyAdmin):
 
 @admin.register(Escrow)
 class EscrowAdmin(ReadOnlyAdmin):
+    list_display = ("public_id", "platform", "reference", "buyer", "seller", "amount", "fee", "commission", "status", "created_at")
+    list_filter = ("status",)
+
+
+@admin.register(Payment)
+class PaymentAdmin(ReadOnlyAdmin):
     list_display = ("public_id", "platform", "reference", "buyer", "seller", "amount", "status", "created_at")
     list_filter = ("status",)
 
@@ -74,7 +81,9 @@ class WebhookEventAdmin(ReadOnlyAdmin):
 
 @admin.register(PlatformConfig)
 class PlatformConfigAdmin(admin.ModelAdmin):
-    list_display = ("platform", "webhook_url", "fee_bps")
+    """fee_bps (Gaxtron's own gateway fee) is operator-only: it is not exposed anywhere on the platform API,
+    only commission_bps is (see CommissionConfigView), so a platform can never raise its own gateway fee."""
+    list_display = ("platform", "webhook_url", "fee_bps", "commission_bps", "commission_recipient")
     exclude = ("webhook_secret_encrypted",)
 
 

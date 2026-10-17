@@ -13,12 +13,14 @@ from merchants.rate_limit import check_rate_limit
 from merchants.url_validation import CallbackUrlError, validate_callback_url
 
 from . import chain, services
-from .models import Entry, Escrow, PlatformConfig, WebhookEvent, Withdrawal
+from .models import Entry, Escrow, Payment, PlatformConfig, WebhookEvent, Withdrawal
+from .tron_client import TronClient
 from .serializers import (
-    BalanceSerializer, DepositAddressSerializer, ErrorSerializer, EscrowCreateSerializer, EscrowDisputeSerializer, EscrowSerializer,
-    EntrySerializer, SandboxCreditSerializer, TransferCreateSerializer, TransferSerializer, UserCreateSerializer,
-    UserSerializer, WebhookConfigInSerializer, WebhookConfigSerializer, WebhookEventSerializer,
-    WithdrawalCreateSerializer, WithdrawalSerializer,
+    BalanceSerializer, CommissionConfigInSerializer, CommissionConfigSerializer, DepositAddressSerializer,
+    ErrorSerializer, EscrowCreateSerializer, EscrowDisputeSerializer, EscrowSerializer, EntrySerializer,
+    PaymentCreateSerializer, PaymentSerializer, SandboxCreditSerializer, TransferCreateSerializer,
+    TransferSerializer, UserCreateSerializer, UserSerializer, WebhookConfigInSerializer, WebhookConfigSerializer,
+    WebhookEventSerializer, WithdrawalCreateSerializer, WithdrawalSerializer,
 )
 
 _CODES = {
@@ -263,6 +265,89 @@ class EscrowDisputeView(PlatformAPIView):
         s.is_valid(raise_exception=True)
         escrow, _ = services.dispute_escrow(self.platform, escrow_id, s.validated_data["reason"])
         return Response(EscrowSerializer(escrow).data)
+
+
+# ------------------------------------------------------------------ payments (pay from any wallet)
+
+
+class PaymentsView(PlatformAPIView):
+    @extend_schema(tags=["Payments"], summary="Open a pay-from-any-wallet checkout for one order",
+                   parameters=[IDEMPOTENCY], request=PaymentCreateSerializer,
+                   responses={201: PaymentSerializer, 200: PaymentSerializer, 400: ErrorSerializer})
+    def post(self, request):
+        s = PaymentCreateSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        v = s.validated_data
+        seller, _ = services.get_or_create_end_user(self.platform, v["seller"])
+        buyer = services.get_end_user(self.platform, v["buyer"]) if v.get("buyer") else None
+        payment, replayed = services.create_payment(
+            self.platform, reference=v["reference"], seller=seller, buyer=buyer, amount=v["amount"],
+            expires_in_minutes=v.get("expires_in_minutes"), commission_bps=v.get("commission_bps"),
+            metadata=v["metadata"],
+        )
+        chain.open_payment(payment)
+        payment.refresh_from_db()
+        return Response(PaymentSerializer(payment).data, status=200 if replayed else 201)
+
+    @extend_schema(tags=["Payments"], summary="List payments", responses={200: PaymentSerializer(many=True)},
+                   parameters=[OpenApiParameter("status", str), OpenApiParameter("reference", str),
+                               OpenApiParameter("limit", int), OpenApiParameter("starting_after", str)])
+    def get(self, request):
+        qs = Payment.objects.filter(platform=self.platform).select_related("buyer", "seller", "escrow", "deposit_address")
+        p = request.query_params
+        if p.get("status"):
+            qs = qs.filter(status=p["status"])
+        if p.get("reference"):
+            qs = qs.filter(reference=p["reference"])
+        cursor = lambda v: Payment.objects.filter(platform=self.platform, public_id=v).values_list("pk", flat=True).first()  # noqa: E731
+        items, more = _page(request, qs, cursor)
+        return _listing(PaymentSerializer, items, more)
+
+
+class PaymentDetailView(PlatformAPIView):
+    @extend_schema(tags=["Payments"], summary="Get a payment (checks for a new deposit immediately)",
+                   responses={200: PaymentSerializer, 404: ErrorSerializer})
+    def get(self, request, payment_id):
+        payment = Payment.objects.select_related("buyer", "seller", "deposit_address").filter(
+            platform=self.platform, public_id=payment_id
+        ).first()
+        if not payment:
+            raise services.NotFound("Payment not found")
+        if payment.status == Payment.Status.AWAITING_PAYMENT:
+            try:
+                chain.scan_deposit(TronClient(), payment.deposit_address)
+            except Exception:
+                pass
+            payment = services.settle_payment(payment.pk) or payment
+        return Response(PaymentSerializer(payment).data)
+
+
+# ------------------------------------------------------------------ commission config
+
+
+class CommissionConfigView(PlatformAPIView):
+    @extend_schema(tags=["Settings"], summary="Get your commission settings", responses={200: CommissionConfigSerializer})
+    def get(self, request):
+        config = _config(self.platform)
+        return Response(CommissionConfigSerializer({
+            "commission_bps": config.commission_bps, "max_commission_bps": settings.MAX_COMMISSION_BPS,
+            "recipient": config.commission_recipient.external_id if config.commission_recipient_id else None,
+            "gateway_fee_bps": services.gateway_fee_bps(self.platform),
+        }).data)
+
+    @extend_schema(tags=["Settings"], summary="Set your default commission on each sale",
+                   request=CommissionConfigInSerializer, responses={200: CommissionConfigSerializer, 400: ErrorSerializer})
+    def put(self, request):
+        s = CommissionConfigInSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        v = s.validated_data
+        if v["commission_bps"] > settings.MAX_COMMISSION_BPS:
+            raise services.InvalidRequest(f"commission_bps must be at most {settings.MAX_COMMISSION_BPS}")
+        config = _config(self.platform)
+        config.commission_bps = v["commission_bps"]
+        config.commission_recipient = services.get_or_create_end_user(self.platform, v["recipient"])[0] if v.get("recipient") else None
+        config.save(update_fields=["commission_bps", "commission_recipient"])
+        return self.get(request)
 
 
 # ------------------------------------------------------------------ withdrawals

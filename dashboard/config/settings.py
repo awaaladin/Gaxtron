@@ -196,7 +196,9 @@ SWEEP_TRX_TARGET_SUN = int(os.getenv("SWEEP_TRX_TARGET_SUN", "40000000"))  # TRX
 SWEEP_FEE_LIMIT_SUN = int(os.getenv("SWEEP_FEE_LIMIT_SUN", "40000000"))  # max TRX one sweep transfer may burn
 
 # --- Custodial ledger / escrow / withdrawals (see ledger/). Conservative, fail-closed defaults. ---
-ESCROW_FEE_BPS = int(os.getenv("ESCROW_FEE_BPS", "0"))
+ESCROW_FEE_BPS = int(os.getenv("ESCROW_FEE_BPS", "0"))  # default Gaxtron gateway fee (per-platform override in admin)
+MAX_COMMISSION_BPS = int(os.getenv("MAX_COMMISSION_BPS", "3000"))  # ceiling on a platform's own commission (30%)
+PAYMENT_LINK_EXPIRY_MINUTES = int(os.getenv("PAYMENT_LINK_EXPIRY_MINUTES", "60"))
 WITHDRAWAL_FEE = Decimal(os.getenv("WITHDRAWAL_FEE", "0"))
 WITHDRAWAL_MIN = Decimal(os.getenv("WITHDRAWAL_MIN", "1"))
 WITHDRAWAL_USER_DAILY_LIMIT = Decimal(os.getenv("WITHDRAWAL_USER_DAILY_LIMIT", "1000"))

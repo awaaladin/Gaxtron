@@ -18,8 +18,8 @@ from django.db.models import Sum
 from django.utils import timezone
 
 from . import events, tron
-from .models import CURRENCY, Account, EndUser, Entry, Escrow, LedgerTransaction, PlatformConfig, Withdrawal
-from .serializers import EscrowSerializer, WithdrawalSerializer
+from .models import CURRENCY, Account, EndUser, Entry, Escrow, LedgerTransaction, Payment, PlatformConfig, Withdrawal
+from .serializers import EscrowSerializer, PaymentSerializer, WithdrawalSerializer
 
 QUANT = Decimal("0.000001")
 MAX_AMOUNT = Decimal("1000000000")
@@ -230,12 +230,37 @@ def transfer(platform, from_user, to_user, amount, description="", idempotency_k
 # ---------------------------------------------------------------- escrow
 
 
-def compute_fee(platform, amount: Decimal) -> Decimal:
+def gateway_fee_bps(platform) -> int:
+    """Gaxtron's own fee for this platform. Set by an operator in the admin, never by the platform."""
     config = PlatformConfig.objects.filter(platform=platform).first()
     bps = config.fee_bps if config and config.fee_bps is not None else settings.ESCROW_FEE_BPS
     if not 0 <= bps <= 10000:
         raise RuntimeError("fee_bps out of range")
-    return (amount * bps / Decimal(10000)).quantize(QUANT, ROUND_HALF_UP)
+    return bps
+
+
+def compute_fee(platform, amount: Decimal) -> Decimal:
+    return (amount * gateway_fee_bps(platform) / Decimal(10000)).quantize(QUANT, ROUND_HALF_UP)
+
+
+def platform_revenue_user(platform):
+    return get_or_create_end_user(platform, "platform:revenue")[0]
+
+
+def commission_recipient_for(platform):
+    config = PlatformConfig.objects.filter(platform=platform).select_related("commission_recipient").first()
+    return (config.commission_recipient if config and config.commission_recipient_id else None) or platform_revenue_user(platform)
+
+
+def compute_commission(platform, amount: Decimal, override_bps=None):
+    """The platform's own cut of a sale: (commission, recipient). `override_bps` lets the platform vary it per sale."""
+    config = PlatformConfig.objects.filter(platform=platform).first()
+    bps = override_bps if override_bps is not None else (config.commission_bps if config else 0)
+    if not 0 <= bps <= settings.MAX_COMMISSION_BPS:
+        raise InvalidRequest(f"commission_bps must be between 0 and {settings.MAX_COMMISSION_BPS}")
+    if bps == 0:
+        return Decimal("0"), None
+    return (amount * bps / Decimal(10000)).quantize(QUANT, ROUND_HALF_UP), commission_recipient_for(platform)
 
 
 def _emit_escrow(escrow, event_type):
@@ -245,7 +270,7 @@ def _emit_escrow(escrow, event_type):
 def _locked_escrow(platform, escrow_id) -> Escrow:
     escrow = (
         Escrow.objects.select_for_update(of=("self",))
-        .select_related("buyer", "seller", "platform")
+        .select_related("buyer", "seller", "platform", "commission_recipient")
         .filter(platform=platform, public_id=escrow_id)
         .first()
     )
@@ -255,30 +280,42 @@ def _locked_escrow(platform, escrow_id) -> Escrow:
 
 
 @transaction.atomic
-def hold_escrow(platform, *, buyer, seller, amount, reference, metadata=None):
-    """Moves `amount` from the buyer's available balance into escrow. Idempotent per reference."""
+def hold_escrow(platform, *, buyer, seller, amount, reference, metadata=None, commission_bps=None):
+    """Moves `amount` from the buyer's available balance into escrow. Idempotent per reference.
+
+    Two separate cuts come out of the seller's proceeds on release: Gaxtron's gateway `fee` and the platform's own
+    `commission`. Both are fixed now, so later configuration changes never alter an escrow that is already held."""
     amount = parse_amount(amount)
     reference = str(reference).strip()
     if not reference or len(reference) > 128:
         raise InvalidRequest("reference must be 1-128 characters")
     if buyer.id == seller.id:
         raise InvalidRequest("buyer and seller must be different users")
+    fee = compute_fee(platform, amount)
+    commission, recipient = compute_commission(platform, amount, commission_bps)
+    if fee + commission >= amount:
+        raise InvalidRequest("fees must be smaller than the amount")
+
+    def same(existing):
+        return (existing.buyer_id, existing.seller_id, existing.amount, existing.commission) == (
+            buyer.id, seller.id, amount, commission
+        )
 
     existing = Escrow.objects.select_related("buyer", "seller").filter(platform=platform, reference=reference).first()
     if existing:
-        if (existing.buyer_id, existing.seller_id, existing.amount) == (buyer.id, seller.id, amount):
+        if same(existing):
             return existing, True
         raise Conflict("An escrow with this reference already exists with different details")
 
     try:
         with transaction.atomic():
             escrow = Escrow.objects.create(
-                platform=platform, reference=reference, buyer=buyer, seller=seller, amount=amount,
-                fee=compute_fee(platform, amount), metadata=metadata or {},
+                platform=platform, reference=reference, buyer=buyer, seller=seller, amount=amount, fee=fee,
+                commission=commission, commission_recipient=recipient, metadata=metadata or {},
             )
     except IntegrityError:
         existing = Escrow.objects.select_related("buyer", "seller").get(platform=platform, reference=reference)
-        if (existing.buyer_id, existing.seller_id, existing.amount) == (buyer.id, seller.id, amount):
+        if same(existing):
             return existing, True
         raise Conflict("An escrow with this reference already exists with different details")
 
@@ -302,9 +339,11 @@ def release_escrow(platform, escrow_id):
         raise InvalidState("Escrow was already refunded")
     legs = [
         (_system_account(platform, Kind.ESCROW), -escrow.amount),
-        (_user_account(platform, escrow.seller), escrow.amount - escrow.fee),
+        (_user_account(platform, escrow.seller), escrow.net_to_seller),
         (_system_account(platform, Kind.FEE), escrow.fee),
     ]
+    if escrow.commission:
+        legs.append((_user_account(platform, escrow.commission_recipient), escrow.commission))
     post(
         platform, TxnKind.ESCROW_RELEASE, legs, reference=escrow.public_id,
         idempotency_key=f"escrow:{escrow.public_id}:release", description=f"Escrow release for {escrow.reference}",
@@ -349,6 +388,90 @@ def dispute_escrow(platform, escrow_id, reason):
     escrow.save(update_fields=["status", "dispute_reason"])
     _emit_escrow(escrow, "escrow.disputed")
     return escrow, False
+
+
+# ---------------------------------------------------------------- payments (pay from any wallet)
+
+
+def _emit_payment(payment, event_type):
+    events.emit(payment.platform, event_type, PaymentSerializer(payment).data)
+
+
+@transaction.atomic
+def create_payment(platform, *, reference, seller, amount, buyer=None, expires_in_minutes=None, metadata=None,
+                   commission_bps=None):
+    """Creates the Payment row. views.PaymentsView.post() is the entry point, and also calls
+    chain.open_payment() right after to attach a dedicated deposit address."""
+    amount = parse_amount(amount)
+    reference = str(reference).strip()
+    if not reference or len(reference) > 128:
+        raise InvalidRequest("reference must be 1-128 characters")
+    if amount < settings.TRON_DEPOSIT_MIN:
+        raise InvalidRequest(f"amount must be at least {settings.TRON_DEPOSIT_MIN} {CURRENCY}")
+    minutes = expires_in_minutes or settings.PAYMENT_LINK_EXPIRY_MINUTES
+    if not 5 <= minutes <= 1440:
+        raise InvalidRequest("expires_in_minutes must be between 5 and 1440")
+    compute_commission(platform, amount, commission_bps)  # validates the override early
+    if buyer is not None and buyer.id == seller.id:
+        raise InvalidRequest("buyer and seller must be different users")
+
+    existing = Payment.objects.select_related("buyer", "seller").filter(platform=platform, reference=reference).first()
+    if existing:
+        if (existing.seller_id, existing.amount) == (seller.id, amount) and (buyer is None or existing.buyer_id == buyer.id):
+            return existing, True
+        raise Conflict("A payment with this reference already exists with different details")
+
+    buyer = buyer or get_or_create_end_user(platform, f"guest:{uuid.uuid4().hex[:16]}")[0]
+    payment = Payment.objects.create(
+        platform=platform, reference=reference, buyer=buyer, seller=seller, amount=amount,
+        commission_bps=commission_bps, metadata=metadata or {}, expires_at=timezone.now() + timedelta(minutes=minutes),
+    )
+    return payment, False
+
+
+@transaction.atomic
+def settle_payment(payment_id):
+    """Moves a fully-paid payment into escrow (or expires an unpaid, overdue one). Safe to call repeatedly.
+
+    Whatever the buyer sent is already credited to the buyer's balance, so an underpaid, overpaid or late payment
+    never loses money: the amount simply stays with the buyer as spendable balance."""
+    payment = (
+        Payment.objects.select_for_update(of=("self",))
+        .select_related("platform", "buyer", "seller", "deposit_address")
+        .filter(pk=payment_id).first()
+    )
+    if payment is None or payment.status != Payment.Status.AWAITING_PAYMENT:
+        return payment
+    deposit = getattr(payment, "deposit_address", None)
+    paid = deposit is not None and deposit.credited_units >= int(payment.amount * 10**6)
+    if not paid:
+        if payment.expires_at < timezone.now():
+            payment.status = Payment.Status.EXPIRED
+            payment.save(update_fields=["status"])
+            _emit_payment(payment, "payment.expired")
+        return payment
+    escrow, _ = hold_escrow(
+        payment.platform, buyer=payment.buyer, seller=payment.seller, amount=payment.amount,
+        reference=payment.reference, metadata=payment.metadata, commission_bps=payment.commission_bps,
+    )
+    payment.status = Payment.Status.FUNDED
+    payment.escrow = escrow
+    payment.funded_at = timezone.now()
+    payment.save(update_fields=["status", "escrow", "funded_at"])
+    _emit_payment(payment, "payment.funded")
+    return payment
+
+
+def settle_pending_payments(limit=100) -> int:
+    settled = 0
+    ids = list(Payment.objects.filter(status=Payment.Status.AWAITING_PAYMENT).order_by("id").values_list("pk", flat=True)[:limit])
+    for payment_id in ids:
+        try:
+            result = settle_payment(payment_id)
+        except LedgerError:
+            continue  # e.g. the buyer's balance was spent by something else first; retried next round
+        settled += 1 if result and result.status != Payment.Status.AWAITING_PAYMENT else 0
+    return settled
 
 
 # ---------------------------------------------------------------- withdrawals

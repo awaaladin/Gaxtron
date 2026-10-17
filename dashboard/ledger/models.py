@@ -72,7 +72,12 @@ class PlatformConfig(models.Model):
     platform = models.OneToOneField(GaxtronUser, on_delete=models.CASCADE, related_name="ledger_config")
     webhook_url = models.TextField(blank=True, default="")
     webhook_secret_encrypted = models.CharField(max_length=255, default=new_encrypted_webhook_secret)
+    # Gaxtron's own gateway fee for this platform (operator-set in the admin; the platform cannot change it).
     fee_bps = models.PositiveIntegerField(null=True, blank=True, validators=[MaxValueValidator(10000)])
+    # The platform's own commission on each sale (platform-set via the API, capped by MAX_COMMISSION_BPS),
+    # credited to `commission_recipient`, or to a "platform:revenue" user created on first use.
+    commission_bps = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(10000)])
+    commission_recipient = models.ForeignKey("EndUser", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property
@@ -108,7 +113,9 @@ class DepositAddress(models.Model):
     """One TRON address per user. The private key is Fernet-encrypted; it is only needed to sweep
     deposits into the treasury, never to credit them."""
 
-    end_user = models.OneToOneField(EndUser, on_delete=models.CASCADE, related_name="deposit_address")
+    end_user = models.ForeignKey(EndUser, on_delete=models.CASCADE, related_name="deposit_addresses")
+    # Set for a per-order payment address; empty for the user's standing wallet address (one per user).
+    payment = models.OneToOneField("Payment", null=True, blank=True, on_delete=models.PROTECT, related_name="deposit_address")
     address = models.CharField(max_length=40, unique=True)
     private_key_encrypted = models.TextField()
     last_scanned_ms = models.BigIntegerField(default=0)
@@ -119,6 +126,13 @@ class DepositAddress(models.Model):
     credited_units = models.BigIntegerField(default=0)
     swept_units = models.BigIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["end_user"], condition=Q(payment__isnull=True), name="one_standing_address_per_user"
+            ),
+        ]
 
     def __str__(self):
         return self.address
@@ -234,7 +248,11 @@ class Escrow(models.Model):
     buyer = models.ForeignKey(EndUser, on_delete=models.PROTECT, related_name="escrows_as_buyer")
     seller = models.ForeignKey(EndUser, on_delete=models.PROTECT, related_name="escrows_as_seller")
     amount = models.DecimalField(**AMOUNT)
-    fee = models.DecimalField(default=0, **AMOUNT)
+    fee = models.DecimalField(default=0, **AMOUNT)  # Gaxtron's gateway fee
+    commission = models.DecimalField(default=0, **AMOUNT)  # the platform's commission
+    commission_recipient = models.ForeignKey(
+        EndUser, null=True, blank=True, on_delete=models.PROTECT, related_name="escrows_as_commission_recipient"
+    )
     currency = models.CharField(max_length=10, default=CURRENCY)
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.HELD, db_index=True)
     dispute_reason = models.TextField(blank=True, default="")
@@ -245,6 +263,43 @@ class Escrow(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["platform", "reference"], name="uniq_escrow_platform_reference"),
+        ]
+
+    @property
+    def net_to_seller(self):
+        return self.amount - self.fee - self.commission
+
+
+def new_payment_id():
+    return f"pay_{secrets.token_hex(12)}"
+
+
+class Payment(models.Model):
+    """A pay-from-any-wallet checkout for one order: the buyer sends USDT to a dedicated address, and once the
+    amount has arrived (irreversibly) it is credited to the buyer and moved straight into escrow."""
+
+    class Status(models.TextChoices):
+        AWAITING_PAYMENT = "awaiting_payment"
+        FUNDED = "funded"
+        EXPIRED = "expired"
+
+    public_id = models.CharField(max_length=40, unique=True, default=new_payment_id)
+    platform = models.ForeignKey(GaxtronUser, on_delete=models.CASCADE, related_name="ledger_payments")
+    reference = models.CharField(max_length=128)
+    buyer = models.ForeignKey(EndUser, on_delete=models.PROTECT, related_name="payments_as_buyer")
+    seller = models.ForeignKey(EndUser, on_delete=models.PROTECT, related_name="payments_as_seller")
+    amount = models.DecimalField(**AMOUNT)
+    commission_bps = models.PositiveIntegerField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.AWAITING_PAYMENT, db_index=True)
+    escrow = models.OneToOneField(Escrow, null=True, blank=True, on_delete=models.PROTECT, related_name="payment")
+    expires_at = models.DateTimeField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    funded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["platform", "reference"], name="uniq_payment_platform_reference"),
         ]
 
 

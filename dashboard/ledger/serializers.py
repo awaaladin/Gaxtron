@@ -3,7 +3,9 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from .models import Entry, Escrow, WebhookEvent, Withdrawal
+from django.conf import settings
+
+from .models import Entry, Escrow, Payment, WebhookEvent, Withdrawal
 
 AMOUNT_IN = {"max_digits": 30, "decimal_places": 6, "min_value": Decimal("0.000001")}
 AMOUNT_OUT = {"max_digits": 30, "decimal_places": 6}
@@ -99,14 +101,64 @@ class EscrowSerializer(serializers.ModelSerializer):
     buyer = serializers.CharField(source="buyer.external_id")
     seller = serializers.CharField(source="seller.external_id")
     amount = serializers.DecimalField(**AMOUNT_OUT)
-    fee = serializers.DecimalField(**AMOUNT_OUT)
+    fee = serializers.DecimalField(**AMOUNT_OUT, help_text="Gaxtron's gateway fee.")
+    commission = serializers.DecimalField(**AMOUNT_OUT, help_text="Your platform's own commission, if any.")
+    net_to_seller = serializers.DecimalField(**AMOUNT_OUT, read_only=True, help_text="What the seller receives on release: amount - fee - commission.")
 
     class Meta:
         model = Escrow
         fields = [
-            "id", "reference", "status", "buyer", "seller", "amount", "fee", "currency",
-            "metadata", "dispute_reason", "created_at", "resolved_at",
+            "id", "reference", "status", "buyer", "seller", "amount", "fee", "commission", "net_to_seller",
+            "currency", "metadata", "dispute_reason", "created_at", "resolved_at",
         ]
+
+
+class PaymentCreateSerializer(serializers.Serializer):
+    reference = serializers.CharField(max_length=128, help_text="Your order id. Unique per platform; makes creation idempotent.")
+    seller = serializers.CharField(max_length=128)
+    buyer = serializers.CharField(max_length=128, required=False, allow_blank=True,
+                                  help_text="Omit for a guest checkout not tied to one of your existing users.")
+    amount = serializers.DecimalField(**AMOUNT_IN)
+    expires_in_minutes = serializers.IntegerField(required=False, min_value=5, max_value=1440)
+    commission_bps = serializers.IntegerField(required=False, min_value=0,
+                                               help_text="Override your platform's default commission for this sale only.")
+    metadata = serializers.DictField(required=False, default=dict, validators=[_validate_metadata])
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="public_id")
+    buyer = serializers.CharField(source="buyer.external_id")
+    seller = serializers.CharField(source="seller.external_id")
+    amount = serializers.DecimalField(**AMOUNT_OUT)
+    escrow_id = serializers.CharField(source="escrow.public_id", default=None)
+    deposit_address = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Payment
+        fields = [
+            "id", "reference", "status", "buyer", "seller", "amount", "metadata", "deposit_address",
+            "escrow_id", "expires_at", "created_at", "funded_at",
+        ]
+
+    def get_deposit_address(self, obj) -> DepositAddressSerializer:
+        deposit = getattr(obj, "deposit_address", None)
+        return DepositAddressSerializer({
+            "address": deposit.address, "network": f"tron-{settings.TRON_NETWORK}", "currency": "USDT",
+            "token_contract": settings.USDT_TRC20_CONTRACT, "min_deposit": obj.amount,
+        }).data if deposit else None
+
+
+class CommissionConfigInSerializer(serializers.Serializer):
+    commission_bps = serializers.IntegerField(min_value=0, help_text="Your default commission on each sale, in basis points (100 = 1%).")
+    recipient = serializers.CharField(max_length=128, required=False, allow_blank=True,
+                                      help_text="User id to credit commission to. Omit to use your platform revenue account.")
+
+
+class CommissionConfigSerializer(serializers.Serializer):
+    commission_bps = serializers.IntegerField()
+    max_commission_bps = serializers.IntegerField()
+    recipient = serializers.CharField(allow_null=True)
+    gateway_fee_bps = serializers.IntegerField(help_text="Gaxtron's own fee, set by Gaxtron and shown here for reference.")
 
 
 class WithdrawalCreateSerializer(serializers.Serializer):
