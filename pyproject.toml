@@ -16,6 +16,7 @@ dependencies = [
   "web3>=6.15.0",
   "redis>=5.0.0",
   "httpx>=0.26.0",
+  "drf-spectacular>=0.28.0",
 ]
 
 [tool.vercel]
