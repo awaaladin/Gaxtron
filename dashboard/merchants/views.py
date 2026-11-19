@@ -129,6 +129,12 @@ def api_keys_view(request):
                 created_key = raw_key
         elif action == "revoke":
             ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).update(is_active=False)
+        elif action == "reactivate":
+            active_count = ApiKey.objects.filter(user=request.user, is_active=True).count()
+            if active_count >= settings.MAX_API_KEYS_PER_USER:
+                error = f"Maximum {settings.MAX_API_KEYS_PER_USER} active API keys allowed. Delete or leave another key revoked first."
+            else:
+                ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).update(is_active=True)
         elif action == "delete":
             ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).delete()
 
