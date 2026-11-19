@@ -129,6 +129,8 @@ def api_keys_view(request):
                 created_key = raw_key
         elif action == "revoke":
             ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).update(is_active=False)
+        elif action == "delete":
+            ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).delete()
 
     keys = ApiKey.objects.filter(user=request.user).order_by("-created_at")
     return render(
