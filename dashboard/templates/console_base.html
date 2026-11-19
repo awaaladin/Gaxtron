@@ -75,7 +75,7 @@
 
     <main class="w-full max-w-[1400px] flex-1 px-margin-mobile py-stack-lg md:px-margin-desktop">
       {% for message in messages %}
-      <div class="mb-stack-md rounded-md border border-primary/40 bg-surface-lowest p-4 text-sm text-foreground">{{ message }}</div>
+      <div class="mb-stack-md rounded-md border p-4 text-sm bg-surface-lowest {% if 'error' in message.tags %}border-destructive/40 text-destructive{% else %}border-primary/40 text-foreground{% endif %}">{{ message }}</div>
       {% endfor %}
       {% block content %}{% endblock %}
     </main>

@@ -11,9 +11,6 @@
   </button>
 </div>
 
-{% if error %}
-<div class="mb-stack-md rounded-md border border-destructive/40 bg-surface-lowest p-4 text-sm text-destructive">{{ error }}</div>
-{% endif %}
 {% if created_key %}
 <div class="mb-stack-lg flex flex-col gap-stack-sm rounded-md border border-primary/40 bg-surface-lowest p-6">
   <p class="label-caps text-[9px] text-primary">New key created — copy it now, it won't be shown again</p>

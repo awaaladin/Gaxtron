@@ -109,40 +109,49 @@ def transactions_view(request):
 @require_http_methods(["GET", "POST"])
 def api_keys_view(request):
     from django.conf import settings
+    from django.contrib import messages as flash
 
     from . import security
 
-    created_key = None
-    error = None
     if request.method == "POST":
         action = request.POST.get("action")
         if action == "create":
             active_count = ApiKey.objects.filter(user=request.user, is_active=True).count()
             if active_count >= settings.MAX_API_KEYS_PER_USER:
-                error = f"Maximum {settings.MAX_API_KEYS_PER_USER} active API keys allowed."
+                flash.error(request, f"Maximum {settings.MAX_API_KEYS_PER_USER} active API keys allowed.")
             else:
                 name = request.POST.get("name", "").strip() or "default"
                 raw_key = security.generate_api_key()
                 ApiKey.objects.create(
                     user=request.user, key_hash=security.hash_api_key(raw_key), key_prefix=raw_key[:12], name=name
                 )
-                created_key = raw_key
+                # Shown once on the next GET, then popped -- this is the only place the raw key ever
+                # exists outside the moment of generation; only a hash is stored in the database.
+                request.session["new_api_key"] = raw_key
         elif action == "revoke":
             ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).update(is_active=False)
         elif action == "reactivate":
             active_count = ApiKey.objects.filter(user=request.user, is_active=True).count()
             if active_count >= settings.MAX_API_KEYS_PER_USER:
-                error = f"Maximum {settings.MAX_API_KEYS_PER_USER} active API keys allowed. Delete or leave another key revoked first."
+                flash.error(
+                    request,
+                    f"Maximum {settings.MAX_API_KEYS_PER_USER} active API keys allowed. "
+                    "Delete or leave another key revoked first.",
+                )
             else:
                 ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).update(is_active=True)
         elif action == "delete":
             ApiKey.objects.filter(id=request.POST.get("key_id"), user=request.user).delete()
+        # Redirect after every POST (the Post/Redirect/Get pattern) so reloading the result page is a
+        # plain GET -- without this, the browser's "confirm form resubmission" prompt appears on reload,
+        # and clicking through it on the create action would silently mint a second key.
+        return redirect("api_keys")
 
     keys = ApiKey.objects.filter(user=request.user).order_by("-created_at")
     return render(
         request,
         "merchants/api_keys.html",
-        {"api_keys": keys, "created_key": created_key, "error": error, "active_nav": "API keys"},
+        {"api_keys": keys, "created_key": request.session.pop("new_api_key", None), "active_nav": "API keys"},
     )
 
 
